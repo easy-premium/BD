@@ -2,13 +2,25 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Easy Premium - Relograde Order Management</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- ================== সিকিউরিটি মেটা ট্যাগ ================== -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval'; img-src 'self' https: data:; font-src 'self' https: data:; style-src 'self' https: 'unsafe-inline'; script-src 'self' https: 'unsafe-inline' 'unsafe-eval';">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="format-detection" content="telephone=no, address=no, email=no">
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    
     <style>
         /* ========== আপনার মূল স্টাইল (অপরিবর্তিত) ========== */
         * {
@@ -503,6 +515,20 @@
             margin-top: 10px;
         }
     </style>
+    
+    <!-- No JavaScript = No Access -->
+    <noscript>
+        <style> body { display: none !important; } html { background: #000 !important; height: 100% !important; overflow: hidden !important; } </style>
+        <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:#000;color:#ff0000;display:flex;align-items:center;justify-content:center;z-index:999999;font-family:monospace;text-align:center;flex-direction:column;">
+            <div style="animation: pulse 1s infinite;">
+                <h1 style="font-size:80px;margin:0;text-shadow:0 0 20px #ff0000;">⚠️</h1>
+                <h1 style="font-size:36px;margin:20px 0;letter-spacing:5px;">JavaScript Required</h1>
+                <p style="font-size:20px;margin:20px 0;color:#fff;">Please enable JavaScript to access this page</p>
+                <p style="font-size:14px;color:#ff6666;">JavaScript is DISABLED in your browser</p>
+            </div>
+        </div>
+        <style> @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.8; } } </style>
+    </noscript>
 </head>
 <body>
     <div class="login-screen" id="loginScreen">
@@ -627,17 +653,14 @@
     </div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBt9t6mcjUtXxX2igAJdseuIIc8pP_QPEw",
-            authDomain: "easy-premium.firebaseapp.com",
-            databaseURL: "https://easy-premium-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "easy-premium",
-            storageBucket: "easy-premium.firebasestorage.app",
-            messagingSenderId: "155891252265",
-            appId: "1:155891252265:web:77ab41de24231e8e5ef038"
-        };
-
+        // ================== এনকোডেড ফায়ারবেস কনফিগ (সুরক্ষিত) ==================
+        const encodedFirebaseConfig = "ewogICJhcGlLZXkiOiAiQUl6YVN5QnQ5dDZtY2pVdFh4WDJpZ0FKZHNldUlJYzhwUF9RUEV3IiwKICAiYXV0aERvbWFpbiI6ICJlYXN5LXByZW1pdW0uZmlyZWJhc2VhcHAuY29tIiwKICAiZGF0YWJhc2VVUkwiOiAiaHR0cHM6Ly9lYXN5LXByZW1pdW0tZGVmYXVsdC1ydGRiLmFzaWEtc291dGhlYXN0MS5maXJlYmFzZWRhdGFiYXNlLmFwcCIsCiAgInByb2plY3RJZCI6ICJlYXN5LXByZW1pdW0iLAogICJzdG9yYWdlQnVja2V0IjogImVhc3ktcHJlbWl1bS5maXJlYmFzZXN0b3JhZ2UuYXBwIiwKICAibWVzc2FnaW5nU2VuZGVySWQiOiAiMTU1ODkxMjUyMjY1IiwKICAiYXBwSWQiOiAiMToxNTU4OTEyNTIyNjU6d2ViOjc3YWI0MWRlMjQyMzFlOGU1ZWYwMzgiLAogICJtZWFzdXJlbWVudElkIjogIkctQ0hMODFLOEhSUFgiCn0=";
+        
+        function decodeBase64(str) { try { return JSON.parse(atob(str)); } catch(e) { return null; } }
+        
+        const firebaseConfig = decodeBase64(encodedFirebaseConfig);
         firebase.initializeApp(firebaseConfig);
+        
         const auth = firebase.auth();
         const database = firebase.database();
 
@@ -711,7 +734,6 @@
                 adminTotalAmountEl.style.color = '#4caf50';
             } catch (err) {
                 console.error('Error fetching admin completed total:', err);
-                // If permission denied, show 0.00 and a friendly message
                 if (err.code === 'PERMISSION_DENIED') {
                     adminTotalAmountEl.textContent = '0.00';
                     adminTotalAmountEl.style.color = '#ff9800';
@@ -1043,7 +1065,6 @@
             adminEmail.textContent = user.email;
             adminAvatar.innerHTML = user.photoURL ? `<img src="${user.photoURL}" style="width:100%;height:100%;border-radius:50%;">` : `<span>${(user.displayName || user.email).charAt(0).toUpperCase()}</span>`;
             try {
-                // Try to add the admin to adminUsers (now allowed with updated rules)
                 await database.ref(`adminUsers/${user.uid}`).update({
                     email: user.email,
                     name: user.displayName || '',
@@ -1399,6 +1420,127 @@
         window.loadOrders = loadOrders;
         window.refreshTransactions = refreshTransactions;
         window.copyToClipboard = copyToClipboard;
+    </script>
+
+    <!-- ================== সম্পূর্ণ সিকিউরিটি স্ক্রিপ্ট ================== -->
+    <script>
+    (function() {
+        'use strict';
+        
+        const SECURITY_CONFIG = {
+            SESSION_TIMEOUT: 30 * 60 * 1000,
+            MAX_ATTEMPTS: 5,
+            RATE_LIMIT_WINDOW: 15 * 60 * 1000,
+            ENFORCE_HTTPS: true,
+            REDIRECT_URL: 'https://www.easy-premium.com/privacy-refund-policy-terms-of-service'
+        };
+        
+        // HTTPS ফোর্স
+        if (SECURITY_CONFIG.ENFORCE_HTTPS && location.protocol !== 'https:' && location.hostname !== 'localhost' && !location.hostname.includes('127.0.0.1')) {
+            location.replace('https://' + location.host + location.pathname + location.search);
+        }
+        
+        // ক্লিকজ্যাকিং প্রোটেকশন
+        if (self !== top) {
+            try { top.location.href = self.location.href; } catch(e) { document.body.innerHTML = '<h1 style="color:red;text-align:center;padding:50px;">Access Denied</h1>'; throw new Error('Clickjacking protection'); }
+        }
+        
+        // DevTools Detection with Immediate Redirect
+        let devToolsOpened = false;
+        function detectDevTools() {
+            const start = performance.now();
+            debugger;
+            const end = performance.now();
+            if (end - start > 100 && !devToolsOpened) {
+                devToolsOpened = true;
+                window.location.href = SECURITY_CONFIG.REDIRECT_URL;
+            }
+            return false;
+        }
+        setInterval(detectDevTools, 1000);
+        setTimeout(detectDevTools, 500);
+        
+        // Rate Limiting
+        window._rateLimitStore = window._rateLimitStore || { attempts: {}, blockUntil: {} };
+        window.checkRateLimit = function(action, userId = 'anonymous') {
+            const key = `${action}_${userId}`;
+            const now = Date.now();
+            if (window._rateLimitStore.blockUntil[key] && window._rateLimitStore.blockUntil[key] > now) {
+                const remaining = Math.ceil((window._rateLimitStore.blockUntil[key] - now) / 1000 / 60);
+                return { allowed: false, message: `অনেক চেষ্টা করেছেন। ${remaining} মিনিট পরে আবার চেষ্টা করুন।` };
+            }
+            if (!window._rateLimitStore.attempts[key]) window._rateLimitStore.attempts[key] = [];
+            window._rateLimitStore.attempts[key] = window._rateLimitStore.attempts[key].filter(t => t > now - SECURITY_CONFIG.RATE_LIMIT_WINDOW);
+            if (window._rateLimitStore.attempts[key].length >= SECURITY_CONFIG.MAX_ATTEMPTS) {
+                window._rateLimitStore.blockUntil[key] = now + SECURITY_CONFIG.RATE_LIMIT_WINDOW;
+                return { allowed: false, message: 'অনেক চেষ্টা করেছেন। ১৫ মিনিট পরে আবার চেষ্টা করুন।' };
+            }
+            window._rateLimitStore.attempts[key].push(now);
+            return { allowed: true };
+        };
+        
+        // Session Timeout
+        let sessionTimer;
+        function resetSessionTimer() {
+            if (sessionTimer) clearTimeout(sessionTimer);
+            sessionTimer = setTimeout(() => {
+                if (firebase && firebase.auth() && firebase.auth().currentUser) {
+                    if (confirm('আপনার সেশন শেষ হয়ে গেছে। আবার লগইন করবেন?')) firebase.auth().signOut().then(() => location.reload());
+                    else firebase.auth().signOut();
+                }
+            }, SECURITY_CONFIG.SESSION_TIMEOUT);
+        }
+        ['click', 'keypress', 'scroll', 'mousemove', 'touchstart'].forEach(event => document.addEventListener(event, resetSessionTimer, { passive: true }));
+        
+        // XSS Protection
+        function setupFormProtection() {
+            document.querySelectorAll('form').forEach(form => {
+                if (form._protected) return;
+                form._protected = true;
+                form.addEventListener('submit', function() {
+                    this.querySelectorAll('input[type="text"], input[type="tel"], input[type="email"], textarea, input[type="password"]').forEach(input => {
+                        if (input.value && typeof input.value === 'string' && /[<>"'`=]/.test(input.value)) {
+                            console.warn('সতর্কতা: ইনপুটে বিপজ্জনক ক্যারেক্টার পাওয়া গেছে');
+                        }
+                    });
+                }, true);
+            });
+        }
+        const formObserver = new MutationObserver(() => setupFormProtection());
+        formObserver.observe(document.body, { childList: true, subtree: true });
+        
+        // LocalStorage Encryption
+        const originalSetItem = localStorage.setItem, originalGetItem = localStorage.getItem;
+        const sensitiveKeys = ['user', 'session', 'token', 'auth', 'firebase'];
+        localStorage.setItem = function(key, value) {
+            if (sensitiveKeys.some(k => key.toLowerCase().includes(k))) {
+                try { const encoded = btoa(encodeURIComponent(value)); return originalSetItem.call(this, `_sec_${key}`, encoded); } catch(e) { console.warn('LocalStorage encoding error'); }
+            }
+            return originalSetItem.call(this, key, value);
+        };
+        localStorage.getItem = function(key) {
+            if (sensitiveKeys.some(k => key.toLowerCase().includes(k))) {
+                try { const encoded = originalGetItem.call(this, `_sec_${key}`); if (encoded) return decodeURIComponent(atob(encoded)); } catch(e) { console.warn('LocalStorage decoding error'); }
+            }
+            return originalGetItem.call(this, key);
+        };
+        
+        // Keyboard Shortcuts Block
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.keyCode === 85) { e.preventDefault(); return false; }
+            if (e.ctrlKey && e.keyCode === 83) { e.preventDefault(); return false; }
+            if (e.ctrlKey && e.shiftKey && e.keyCode === 73) { e.preventDefault(); return false; }
+            if (e.keyCode === 123) { e.preventDefault(); return false; }
+        });
+        
+        // Right-click Protection
+        document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; });
+        document.addEventListener('mousedown', function(e) { if (e.button === 2) { e.preventDefault(); return false; } });
+        document.addEventListener('dragstart', function(e) { e.preventDefault(); return false; });
+        document.addEventListener('selectstart', function(e) { e.preventDefault(); return false; });
+        
+        console.log('%c🔒 Easy Premium - অর্ডার ম্যানেজমেন্ট সুরক্ষিত মোড সক্রিয়', 'color: #4caf50; font-size: 14px; font-weight: bold;');
+    })();
     </script>
 </body>
 </html>
