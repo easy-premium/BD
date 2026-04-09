@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>আমার প্রোফাইল · Easy Premium</title>
+    <meta name="description" content="আপনার Easy Premium অ্যাকাউন্টের তথ্য ও অর্ডার ইতিহাস দেখুন।">
+    <link rel="icon" type="image/x-icon" href="https://cdn-icons-png.flaticon.com/512/8701/8701941.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval'; img-src 'self' https: data:; font-src 'self' https: data:; style-src 'self' https: 'unsafe-inline'; script-src 'self' https: 'unsafe-inline' 'unsafe-eval';">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="format-detection" content="telephone=no, address=no, email=no">
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <style>
+        /* ========== সম্পূর্ণ ডার্ক থিম – কোনো সাদা অংশ থাকবে না ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Noto Sans Bengali', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            color: #fff;
+        }
+        html {
+            background: #0a0a1a;
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+            width: 100%;
+            height: 100%;
+        }
+        body {
+            background: #0a0a1a; /* পুরোপুরি কালো ব্যাকগ্রাউন্ড, গ্রেডিয়েন্ট সরানো হয়েছে */
+            min-height: 100vh;
+            position: relative;
+        }
+        /* কোনো হালকা প্রভাব নেই */
+        /* Header */
+        .header {
+            background: #0a0a1a; /* সম্পূর্ণ অপেক ডার্ক */
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            width: 100%;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            transition: transform 0.3s;
+        }
+        .logo:hover { transform: scale(1.02); }
+        .logo-image-container {
+            width: 45px;
+            height: 45px;
+            min-width: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: 8px;
+            padding: 5px;
+            box-shadow: 0 5px 15px rgba(255,152,0,0.3);
+        }
+        .logo-image { width: 100%; height: 100%; object-fit: contain; }
+        .logo-text { display: flex; flex-direction: column; line-height: 1; }
+        .logo-main { font-size: 1.3rem; font-weight: 800; color: #ff9800; text-transform: uppercase; white-space: nowrap; }
+        .logo-sub { font-size: 0.75rem; font-weight: 600; color: #00bcd4; margin-top: 2px; white-space: nowrap; }
+        .header-right { display: flex; align-items: center; gap: 10px; }
+        .cart-icon-container, .menu-icon-container {
+            cursor: pointer;
+            position: relative;
+        }
+        .cart-modern-icon, .menu-modern-icon {
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: linear-gradient(145deg, rgba(255,152,0,0.15), rgba(255,87,34,0.1));
+            border: 2px solid rgba(255,152,0,0.3);
+            transition: all 0.4s;
+        }
+        .cart-modern-icon i, .menu-modern-icon i { font-size: 1.4rem; color: #ff9800; }
+        .cart-icon-container:hover .cart-modern-icon,
+        .menu-icon-container:hover .menu-modern-icon {
+            border-color: #ff9800;
+            box-shadow: 0 0 20px rgba(255,152,0,0.4);
+            transform: translateY(-3px);
+        }
+        .cart-icon-container:hover .cart-modern-icon i,
+        .menu-icon-container:hover .menu-modern-icon i { color: #fff; transform: scale(1.1); }
+        .cart-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: linear-gradient(45deg, #ff5722, #ff9800);
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border: 2px solid #0a0a1a;
+            z-index: 10;
+            animation: badgePulse 2s infinite;
+        }
+        /* কার্ট ব্যাজ সম্পূর্ণ লুকান (প্রয়োজন হলে দেখানো হবে) */
+        #cartBadge {
+            display: none !important;
+        }
+        @keyframes badgePulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+        
+        /* Hero section – সম্পূর্ণ ডার্ক */
+        .hero {
+            text-align: center;
+            padding: 40px 20px;
+            background: #0a0a1a; /* সরাসরি কালো, কোনো হালকা গ্রেডিয়েন্ট নেই */
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .hero h1 {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            color: #ff9800;
+            line-height: 1.3;
+        }
+        .hero p {
+            font-size: 1rem;
+            max-width: 600px;
+            margin: 0 auto;
+            color: #ddd;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Profile card */
+        .profile-card {
+            background: rgba(20,20,40,0.9);
+            border-radius: 12px;
+            padding: 25px;
+            border: 2px solid transparent;
+            transition: 0.3s;
+        }
+        .profile-card:hover {
+            border-color: #ff9800;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #ff9800;
+        }
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #ff9800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #0a0a1a;
+            overflow: hidden;
+        }
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .user-details {
+            flex: 1;
+        }
+        .user-name {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #ff9800;
+            margin-bottom: 5px;
+        }
+        .user-email {
+            color: #b0bec5;
+            font-size: 0.95rem;
+            word-break: break-word;
+        }
+        
+        /* Orders section */
+        .orders-section {
+            margin-top: 20px;
+        }
+        .section-title {
+            font-size: 1.2rem;
+            color: #00bcd4;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(0,188,212,0.3);
+        }
+        .no-orders {
+            text-align: center;
+            color: #b0bec5;
+            padding: 40px 20px;
+            font-size: 1.1rem;
+        }
+        .orders-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .order-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 15px;
+            border-left: 4px solid #ff9800;
+            transition: 0.2s;
+        }
+        /* Clickable styles for pending orders */
+        .order-card.clickable-pending {
+            cursor: pointer;
+        }
+        .order-card.clickable-pending:hover {
+            background: rgba(255,152,0,0.1);
+            border-left-color: #00bcd4;
+        }
+        /* Completed orders with voucher link */
+        .order-card[data-voucher-link]:not([data-voucher-link=""]) {
+            cursor: pointer;
+        }
+        .order-card[data-voucher-link]:not([data-voucher-link=""]):hover {
+            background: rgba(255,152,0,0.1);
+            border-left-color: #00bcd4;
+        }
+        .order-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255,152,0,0.2);
+        }
+        .order-row:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        .order-label {
+            color: #b0bec5;
+            font-size: 0.9rem;
+        }
+        .order-value {
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 500;
+            text-align: right;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .status-pending {
+            background: rgba(255,152,0,0.2);
+            color: #ff9800;
+            border: 1px solid #ff9800;
+        }
+        .status-completed {
+            background: rgba(76,175,80,0.2);
+            color: #4caf50;
+            border: 1px solid #4caf50;
+        }
+        .status-cancelled {
+            background: rgba(220,53,69,0.2);
+            color: #dc3545;
+            border: 1px solid #dc3545;
+        }
+        
+        /* Reorder button */
+        .reorder-btn {
+            background: linear-gradient(45deg, #ff9800, #ff5722);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: white;
+            margin-top: 8px;
+        }
+        .reorder-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(255,152,0,0.4);
+        }
+        
+        /* Loading & error */
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid #ff9800;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .error {
+            text-align: center;
+            padding: 30px;
+            color: #ff6b6b;
+            background: rgba(255,107,107,0.1);
+            border-radius: 16px;
+            border: 1px solid #ff6b6b;
+        }
+        
+        /* Footer (same as main site) */
+        .footer {
+            background: rgba(10,10,26,0.95);
+            padding: 40px 20px 30px;
+            text-align: center;
+            margin-top: 60px;
+        }
+        .footer-policy-links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .footer-policy-links a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 0.95rem;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: 0.3s;
+            border: 1px solid transparent;
+        }
+        .footer-policy-links a:hover {
+            color: #ff9800;
+            background: rgba(255,152,0,0.1);
+            border-color: #ff9800;
+        }
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 0 auto 30px;
+            flex-wrap: wrap;
+        }
+        .social-link {
+            color: #fff;
+            font-size: 1.5rem;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            text-decoration: none;
+            transition: 0.3s;
+        }
+        .social-link i {
+            transition: color 0.3s;
+        }
+        .social-link:nth-child(1) i { color: #1877F2; }
+        .social-link:nth-child(2) i { color: #E4405F; }
+        .social-link:nth-child(3) i { color: #FF0000; }
+        .social-link:nth-child(4) i { color: #000000; }
+        .social-link:nth-child(5) i { color: #25D366; }
+        .social-link:nth-child(6) i { color: #0088cc; }
+        .social-link:hover {
+            background: rgba(255,152,0,0.2);
+            transform: translateY(-5px) scale(1.1);
+        }
+        .social-link:hover i {
+            color: #ff9800 !important;
+        }
+        .copyright {
+            color: #b0bec5;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        /* Drawer (same) */
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(3px);
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.3s;
+        }
+        .drawer-overlay.active { opacity: 1; visibility: visible; }
+        .drawer {
+            position: fixed;
+            top: 0;
+            right: -350px;
+            width: 300px;
+            height: 100vh;
+            background: rgba(20,20,40,0.95);
+            backdrop-filter: blur(10px);
+            border-left: 2px solid #ff9800;
+            z-index: 2001;
+            transition: right 0.3s;
+            padding: 20px;
+        }
+        .drawer.active { right: 0; }
+        .drawer-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #ff9800;
+            cursor: pointer;
+            float: right;
+        }
+        .drawer-buttons {
+            margin-top: 50px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .drawer-btn {
+            background: rgba(255,152,0,0.1);
+            border: 1px solid #ff9800;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .drawer-btn:hover {
+            background: #ff9800;
+            color: #000;
+        }
+        
+        /* Messenger float */
+        .messenger-float {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #0084ff, #00b2ff);
+            border-radius: 50%;
+            box-shadow: 0 10px 25px rgba(0, 132, 255, 0.4);
+            transition: all 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            animation: messengerPulse 2s infinite;
+        }
+        .messenger-float:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 30px rgba(0, 132, 255, 0.6);
+        }
+        .messenger-float i {
+            color: white;
+            font-size: 2rem;
+        }
+        @keyframes messengerPulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 132, 255, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(0, 132, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 132, 255, 0); }
+        }
+        
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 1.7rem; }
+            .user-info { flex-direction: column; align-items: flex-start; }
+            .avatar { width: 60px; height: 60px; }
+            .user-name { font-size: 1.3rem; }
+        }
+        @media (max-width: 480px) {
+            .logo-main { font-size: 1.1rem; }
+            .logo-sub { font-size: 0.7rem; }
+            .cart-modern-icon, .menu-modern-icon { width: 40px; height: 40px; }
+            .cart-modern-icon i, .menu-modern-icon i { font-size: 1.2rem; }
+            .hero h1 { font-size: 1.5rem; }
+            .messenger-float { width: 50px; height: 50px; bottom: 20px; right: 20px; }
+            .messenger-float i { font-size: 1.6rem; }
+        }
+    </style>
+    
+    <noscript>
+        <style>
+            body { display: none !important; }
+            html { background: #000 !important; height: 100% !important; overflow: hidden !important; }
+        </style>
+        <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:#000;color:#ff0000;display:flex;align-items:center;justify-content:center;z-index:999999;font-family:monospace;text-align:center;flex-direction:column;">
+            <div style="animation: pulse 1s infinite;">
+                <h1 style="font-size:120px;margin:0;text-shadow:0 0 20px #ff0000;">We have an API key so JavaScript is disabled.</h1>
+                <h1 style="font-size:72px;margin:20px 0;letter-spacing:10px;">Please do not modify or use JavaScript.</h1>
+                <p style="font-size:24px;margin:20px 0;color:#fff;">JavaScript is DISABLED</p>
+                <p style="font-size:18px;color:#ff6666;">Nice try, script kiddie</p>
+                <p style="font-size:16px;color:#666;margin-top:30px;">Enable JavaScript to access this site</p>
+            </div>
+        </div>
+        <style>
+            @keyframes pulse {
+                0%, 100% { transform: scale(1); opacity: 1; }
+                50% { transform: scale(1.1); opacity: 0.8; }
+            }
+        </style>
+    </noscript>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <a href="https://www.easy-premium.com" class="logo">
+                <div class="logo-image-container"><img src="https://cdn-icons-png.flaticon.com/512/8701/8701941.png" class="logo-image"></div>
+                <div class="logo-text">
+                    <div class="logo-main">EASY PREMIUM</div>
+                    <div class="logo-sub">Rewarble Voucher Services</div>
+                </div>
+            </a>
+        </div>
+        <div class="header-right">
+            <div class="cart-icon-container" id="cartIcon">
+                <div class="cart-modern-icon"><i class="fas fa-shopping-cart"></i></div>
+                <span class="cart-badge" id="cartBadge" style="display: none;">0</span>
+            </div>
+            <div class="menu-icon-container" id="menuIcon">
+                <div class="menu-modern-icon"><i class="fas fa-bars"></i></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Drawer -->
+    <div id="drawerOverlay" class="drawer-overlay"></div>
+    <div id="drawer" class="drawer">
+        <button class="drawer-close" id="drawerClose"><i class="fas fa-times"></i></button>
+        <div class="drawer-buttons">
+            <a href="https://www.easy-premium.com" class="drawer-btn">ভিসাকার্ড</a>
+            <a href="https://www.easy-premium.com/AccountDelete" class="drawer-btn">অ্যাকাউন্ট ডিলিট</a>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>আমার প্রোফাইল</h1>
+        <p>আপনার অ্যাকাউন্টের তথ্য ও অর্ডার ইতিহাস</p>
+    </section>
+
+    <div class="container">
+        <div id="profileContent">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>লোড হচ্ছে...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-policy-links">
+            <a href="https://www.easy-premium.com/privacy-refund-policy-terms-of-service?data=PrivacyPolicy">Privacy Policy</a>
+            <a href="https://www.easy-premium.com/privacy-refund-policy-terms-of-service?data=PaymentSolutions">Payment Solutions</a>
+            <a href="https://www.easy-premium.com/privacy-refund-policy-terms-of-service?data=TermsandConditions">Terms and Conditions</a>
+            <a href="https://www.easy-premium.com/privacy-refund-policy-terms-of-service?data=RefundandReturnsPolicy">Refund and Returns Policy</a>
+        </div>
+        <div class="social-links">
+            <a href="https://m.me/906635592542978" class="social-link"><i class="fab fa-facebook"></i></a>
+            <a href="https://www.instagram.com/easy__premium/" class="social-link"><i class="fab fa-instagram"></i></a>
+            <a href="https://www.youtube.com/@Easy_Premium" class="social-link"><i class="fab fa-youtube"></i></a>
+            <a href="https://twitter.com/EasyPremium2026" class="social-link"><i class="fab fa-twitter"></i></a>
+            <a href="https://wa.me/1770584994" class="social-link"><i class="fab fa-whatsapp"></i></a>
+            <a href="https://t.me/Easy_Pemium" class="social-link"><i class="fab fa-telegram"></i></a>
+        </div>
+        <div class="copyright">
+            © 2026 Easy Premium. TIN : 478475635566<br>
+            কন্টাক্ট: support@easy-premium.com | হেল্পলাইন: +8801770584994
+        </div>
+    </footer>
+
+    <!-- Floating Messenger -->
+    <a href="https://m.me/906635592542978" target="_blank" class="messenger-float" title="মেসেঞ্জারে কথা বলুন">
+        <i class="fab fa-facebook-messenger"></i>
+    </a>
+
+    <script>
+        // ================== এনকোডেড ফায়ারবেস কনফিগ ==================
+        const encodedFirebaseConfig = "ewogICJhcGlLZXkiOiAiQUl6YVN5QnQ5dDZtY2pVdFh4WDJpZ0FKZHNldUlJYzhwUF9RUEV3IiwKICAiYXV0aERvbWFpbiI6ICJlYXN5LXByZW1pdW0uZmlyZWJhc2VhcHAuY29tIiwKICAiZGF0YWJhc2VVUkwiOiAiaHR0cHM6Ly9lYXN5LXByZW1pdW0tZGVmYXVsdC1ydGRiLmFzaWEtc291dGhlYXN0MS5maXJlYmFzZWRhdGFiYXNlLmFwcCIsCiAgInByb2plY3RJZCI6ICJlYXN5LXByZW1pdW0iLAogICJzdG9yYWdlQnVja2V0IjogImVhc3ktcHJlbWl1bS5maXJlYmFzZXN0b3JhZ2UuYXBwIiwKICAibWVzc2FnaW5nU2VuZGVySWQiOiAiMTU1ODkxMjUyMjY1IiwKICAiYXBwSWQiOiAiMToxNTU4OTEyNTIyNjU6d2ViOjc3YWI0MWRlMjQyMzFlOGU1ZWYwMzgiLAogICJtZWFzdXJlbWVudElkIjogIkctQ0hMODFLOEhSUFgiCn0=";
+        
+        function decodeBase64(str) {
+            try { return JSON.parse(atob(str)); } catch(e) { return null; }
+        }
+        
+        const firebaseConfig = decodeBase64(encodedFirebaseConfig);
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const auth = firebase.auth();
+
+        const profileContent = document.getElementById('profileContent');
+        const cartBadge = document.getElementById('cartBadge');
+        
+        // Drawer logic
+        const menuIcon = document.getElementById('menuIcon');
+        const drawer = document.getElementById('drawer');
+        const drawerOverlay = document.getElementById('drawerOverlay');
+        const drawerClose = document.getElementById('drawerClose');
+        
+        menuIcon.addEventListener('click', () => { drawer.classList.add('active'); drawerOverlay.classList.add('active'); });
+        function closeDrawer() { drawer.classList.remove('active'); drawerOverlay.classList.remove('active'); }
+        drawerOverlay.addEventListener('click', closeDrawer);
+        drawerClose.addEventListener('click', closeDrawer);
+        drawer.addEventListener('click', e => e.stopPropagation());
+        
+        // Cart icon redirect
+        const cartIcon = document.getElementById('cartIcon');
+        cartIcon.addEventListener('click', () => {
+            window.location.href = 'https://www.easy-premium.com/Profile.html';
+        });
+        
+        // Helper functions
+        function formatDate(iso) {
+            if (!iso) return 'N/A';
+            try {
+                const d = new Date(iso);
+                return d.toLocaleDateString('bn-BD', { year: 'numeric', month: 'long', day: 'numeric' }) + ' ' + d.toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' });
+            } catch { return iso; }
+        }
+
+        function getStatusClass(status) {
+            if (status === 'completed') return 'status-completed';
+            if (status === 'cancelled') return 'status-cancelled';
+            if (status === 'fail' || status === 'failed') return 'status-cancelled';
+            return 'status-pending';
+        }
+
+        function getStatusBangla(status) {
+            if (status === 'completed') return 'সম্পন্ন';
+            if (status === 'cancelled') return 'বাতিল';
+            if (status === 'fail' || status === 'failed') return 'ফেল';
+            if (status === 'waiting') return 'অপেক্ষমান';
+            return 'পেমেন্ট করুন';
+        }
+
+        async function updateCartBadge(uid) {
+            const snap = await database.ref(`userOrders/${uid}`).once('value');
+            const count = snap.numChildren();
+            if (count > 0) { cartBadge.textContent = count; cartBadge.style.display = 'flex'; }
+            else cartBadge.style.display = 'none';
+        }
+
+        // Fetch payment link from transactions if not present in userOrder
+        async function ensurePaymentLink(orderId, orderData) {
+            if (orderData.paymentLink) return orderData.paymentLink;
+            try {
+                const snap = await database.ref(`transactions/${orderId}`).once('value');
+                const trans = snap.val();
+                if (trans && trans.paymentLink) return trans.paymentLink;
+            } catch (e) {
+                console.warn('Could not fetch payment link from transactions', e);
+            }
+            return null;
+        }
+
+        // Reorder function for failed orders
+        async function reorderOrder(orderId, platformId, price, platformName) {
+            const mainUrl = `https://www.easy-premium.com?reorder=true&product=${encodeURIComponent(platformId)}&price=${encodeURIComponent(price)}&name=${encodeURIComponent(platformName)}`;
+            window.open(mainUrl, '_blank');
+            alert('পুনরায় অর্ডার করতে পৃষ্ঠাটি খুলেছে। অনুগ্রহ করে একই পণ্য নির্বাচন করুন।');
+        }
+
+        // Attach click handlers for both completed (voucher) and pending (payment link)
+        function attachClickHandlers() {
+            // Completed orders (voucher link)
+            document.querySelectorAll('.order-card[data-voucher-link]:not([data-voucher-link=""])').forEach(card => {
+                const newCard = card.cloneNode(true);
+                card.parentNode.replaceChild(newCard, card);
+                newCard.style.cursor = 'pointer';
+                newCard.addEventListener('click', (e) => {
+                    if (e.target.closest('.reorder-btn')) return;
+                    const link = newCard.dataset.voucherLink;
+                    if (link) window.open(link, '_blank');
+                });
+            });
+
+            // Pending orders (payment link)
+            document.querySelectorAll('.order-card.clickable-pending').forEach(card => {
+                const newCard = card.cloneNode(true);
+                card.parentNode.replaceChild(newCard, card);
+                newCard.addEventListener('click', async (e) => {
+                    if (e.target.closest('.reorder-btn')) return;
+                    let link = newCard.dataset.paymentLink;
+                    if (!link) {
+                        const orderId = newCard.dataset.orderId;
+                        if (orderId) {
+                            const snap = await database.ref(`transactions/${orderId}`).once('value');
+                            const trans = snap.val();
+                            if (trans && trans.paymentLink) link = trans.paymentLink;
+                        }
+                    }
+                    if (link) {
+                        window.location.href = link;
+                    } else {
+                        alert('পেমেন্ট লিংক পাওয়া যায়নি। অনুগ্রহ করে সাপোর্টে যোগাযোগ করুন।');
+                    }
+                });
+            });
+
+            // Reorder buttons for failed orders
+            document.querySelectorAll('.reorder-btn').forEach(btn => {
+                btn.removeEventListener('click', btn._reorderHandler);
+                btn._reorderHandler = (e) => {
+                    e.stopPropagation();
+                    const orderId = btn.dataset.orderId;
+                    const platformId = btn.dataset.platformId;
+                    const price = btn.dataset.price;
+                    const platformName = btn.dataset.platformName;
+                    reorderOrder(orderId, platformId, price, platformName);
+                };
+                btn.addEventListener('click', btn._reorderHandler);
+            });
+        }
+        
+        async function renderProfile(user, orders) {
+            const avatarHtml = user.photoURL 
+                ? `<img src="${user.photoURL}" alt="avatar">`
+                : `<span>${(user.displayName || user.email).charAt(0).toUpperCase()}</span>`;
+
+            let ordersHtml = '';
+            if (orders.length === 0) {
+                ordersHtml = '<div class="no-orders">কোন অর্ডার নেই</div>';
+            } else {
+                ordersHtml = '<div class="orders-cards">';
+                for (const order of orders) {
+                    const status = order.status || 'pending';
+                    const statusClass = getStatusClass(status);
+                    const statusBangla = getStatusBangla(status);
+                    const voucherLink = (status === 'completed' && order.voucherData?.voucherLink) ? order.voucherData.voucherLink : '';
+                    let paymentLink = (status === 'pending' && order.paymentLink) ? order.paymentLink : '';
+                    
+                    // If it's pending and no paymentLink yet, try to fetch it now (async)
+                    if (status === 'pending' && !paymentLink && order.orderId) {
+                        paymentLink = await ensurePaymentLink(order.orderId, order);
+                    }
+                    
+                    const isClickablePending = (status === 'pending' && paymentLink);
+                    const isClickableCompleted = (status === 'completed' && voucherLink);
+                    
+                    const clickablePendingClass = isClickablePending ? 'clickable-pending' : '';
+                    const voucherAttr = (isClickableCompleted && voucherLink) ? `data-voucher-link="${voucherLink}"` : '';
+                    const paymentAttr = (isClickablePending && paymentLink) ? `data-payment-link="${paymentLink}"` : '';
+                    const orderIdAttr = order.orderId ? `data-order-id="${order.orderId}"` : '';
+                    
+                    // Reorder button only for failed orders
+                    let reorderButton = '';
+                    if (status === 'fail' || status === 'failed') {
+                        const platformId = order.platformId || '';
+                        const price = order.price || '';
+                        const platformName = order.platform || '';
+                        reorderButton = `
+                            <div class="order-row" style="justify-content: flex-end;">
+                                <button class="reorder-btn" data-order-id="${order.orderId || ''}" data-platform-id="${platformId}" data-price="${price}" data-platform-name="${platformName}">
+                                    <i class="fas fa-redo-alt"></i> পুনরায় অর্ডার করুন
+                                </button>
+                            </div>
+                        `;
+                    }
+                    
+                    ordersHtml += `
+                        <div class="order-card ${clickablePendingClass}" ${voucherAttr} ${paymentAttr} ${orderIdAttr}>
+                            <div class="order-row"><span class="order-label">প্ল্যাটফর্ম</span><span class="order-value">${order.platform || '—'}</span></div>
+                            <div class="order-row"><span class="order-label">মূল্য</span><span class="order-value">${order.price || '—'}</span></div>
+                            <div class="order-row"><span class="order-label">অর্ডার আইডি</span><span class="order-value">${order.orderId || order.id || '—'}</span></div>
+                            <div class="order-row"><span class="order-label">তারিখ</span><span class="order-value">${formatDate(order.orderDate)}</span></div>
+                            <div class="order-row"><span class="order-label">স্ট্যাটাস</span><span class="order-value"><span class="status-badge ${statusClass}">${statusBangla}</span></span></div>
+                            ${reorderButton}
+                        </div>
+                    `;
+                }
+                ordersHtml += '</div>';
+            }
+
+            return `
+                <div class="profile-card">
+                    <div class="user-info">
+                        <div class="avatar">${avatarHtml}</div>
+                        <div class="user-details">
+                            <div class="user-name">${user.displayName || 'ব্যবহারকারী'}</div>
+                            <div class="user-email">${user.email}</div>
+                        </div>
+                    </div>
+                    <div class="orders-section">
+                        <div class="section-title">আপনার অর্ডার সমূহ</div>
+                        ${ordersHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        auth.onAuthStateChanged(async (user) => {
+            if (!user) {
+                window.location.href = 'https://www.easy-premium.com';
+                return;
+            }
+
+            try {
+                const snapshot = await database.ref(`userOrders/${user.uid}`).once('value');
+                const orders = [];
+                snapshot.forEach(child => {
+                    orders.push({ id: child.key, ...child.val() });
+                });
+                orders.sort((a, b) => (b.orderDate || '').localeCompare(a.orderDate || ''));
+                
+                profileContent.innerHTML = await renderProfile(user, orders);
+                attachClickHandlers();
+                await updateCartBadge(user.uid);
+            } catch (error) {
+                profileContent.innerHTML = `<div class="error"><i class="fas fa-exclamation-triangle"></i> তথ্য লোড করতে সমস্যা হয়েছে: ${error.message}</div>`;
+            }
+        });
+    </script>
+
+    <!-- ================== উন্নত নিরাপত্তা স্ক্রিপ্ট (DevTools detection, rate limiting, session timeout) ================== -->
+    <script>
+    (function() {
+        'use strict';
+
+        const SECURITY_CONFIG = {
+            SESSION_TIMEOUT: 30 * 60 * 1000,
+            MAX_ATTEMPTS: 5,
+            RATE_LIMIT_WINDOW: 15 * 60 * 1000,
+            REDIRECT_URL: 'https://www.easy-premium.com/privacy-refund-policy-terms-of-service.html',
+            ENFORCE_HTTPS: true
+        };
+
+        if (SECURITY_CONFIG.ENFORCE_HTTPS && location.protocol !== 'https:' && location.hostname !== 'localhost' && !location.hostname.includes('127.0.0.1')) {
+            location.replace('https://' + location.host + location.pathname + location.search);
+        }
+
+        if (self !== top) {
+            try {
+                top.location.href = self.location.href;
+            } catch (e) {
+                document.body.innerHTML = '<h1 style="color:red;text-align:center;padding:50px;">Access Denied</h1>';
+                throw new Error('Clickjacking protection');
+            }
+        }
+
+        let devToolsOpened = false;
+        function detectDevTools() {
+            const start = performance.now();
+            debugger;
+            const end = performance.now();
+            if (end - start > 100 && !devToolsOpened) {
+                devToolsOpened = true;
+                window.location.href = SECURITY_CONFIG.REDIRECT_URL;
+            }
+            return false;
+        }
+        setInterval(detectDevTools, 1000);
+        setTimeout(detectDevTools, 500);
+
+        window._rateLimitStore = window._rateLimitStore || { attempts: {}, blockUntil: {} };
+        window.checkRateLimit = function(action, userId = 'anonymous') {
+            const key = `${action}_${userId}`;
+            const now = Date.now();
+            if (window._rateLimitStore.blockUntil[key] && window._rateLimitStore.blockUntil[key] > now) {
+                const remaining = Math.ceil((window._rateLimitStore.blockUntil[key] - now) / 1000 / 60);
+                return { allowed: false, message: `অনেক চেষ্টা করেছেন। ${remaining} মিনিট পরে আবার চেষ্টা করুন।` };
+            }
+            if (!window._rateLimitStore.attempts[key]) window._rateLimitStore.attempts[key] = [];
+            window._rateLimitStore.attempts[key] = window._rateLimitStore.attempts[key].filter(t => t > now - SECURITY_CONFIG.RATE_LIMIT_WINDOW);
+            if (window._rateLimitStore.attempts[key].length >= SECURITY_CONFIG.MAX_ATTEMPTS) {
+                window._rateLimitStore.blockUntil[key] = now + SECURITY_CONFIG.RATE_LIMIT_WINDOW;
+                return { allowed: false, message: 'অনেক চেষ্টা করেছেন। ১৫ মিনিট পরে আবার চেষ্টা করুন।' };
+            }
+            window._rateLimitStore.attempts[key].push(now);
+            return { allowed: true };
+        };
+
+        let sessionTimer;
+        function resetSessionTimer() {
+            if (sessionTimer) clearTimeout(sessionTimer);
+            sessionTimer = setTimeout(() => {
+                if (firebase && firebase.auth() && firebase.auth().currentUser) {
+                    if (confirm('আপনার সেশন শেষ হয়ে গেছে। আবার লগইন করবেন?')) {
+                        firebase.auth().signOut();
+                        window.location.reload();
+                    } else {
+                        firebase.auth().signOut();
+                    }
+                }
+            }, SECURITY_CONFIG.SESSION_TIMEOUT);
+        }
+        ['click', 'keypress', 'scroll', 'mousemove', 'touchstart'].forEach(event => {
+            document.addEventListener(event, resetSessionTimer, { passive: true });
+        });
+
+        function sanitizeInput(input) {
+            if (typeof input !== 'string') return input;
+            return input.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;').replace(/\//g, '&#x2F;').replace(/\\/g, '&#x5C;').replace(/`/g, '&#96;').replace(/=/g, '&#61;');
+        }
+
+        function setupFormProtection() {
+            document.querySelectorAll('form').forEach(form => {
+                if (form._protected) return;
+                form._protected = true;
+                form.addEventListener('submit', function() {
+                    const textInputs = this.querySelectorAll('input[type="text"], input[type="tel"], input[type="email"], textarea');
+                    textInputs.forEach(input => {
+                        if (input.value && typeof input.value === 'string' && /[<>"'`=]/.test(input.value)) {
+                            console.warn('সতর্কতা: ইনপুটে বিপজ্জনক ক্যারেক্টার পাওয়া গেছে');
+                        }
+                    });
+                }, true);
+            });
+        }
+        const mutationObserver = new MutationObserver(() => setupFormProtection());
+        mutationObserver.observe(document.body, { childList: true, subtree: true });
+
+        const originalSetItem = localStorage.setItem;
+        const originalGetItem = localStorage.getItem;
+        const sensitiveKeys = ['user', 'session', 'token', 'auth'];
+        localStorage.setItem = function(key, value) {
+            if (sensitiveKeys.some(k => key.toLowerCase().includes(k))) {
+                try {
+                    const encoded = btoa(encodeURIComponent(value));
+                    return originalSetItem.call(this, `_sec_${key}`, encoded);
+                } catch (e) {
+                    console.warn('LocalStorage encoding error');
+                }
+            }
+            return originalSetItem.call(this, key, value);
+        };
+        localStorage.getItem = function(key) {
+            if (sensitiveKeys.some(k => key.toLowerCase().includes(k))) {
+                try {
+                    const encoded = originalGetItem.call(this, `_sec_${key}`);
+                    if (encoded) return decodeURIComponent(atob(encoded));
+                } catch (e) {
+                    console.warn('LocalStorage decoding error');
+                }
+            }
+            return originalGetItem.call(this, key);
+        };
+
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.keyCode === 85) { e.preventDefault(); return false; }
+            if (e.ctrlKey && e.keyCode === 83) { e.preventDefault(); return false; }
+            if (e.ctrlKey && e.shiftKey && e.keyCode === 73) { e.preventDefault(); return false; }
+            if (e.keyCode === 123) { e.preventDefault(); return false; }
+        });
+
+        document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; });
+        document.addEventListener('mousedown', function(e) { if (e.button === 2) { e.preventDefault(); return false; } });
+        document.addEventListener('touchstart', function(e) {
+            let touchTimer;
+            const handleTouchEnd = function() { clearTimeout(touchTimer); document.removeEventListener('touchend', handleTouchEnd); };
+            if (e.touches.length === 1) {
+                touchTimer = setTimeout(function() { e.preventDefault(); }, 500);
+                document.addEventListener('touchend', handleTouchEnd, { once: true });
+            }
+        }, { passive: false });
+
+        if (window.purchaseForm) {
+            const form = window.purchaseForm;
+            const originalHandler = form.onsubmit;
+            form.onsubmit = async function(e) {
+                e.preventDefault();
+                if (firebase && firebase.auth() && firebase.auth().currentUser) {
+                    const rateCheck = window.checkRateLimit('purchase', firebase.auth().currentUser.uid);
+                    if (!rateCheck.allowed) { alert(rateCheck.message); return false; }
+                }
+                if (originalHandler) return originalHandler.call(this, e);
+                return false;
+            };
+        }
+
+        console.log('%c🔒 Easy Premium - প্রোফাইল পৃষ্ঠা সুরক্ষিত মোড সক্রিয় (পুরোপুরি ডার্ক থিম)', 'color: #4caf50; font-size: 14px; font-weight: bold;');
+    })();
+    </script>
+</body>
+</html>
