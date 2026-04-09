@@ -1,0 +1,129 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "reviews": {
+      ".read": true,
+      ".write": "auth != null",
+      "$reviewId": {
+        ".validate": "newData.hasChildren(['userId', 'email', 'audioBase64', 'timestamp']) && newData.child('userId').val() === auth.uid"
+      }
+    },
+
+
+    "publicAdminInfo": {
+      ".read": "auth != null",
+      ".write": false,
+      "$uid": {
+         ".read": "auth != null",
+        ".write": "auth != null && auth.uid === $uid && (auth.token.email == 'ashikislam017705@gmail.com' || auth.token.email == 'mdsojib1388888@gmail.com' || auth.token.email == 'mdsojib138888@gmail.com' || auth.token.email == 'allwork204571@gmail.com')"
+      }
+    },
+    "users": {
+      "$userId": {
+        ".read": "auth != null && auth.uid === $userId",
+        ".write": "auth != null && auth.uid === $userId"
+      }
+    },
+
+    "userOrders": {
+      ".read": "auth != null",
+      ".write": "auth != null",
+      "$userId": {
+        ".read": "auth != null && auth.uid === $userId",
+        ".write": "auth != null && auth.uid === $userId"
+      }
+    },
+
+    "userDeletions": {
+      ".write": "auth != null",
+      "$userId": {
+        ".write": "auth != null && auth.uid === $userId"
+      }
+    },
+    "accountDeletions": {
+      ".write": "auth != null",
+      "$userId": {
+        ".write": "auth != null && auth.uid === $userId"
+      }
+    },
+    "deletedLogs": {
+      ".write": "auth != null",
+      "$userId": {
+        ".write": "auth != null && auth.uid === $userId"
+      }
+    },
+
+    "transactions": {
+      ".read": "auth != null",
+      ".write": "auth != null",
+      "$transactionId": {
+        ".read": "auth != null && (root.child('adminUsers').child(auth.uid).exists() || data.child('userId').val() === auth.uid)",
+        ".write": "auth != null && (root.child('adminUsers').child(auth.uid).exists() || (data.child('userId').val() === auth.uid && (!newData.exists() || newData.child('userId').val() === auth.uid)))"
+      }
+    },
+
+    "adminUsers": {
+      ".read": "auth != null && (auth.token.email == 'ashikislam017705@gmail.com' || auth.token.email == 'mdsojib1388888@gmail.com' || auth.token.email == 'mdsojib138888@gmail.com' || auth.token.email == 'allwork204571@gmail.com')",
+      "$uid": {
+        ".read": "auth != null && (auth.token.email == 'ashikislam017705@gmail.com' || auth.token.email == 'mdsojib1388888@gmail.com' || auth.token.email == 'mdsojib138888@gmail.com' || auth.token.email == 'allwork204571@gmail.com')",
+        ".write": "auth != null && auth.uid === $uid && (auth.token.email == 'ashikislam017705@gmail.com' || auth.token.email == 'mdsojib1388888@gmail.com' || auth.token.email == 'mdsojib138888@gmail.com' || auth.token.email == 'allwork204571@gmail.com')"
+      }
+    },
+    "adminSettings": {
+      ".read": "auth != null && root.child('adminUsers').child(auth.uid).exists()",
+      ".write": "auth != null && root.child('adminUsers').child(auth.uid).exists()"
+    },
+    "adminLogs": {
+      ".read": "auth != null && root.child('adminUsers').child(auth.uid).exists()",
+      ".write": "auth != null && root.child('adminUsers').child(auth.uid).exists()"
+    },
+
+    "FailOrders": {
+      ".read": "auth != null && (auth.token.email == 'ashikislam017705@gmail.com' || auth.token.email == 'mdsojib1388888@gmail.com' || auth.token.email == 'mdsojib138888@gmail.com' || auth.token.email == 'allwork204571@gmail.com')",
+    },
+    "completedOrders": {
+      ".read": "auth != null && (auth.token.email == 'ashikislam017705@gmail.com' || auth.token.email == 'mdsojib1388888@gmail.com' || auth.token.email == 'mdsojib138888@gmail.com' || auth.token.email == 'allwork204571@gmail.com')",
+    },
+    "deletedOrders": {
+      ".read": "auth != null && root.child('adminUsers').child(auth.uid).exists()",
+      ".write": "auth != null && root.child('adminUsers').child(auth.uid).exists()"
+    },
+    "adminActionLogs": {
+      ".read": "auth != null && root.child('adminUsers2').child(auth.uid).exists()",
+      ".write": "auth != null && root.child('adminUsers').child(auth.uid).exists()"
+    },
+
+    "voice_rooms": {
+      ".read": "auth != null",
+      ".write": "auth != null",
+      "$roomId": {
+        "users": {
+          ".read": "auth != null",
+          "$uid": {
+            ".write": "auth != null && auth.uid === $uid"
+          }
+        },
+        "offers": {
+          ".read": "auth != null",
+          "$targetUserId": {
+            ".write": "auth != null"
+          }
+        },
+        "answers": {
+          ".read": "auth != null",
+          "$targetUserId": {
+            ".write": "auth != null"
+          }
+        },
+        "candidates": {
+          ".read": "auth != null",
+          "$targetUserId": {
+            ".write": "auth != null"
+          }
+        }
+      }
+    }
+  }
+}
