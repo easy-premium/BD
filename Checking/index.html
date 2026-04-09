@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>অর্ডার তথ্য · Easy Premium</title>
+    <meta name="theme-color" content="#0a0a1a">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        html,body { background:#0a0a1a; width:100%; min-height:100vh; color:#fff; font-family:'Segoe UI','Noto Sans Bengali',sans-serif; }
+        body { display:flex; justify-content:center; background:linear-gradient(135deg,#0a0a1a 0%,#121230 50%,#1a1a3a 100%); background-attachment:fixed; }
+        .container { width:100%; max-width:600px; margin:0 auto; }
+        .header { text-align:center; margin-bottom:25px; }
+        .header h1 { color:#ff9800; font-size:32px; text-shadow:0 2px 10px rgba(255,152,0,0.3); }
+        .header p { color:#00bcd4; font-size:16px; margin-top:5px; }
+        .card { background:rgba(20,20,40,0.9); backdrop-filter:blur(10px); border:1px solid rgba(255,152,0,0.3); border-radius:20px; padding:25px; margin-bottom:20px; box-shadow:0 10px 30px rgba(0,0,0,0.5); }
+        .loading { text-align:center; padding:30px; }
+        .spinner { border:4px solid rgba(255,255,255,0.2); border-top:4px solid #ff9800; border-radius:50%; width:50px; height:50px; animation:spin 1s linear infinite; margin:0 auto 20px; }
+        @keyframes spin { 0%{transform:rotate(0deg);}100%{transform:rotate(360deg);} }
+        .error { text-align:center; padding:30px; color:#ff6b6b; background:rgba(255,107,107,0.1); border-radius:16px; border:1px solid #ff6b6b; }
+        .success-badge { text-align:center; margin-bottom:25px; }
+        .success-badge i { font-size:4rem; color:#4caf50; background:rgba(76,175,80,0.2); padding:15px; border-radius:50%; }
+        .success-badge h2 { color:#4caf50; margin-top:10px; font-size:1.8rem; }
+        .info-grid { display:grid; grid-template-columns:1fr 2fr; gap:12px 10px; margin:20px 0; }
+        .info-label { color:#b0bec5; font-weight:600; font-size:0.95rem; }
+        .info-value { color:#ffb74d; font-weight:600; font-size:0.95rem; word-break:break-word; text-align:right; }
+        .price-highlight { background:rgba(255,152,0,0.15); border-radius:50px; padding:18px; text-align:center; margin:20px 0; border:1px solid #ff9800; }
+        .price-highlight .label { color:#b0bec5; font-size:1.1rem; }
+        .price-highlight .value { color:#ff0000; font-size:2rem; font-weight:800; margin-left:10px; }
+        .footer { text-align:center; color:#888; font-size:0.8rem; margin-top:30px; padding-top:20px; border-top:1px solid rgba(255,152,0,0.2); }
+        .support-note { background:rgba(0,188,212,0.1); border-left:4px solid #00bcd4; padding:12px 15px; border-radius:8px; margin:20px 0; color:#b0bec5; font-size:0.9rem; }
+        @media (max-width:500px){ .info-grid{grid-template-columns:1fr;gap:5px;} .info-value{text-align:left;} }
+        
+        /* Widget wrapper styling - only spacing, no visual changes to your design */
+        .trustpilot-widget-wrapper {
+            margin-top: 20px;
+            margin-bottom: 5px;
+        }
+        .trustpilot-widget {
+            min-height: 52px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>EASY PREMIUM</h1>
+            <p>অর্ডার ট্র্যাকার</p>
+        </div>
+        <div id="content" class="card">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>তথ্য লোড হচ্ছে...</p>
+            </div>
+        </div>
+        <div class="support-note">
+            <i class="fas fa-info-circle"></i> আপনার প্রোফাইল চেক করুন অর্ডার এর সমস্ত তথ্য বা ভাউচার পাবেন
+        </div>
+        <div class="footer">
+            <p>© 2026 Easy Premium · সর্বস্বত্ব সংরক্ষিত</p>
+        </div>
+    </div>
+    
+    <!-- Trustpilot Bootstrap script -->
+    <script type="text/javascript" src="//widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js" async></script>
+    
+    <script>
+        (function(){
+            const content = document.getElementById('content');
+            function getParam(name) {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get(name);
+            }
+            function decodeBase64(str) {
+                try {
+                    const urlDecoded = decodeURIComponent(str);
+                    const binary = atob(urlDecoded);
+                    const bytes = new Uint8Array(binary.length);
+                    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+                    return new TextDecoder('utf-8').decode(bytes);
+                } catch(e) {
+                    console.error('Decode error', e);
+                    return null;
+                }
+            }
+            function formatDate(iso) {
+                if(!iso) return 'N/A';
+                try {
+                    const d = new Date(iso);
+                    return d.toLocaleString('bn-BD', { timeZone:'Asia/Dhaka', year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:true });
+                } catch { return iso; }
+            }
+
+
+            function renderOrder(data) {
+                if(!data) return '<div class="error"><i class="fas fa-exclamation-triangle"></i><h3>ডেটা পাওয়া যায়নি</h3></div>';
+                
+                const labels = {
+                    OrderId:'অর্ডার আইডি', 
+                    PaymentMethods:'পেমেন্ট পদ্ধতি', 
+                    PaymentNumber:'পেমেন্ট নম্বর',
+                    PaymentTrxID:'ট্রানজেকশন আইডি', 
+                    Time:'সময়', 
+                    email:'ইমেইল', 
+                    platformId:'প্ল্যাটফর্ম',
+                    uid:'ইউজার আইডি', 
+                    amount:'মূল্য', 
+                    currency:'মুদ্রা', 
+                    faceValue:'ফেস ভ্যালু', 
+                    serviceCharge:'সার্ভিস চার্জ',
+                    totalAmount:'মোট মূল্য'
+                };
+                
+                let faceDisplay = data.faceValue ? '$' + data.faceValue : '—';
+                let statusText = data.status || 'pending';
+                if(statusText === 'pending') statusText = 'অপেক্ষমান';
+                else if(statusText === 'completed') statusText = 'সম্পন্ন';
+                else if(statusText === 'cancelled') statusText = 'বাতিল';
+                
+                let amountDisplay = data.amount || '0';
+                let totalDisplay = data.totalAmount || data.amount || '0';
+                let serviceDisplay = data.serviceCharge || '0';
+                
+                if(data.currency) {
+                    amountDisplay = data.amount + ' ' + data.currency;
+                    totalDisplay = totalDisplay + ' ' + data.currency;
+                    serviceDisplay = serviceDisplay + ' ' + data.currency;
+                } else {
+                    amountDisplay = data.amount + ' ৳';
+                    totalDisplay = totalDisplay + ' ৳';
+                    serviceDisplay = serviceDisplay + ' ৳';
+                }
+                
+                let html = '<div class="success-badge"><i class="fas fa-check-circle"></i><h2>✅ অর্ডার গৃহীত হয়েছে</h2></div>';
+                html += '<div class="info-grid">';
+                
+                const fields = ['OrderId','PaymentMethods','PaymentNumber','PaymentTrxID','Time','email','platformId','uid'];
+                
+                fields.forEach(f => {
+                    let val = data[f] || 'N/A';
+                    if(f === 'Time') val = formatDate(val);
+                    html += `<div class="info-label">${labels[f]||f}</div><div class="info-value">${val}</div>`;
+                });
+                
+                html += `<div class="info-label">${labels.amount}</div><div class="info-value">${amountDisplay}</div>`;
+                
+                if(data.serviceCharge) {
+                    html += `<div class="info-label">${labels.serviceCharge}</div><div class="info-value">${serviceDisplay}</div>`;
+                }
+                
+                if(data.faceValue) {
+                    html += `<div class="info-label">${labels.faceValue}</div><div class="info-value">${faceDisplay}</div>`;
+                }
+                
+                html += '</div>';
+                
+                html += `<div class="price-highlight"><span class="label">সর্বমোট:</span><span class="value">${totalDisplay}</span></div>`;
+                
+                // 🔁 প্রিন্ট বাটন সরানো হয়েছে এবং এর জায়গায় Trustpilot রিভিউ কালেক্টর যুক্ত করা হয়েছে
+                html += `
+                    <div class="trustpilot-widget-wrapper">
+                        <div class="trustpilot-widget" 
+                             data-locale="en-US" 
+                             data-template-id="56278e9abfbbba0bdcd568bc" 
+                             data-businessunit-id="69c7e068b44dfcea3ab1aece" 
+                             data-style-height="52px" 
+                             data-style-width="100%" 
+                             data-token="feb43707-17b9-4562-9e16-423aa5cc3709">
+                            <a href="https://www.trustpilot.com/review/easy-premium.com" target="_blank" rel="noopener">Trustpilot</a>
+                        </div>
+                    </div>
+                `;
+                
+                return html;
+            }
+            
+            const encoded = getParam('data');
+            if(!encoded) {
+                content.innerHTML = '<div class="error"><i class="fas fa-times-circle"></i><h3>ডাটা পাওয়া যায়নি</h3><p>URL-এ কোনো তথ্য দেওয়া হয়নি।</p></div>';
+                return;
+            }
+            
+            const jsonStr = decodeBase64(encoded);
+            if(!jsonStr) {
+                content.innerHTML = '<div class="error"><i class="fas fa-exclamation-triangle"></i><h3>তথ্য ডিকোড করা যায়নি</h3><p>URL-এর ডেটা নষ্ট বা ভুল ফরম্যাটে আছে।</p></div>';
+                return;
+            }
+            
+            let orderData;
+            try {
+                orderData = JSON.parse(jsonStr);
+            } catch(e) {
+                content.innerHTML = '<div class="error"><i class="fas fa-exclamation-triangle"></i><h3>তথ্য পার্স করা যায়নি</h3><p>JSON ফরম্যাট সঠিক নয়।</p></div>';
+                return;
+            }
+            
+            content.innerHTML = renderOrder(orderData);
+            
+            if (orderData && orderData.OrderId) {
+                updateOrderStatus(orderData.OrderId);
+            }
+        })();
+    </script>
+</body>
+</html>
