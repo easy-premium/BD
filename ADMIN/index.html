@@ -82,11 +82,41 @@
             margin-bottom: 30px;
             color: #fff;
         }
-        .google-login-btn {
-            background: white;
-            color: #333;
+        .input-group {
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #ff9800;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        .login-input {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #ff9800;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        .login-input:focus {
+            outline: none;
+            border-color: #ff5722;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 5px rgba(255, 152, 0, 0.3);
+        }
+        .login-input::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+        .email-login-btn {
+            background: linear-gradient(45deg, #ff9800, #ff5722);
+            color: white;
             border: none;
-            padding: 15px 30px;
+            padding: 12px 30px;
             border-radius: 10px;
             font-weight: 600;
             font-size: 1rem;
@@ -99,10 +129,10 @@
             transition: all 0.3s;
             margin-bottom: 20px;
         }
-        .google-login-btn:hover {
-            background: #f1f1f1;
+        .email-login-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            filter: brightness(1.05);
         }
         .error-message {
             color: #ff6b6b;
@@ -514,6 +544,16 @@
             font-size: 0.9rem;
             margin-top: 10px;
         }
+        /* login extras */
+        .login-footer-note {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: #b0bec5;
+        }
+        .login-footer-note i {
+            color: #ff9800;
+        }
     </style>
     
     <!-- No JavaScript = No Access -->
@@ -541,8 +581,21 @@
                 </div>
             </div>
             <h2 class="login-title">এডমিন লগইন</h2>
-            <button id="googleLoginBtn" class="google-login-btn"><i class="fab fa-google"></i> Sign in with Google</button>
+            
+            <!-- Email/Password Login Form -->
+            <div class="input-group">
+                <label><i class="fas fa-envelope"></i> ইমেইল</label>
+                <input type="email" id="adminEmailInput" class="login-input" placeholder="admin@example.com" autocomplete="email">
+            </div>
+            <div class="input-group">
+                <label><i class="fas fa-lock"></i> পাসওয়ার্ড</label>
+                <input type="password" id="adminPasswordInputField" class="login-input" placeholder="পাসওয়ার্ড" autocomplete="current-password">
+            </div>
+            <button id="emailLoginBtn" class="email-login-btn"><i class="fas fa-sign-in-alt"></i> লগইন করুন</button>
             <div id="loginError" class="error-message"></div>
+            <div class="login-footer-note">
+                <i class="fas fa-shield-alt"></i> শুধুমাত্র অনুমোদিত এডমিনরা প্রবেশ করতে পারেন
+            </div>
         </div>
     </div>
     
@@ -681,7 +734,7 @@
 
         // DOM elements
         const loginScreen = document.getElementById('loginScreen'), adminPanel = document.getElementById('adminPanel');
-        const googleLoginBtn = document.getElementById('googleLoginBtn'), logoutBtn = document.getElementById('logoutBtn'), refreshOrdersBtn = document.getElementById('refreshOrdersBtn');
+        const logoutBtn = document.getElementById('logoutBtn'), refreshOrdersBtn = document.getElementById('refreshOrdersBtn');
         const adminName = document.getElementById('adminName'), adminEmail = document.getElementById('adminEmail'), adminAvatar = document.getElementById('adminAvatar');
         const totalAmountSumEl = document.getElementById('totalAmountSum');
         const completedTransactionsCountEl = document.getElementById('completedTransactionsCount');
@@ -705,16 +758,10 @@
         const passwordModalTitle = document.getElementById('passwordModalTitle');
         const passwordModalMessage = document.getElementById('passwordModalMessage');
 
-        // Store pending action data
-        let pendingAction = null; // 'complete' or 'fail' or 'orders'
-        let pendingTrxId = null;
-        let pendingEvent = null;
-        let pendingOrdersCallback = null;
-
-        // Global stored password (after first successful verification)
+        let pendingAction = null; let pendingTrxId = null; let pendingEvent = null; let pendingOrdersCallback = null;
         let globalAdminPassword = null;
 
-        // ---------- Admin Completed Total (from completedOrders) with fallback ----------
+        // ---------- Admin Completed Total ----------
         async function fetchAdminCompletedTotal() {
             if (!currentAdminEmail) return;
             try {
@@ -725,27 +772,14 @@
                     const order = completedOrders[trxId];
                     if (order.completedBy === currentAdminEmail) {
                         const priceAmount = order.orderData?.priceAmount;
-                        if (typeof priceAmount === 'number') {
-                            total += priceAmount;
-                        }
+                        if (typeof priceAmount === 'number') total += priceAmount;
                     }
                 }
                 adminTotalAmountEl.textContent = total.toFixed(2);
                 adminTotalAmountEl.style.color = '#4caf50';
-            } catch (err) {
-                console.error('Error fetching admin completed total:', err);
-                if (err.code === 'PERMISSION_DENIED') {
-                    adminTotalAmountEl.textContent = '0.00';
-                    adminTotalAmountEl.style.color = '#ff9800';
-                    showToast('আপনার সম্পন্ন অর্ডার পড়ার অনুমতি নেই। এডমিন হিসেবে যুক্ত হন।', 'error');
-                } else {
-                    adminTotalAmountEl.textContent = 'ত্রুটি';
-                    adminTotalAmountEl.style.color = '#dc3545';
-                }
-            }
+            } catch (err) { console.error(err); adminTotalAmountEl.textContent = '0.00'; }
         }
 
-        // ---------- Relograde Balance Fetch ----------
         async function fetchRelogradeBalance() {
             try {
                 const res = await fetch('/api/relograde-balance');
@@ -753,55 +787,35 @@
                 if (data.success && data.balance !== undefined) {
                     relogradeBalanceEl.textContent = `$${data.balance.toFixed(2)}`;
                     relogradeBalanceEl.style.color = '#4caf50';
-                } else {
-                    relogradeBalanceEl.textContent = '—';
-                    relogradeBalanceEl.style.color = '#ff9800';
-                }
-            } catch (err) {
-                console.error('Balance fetch error:', err);
-                relogradeBalanceEl.textContent = 'ত্রুটি';
-                relogradeBalanceEl.style.color = '#dc3545';
-            }
+                } else { relogradeBalanceEl.textContent = '—'; }
+            } catch (err) { relogradeBalanceEl.textContent = 'ত্রুটি'; }
         }
-
         setInterval(fetchRelogradeBalance, 30000);
         fetchRelogradeBalance();
 
         document.addEventListener('DOMContentLoaded', () => { setupEventListeners(); checkAdminAuth(); });
         
         function setupEventListeners() {
-            googleLoginBtn.onclick = handleGoogleLogin;
+            document.getElementById('emailLoginBtn').onclick = handleEmailPasswordLogin;
             logoutBtn.onclick = handleLogout;
-            refreshOrdersBtn.onclick = () => { 
-                showToast('রিফ্রেশ...', 'info'); 
-                loadOrders();
-                refreshTransactions();
-                fetchRelogradeBalance();
-                fetchAdminCompletedTotal();
-            };
+            refreshOrdersBtn.onclick = () => { showToast('রিফ্রেশ...', 'info'); loadOrders(); refreshTransactions(); fetchRelogradeBalance(); fetchAdminCompletedTotal(); };
             closeDetailsModalBtn.onclick = () => orderDetailsModal.classList.remove('active');
             window.onclick = (e) => { if (e.target === orderDetailsModal) orderDetailsModal.classList.remove('active'); };
-            
             closePasswordModalBtn.onclick = () => closePasswordModal();
             submitPasswordBtn.onclick = () => verifyAndPerformAction();
-            adminPasswordInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') verifyAndPerformAction();
-            });
+            adminPasswordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') verifyAndPerformAction(); });
+            document.getElementById('adminPasswordInputField').addEventListener('keypress', (e) => { if (e.key === 'Enter') handleEmailPasswordLogin(); });
         }
 
         function closePasswordModal() {
             passwordModal.classList.remove('active');
             adminPasswordInput.value = '';
             passwordErrorMsg.textContent = '';
-            pendingAction = null;
-            pendingTrxId = null;
-            pendingEvent = null;
-            pendingOrdersCallback = null;
+            pendingAction = null; pendingTrxId = null; pendingEvent = null; pendingOrdersCallback = null;
         }
 
         function showPasswordModalForOrders(callback) {
-            pendingOrdersCallback = callback;
-            pendingAction = 'orders';
+            pendingOrdersCallback = callback; pendingAction = 'orders';
             passwordModalTitle.textContent = 'অর্ডার দেখতে পাসওয়ার্ড';
             passwordModalMessage.textContent = 'অর্ডার তালিকা লোড করতে পাসওয়ার্ড প্রয়োজন।';
             passwordModal.classList.add('active');
@@ -809,736 +823,236 @@
         }
 
         function showPasswordModal(action, trxId, event) {
-            pendingAction = action;
-            pendingTrxId = trxId;
-            pendingEvent = event;
-            
-            if (action === 'complete') {
-                passwordModalTitle.textContent = 'অর্ডার সম্পন্ন করতে পাসওয়ার্ড';
-                passwordModalMessage.textContent = 'অর্ডার সম্পন্ন করতে পাসওয়ার্ড প্রয়োজন।';
-            } else if (action === 'fail') {
-                passwordModalTitle.textContent = 'অর্ডার ফেল করতে পাসওয়ার্ড';
-                passwordModalMessage.textContent = 'অর্ডার ফেল (বাতিল) করতে পাসওয়ার্ড প্রয়োজন।';
-            }
-            
+            pendingAction = action; pendingTrxId = trxId; pendingEvent = event;
+            passwordModalTitle.textContent = action === 'complete' ? 'অর্ডার সম্পন্ন করতে পাসওয়ার্ড' : 'অর্ডার ফেল করতে পাসওয়ার্ড';
+            passwordModalMessage.textContent = action === 'complete' ? 'অর্ডার সম্পন্ন করতে পাসওয়ার্ড প্রয়োজন।' : 'অর্ডার ফেল (বাতিল) করতে পাসওয়ার্ড প্রয়োজন।';
             passwordModal.classList.add('active');
             adminPasswordInput.focus();
         }
 
         async function verifyAndPerformAction() {
             const password = adminPasswordInput.value.trim();
-            if (!password) {
-                passwordErrorMsg.textContent = 'পাসওয়ার্ড দিন';
-                return;
-            }
-            
-            submitPasswordBtn.disabled = true;
-            submitPasswordBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> যাচাই...';
-            
+            if (!password) { passwordErrorMsg.textContent = 'পাসওয়ার্ড দিন'; return; }
+            submitPasswordBtn.disabled = true; submitPasswordBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> যাচাই...';
             try {
                 globalAdminPassword = password;
-
-                if (pendingAction === 'complete') {
-                    await performCompleteOrder(pendingTrxId, password, pendingEvent);
-                } else if (pendingAction === 'fail') {
-                    await performFailOrder(pendingTrxId, password, pendingEvent);
-                } else if (pendingAction === 'orders' && pendingOrdersCallback) {
-                    pendingOrdersCallback(password);
-                }
+                if (pendingAction === 'complete') await performCompleteOrder(pendingTrxId, password, pendingEvent);
+                else if (pendingAction === 'fail') await performFailOrder(pendingTrxId, password, pendingEvent);
+                else if (pendingAction === 'orders' && pendingOrdersCallback) pendingOrdersCallback(password);
                 closePasswordModal();
             } catch (error) {
                 passwordErrorMsg.textContent = error.message || 'ভুল পাসওয়ার্ড';
-                adminPasswordInput.value = '';
-                adminPasswordInput.focus();
-                globalAdminPassword = null;
-            } finally {
-                submitPasswordBtn.disabled = false;
-                submitPasswordBtn.innerHTML = '<i class="fas fa-lock"></i> যাচাই করুন';
-            }
+                adminPasswordInput.value = ''; adminPasswordInput.focus(); globalAdminPassword = null;
+            } finally { submitPasswordBtn.disabled = false; submitPasswordBtn.innerHTML = '<i class="fas fa-lock"></i> যাচাই করুন'; }
         }
 
         async function completeOrder(trxId, event) {
-            if (!isPrimaryAdmin) {
-                showToast('শুধু প্রধান এডমিন অর্ডার সম্পন্ন করতে পারেন', 'error');
-                return;
-            }
+            if (!isPrimaryAdmin) { showToast('শুধু প্রধান এডমিন অর্ডার সম্পন্ন করতে পারেন', 'error'); return; }
             event.stopPropagation();
             if (!confirm('এই অর্ডারটি কি সম্পন্ন করতে চান?')) return;
             showPasswordModal('complete', trxId, event);
         }
-
         async function performCompleteOrder(trxId, password, event) {
-            const btn = event.target.closest('.action-complete');
-            if (!btn) return;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>...';
-            btn.disabled = true;
+            const btn = event.target.closest('.action-complete'); if (!btn) return;
+            const originalText = btn.innerHTML; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>...'; btn.disabled = true;
             try {
-                showToast('অর্ডার সম্পন্ন করা হচ্ছে...', 'info');
                 const orderData = orders.find(o => o.trx === trxId);
-                const response = await fetch('/api/order_completed', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        trxId: trxId, 
-                        action: 'complete', 
-                        adminEmail: currentAdminEmail, 
-                        orderData: orderData,
-                        password: password
-                    })
-                });
+                const response = await fetch('/api/order_completed', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ trxId, action: 'complete', adminEmail: currentAdminEmail, orderData, password }) });
                 const result = await response.json();
                 if (response.ok && result.success) {
                     const idx = orders.findIndex(o => o.trx === trxId);
                     if (idx !== -1) orders[idx].orderStatus = 'finished';
-                    refreshOrdersDisplay();
-                    showToast('✅ অর্ডার সম্পন্ন হয়েছে', 'success');
-                    fetchAdminCompletedTotal();
-                } else {
-                    throw new Error(result.error || 'API failed');
-                }
-            } catch(e) {
-                console.error('Complete error:', e);
-                showToast('সম্পন্ন করতে ব্যর্থ: ' + e.message, 'error');
-                throw e;
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
+                    refreshOrdersDisplay(); showToast('✅ অর্ডার সম্পন্ন হয়েছে', 'success'); fetchAdminCompletedTotal();
+                } else throw new Error(result.error || 'API failed');
+            } catch(e) { showToast('সম্পন্ন করতে ব্যর্থ: ' + e.message, 'error'); throw e; } 
+            finally { btn.innerHTML = originalText; btn.disabled = false; }
         }
-
         async function cancelOrder(trxId, event) {
-            if (!isPrimaryAdmin) {
-                showToast('শুধু প্রধান এডমিন অর্ডার বাতিল করতে পারেন', 'error');
-                return;
-            }
-            event.stopPropagation();
-            if (!confirm('এই অর্ডারটি কি বাতিল (ফেল) করতে চান? স্ট্যাটাস "fail" এ সেট হবে।')) return;
+            if (!isPrimaryAdmin) { showToast('শুধু প্রধান এডমিন অর্ডার বাতিল করতে পারেন', 'error'); return; }
+            event.stopPropagation(); if (!confirm('অর্ডার ফেল করবেন?')) return;
             showPasswordModal('fail', trxId, event);
         }
-
         async function performFailOrder(trxId, password, event) {
-            const btn = event.target.closest('.action-cancel');
-            if (!btn) return;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>...';
-            btn.disabled = true;
+            const btn = event.target.closest('.action-cancel'); if (!btn) return;
+            const originalText = btn.innerHTML; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>...'; btn.disabled = true;
             try {
-                showToast('অর্ডার ফেল হিসেবে আপডেট করা হচ্ছে...', 'info');
                 const orderData = orders.find(o => o.trx === trxId);
-                const response = await fetch('/api/order_completed', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        trxId: trxId, 
-                        action: 'fail', 
-                        adminEmail: currentAdminEmail, 
-                        orderData: orderData,
-                        password: password
-                    })
-                });
+                const response = await fetch('/api/order_completed', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ trxId, action: 'fail', adminEmail: currentAdminEmail, orderData, password }) });
                 const result = await response.json();
                 if (response.ok && result.success) {
                     const idx = orders.findIndex(o => o.trx === trxId);
                     if (idx !== -1) orders[idx].orderStatus = 'fail';
-                    refreshOrdersDisplay();
-                    showToast('✅ অর্ডার ফেল করা হয়েছে', 'success');
-                } else {
-                    throw new Error(result.error || 'API failed');
-                }
-            } catch(e) {
-                console.error('Cancel error:', e);
-                showToast('অর্ডার ফেল করতে ব্যর্থ: ' + e.message, 'error');
-                throw e;
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
+                    refreshOrdersDisplay(); showToast('✅ অর্ডার ফেল করা হয়েছে', 'success');
+                } else throw new Error(result.error || 'API failed');
+            } catch(e) { showToast('অর্ডার ফেল করতে ব্যর্থ: ' + e.message, 'error'); throw e; } 
+            finally { btn.innerHTML = originalText; btn.disabled = false; }
         }
         
-        // ---------- Primary Admin Logic (unchanged) ----------
+        // Primary Admin Logic (unchanged)
         async function getPrimaryAdmin() {
             const snapshot = await publicAdminInfoRef.once('value');
-            const admins = snapshot.val() || {};
-            const now = Date.now();
-            let latestUid = null;
-            let latestTime = 0;
-            
+            const admins = snapshot.val() || {}; const now = Date.now();
+            let latestUid = null, latestTime = 0;
             for (const [uid, info] of Object.entries(admins)) {
                 if (!info.lastActive) continue;
                 const ts = new Date(info.lastActive).getTime();
-                if ((now - ts) <= ACTIVE_WINDOW) {
-                    if (ts > latestTime) {
-                        latestTime = ts;
-                        latestUid = uid;
-                    }
-                }
+                if ((now - ts) <= ACTIVE_WINDOW && ts > latestTime) { latestTime = ts; latestUid = uid; }
             }
-            const isCurrentPrimary = (latestUid === currentAdminUid);
-            return { primaryUid: latestUid, isCurrentPrimary };
+            return { primaryUid: latestUid, isCurrentPrimary: (latestUid === currentAdminUid) };
         }
-
-        async function updateMyLastActive() {
-            if (!isPrimaryAdmin) return;
-            try {
-                await publicAdminInfoRef.child(currentAdminUid).update({
-                    lastActive: new Date().toISOString()
-                });
-                console.log('Updated own lastActive');
-            } catch (err) {
-                console.error('Failed to update lastActive:', err);
-            }
-        }
-
-        function startPrimaryUpdates() {
-            if (primaryUpdateInterval) clearInterval(primaryUpdateInterval);
-            primaryUpdateInterval = setInterval(updateMyLastActive, UPDATE_INTERVAL);
-            updateMyLastActive();
-        }
-
-        function stopAllIntervals() {
-            if (primaryUpdateInterval) clearInterval(primaryUpdateInterval);
-            primaryUpdateInterval = null;
-            if (recheckInterval) clearInterval(recheckInterval);
-            recheckInterval = null;
-        }
-
+        async function updateMyLastActive() { if (!isPrimaryAdmin) return; try { await publicAdminInfoRef.child(currentAdminUid).update({ lastActive: new Date().toISOString() }); } catch(err) { console.error(err); } }
+        function startPrimaryUpdates() { if (primaryUpdateInterval) clearInterval(primaryUpdateInterval); primaryUpdateInterval = setInterval(updateMyLastActive, UPDATE_INTERVAL); updateMyLastActive(); }
+        function stopAllIntervals() { if (primaryUpdateInterval) clearInterval(primaryUpdateInterval); primaryUpdateInterval = null; if (recheckInterval) clearInterval(recheckInterval); recheckInterval = null; }
         async function evaluatePrimaryStatus() {
             const { primaryUid, isCurrentPrimary } = await getPrimaryAdmin();
-            
-            if (isCurrentPrimary) {
-                if (!isPrimaryAdmin) {
-                    isPrimaryAdmin = true;
-                    startPrimaryUpdates();
-                    showToast('আপনি প্রধান এডমিন হিসেবে সক্রিয় হয়েছেন', 'success');
-                    refreshOrdersDisplay();
-                    updateSystemInfo();
-                }
-            } else {
-                if (isPrimaryAdmin) {
-                    isPrimaryAdmin = false;
-                    stopAllIntervals();
-                    if (!recheckInterval) startRecheckLoop();
-                    showToast('অন্য এডমিন প্রধান হয়ে গেছেন। আপনি এখন শুধু দেখতে পারবেন।', 'info');
-                    refreshOrdersDisplay();
-                    updateSystemInfo();
-                } else {
-                    if (!primaryUid) {
-                        const claimed = await tryBecomePrimary();
-                        if (claimed) {
-                            isPrimaryAdmin = true;
-                            startPrimaryUpdates();
-                            showToast('আপনি প্রধান এডমিন হিসেবে সক্রিয় হয়েছেন', 'success');
-                            refreshOrdersDisplay();
-                            updateSystemInfo();
-                        }
-                    }
-                }
-            }
+            if (isCurrentPrimary) { if (!isPrimaryAdmin) { isPrimaryAdmin = true; startPrimaryUpdates(); showToast('আপনি প্রধান এডমিন হিসেবে সক্রিয় হয়েছেন', 'success'); refreshOrdersDisplay(); updateSystemInfo(); } }
+            else { if (isPrimaryAdmin) { isPrimaryAdmin = false; stopAllIntervals(); if (!recheckInterval) startRecheckLoop(); showToast('অন্য এডমিন প্রধান হয়ে গেছেন। আপনি এখন শুধু দেখতে পারবেন।', 'info'); refreshOrdersDisplay(); updateSystemInfo(); } else { if (!primaryUid) { const claimed = await tryBecomePrimary(); if (claimed) { isPrimaryAdmin = true; startPrimaryUpdates(); showToast('আপনি প্রধান এডমিন হিসেবে সক্রিয় হয়েছেন', 'success'); refreshOrdersDisplay(); updateSystemInfo(); } } } }
         }
-
-        async function tryBecomePrimary() {
-            const { primaryUid } = await getPrimaryAdmin();
-            if (primaryUid !== null) return false;
-            try {
-                await publicAdminInfoRef.child(currentAdminUid).update({
-                    lastActive: new Date().toISOString()
-                });
-                const { isCurrentPrimary } = await getPrimaryAdmin();
-                return isCurrentPrimary;
-            } catch (err) {
-                console.error('Failed to become primary:', err);
-                return false;
-            }
-        }
-
-        function startRecheckLoop() {
-            if (recheckInterval) clearInterval(recheckInterval);
-            recheckInterval = setInterval(() => {
-                evaluatePrimaryStatus();
-            }, UPDATE_INTERVAL);
-        }
-        // ---------- End Primary Admin Logic ----------
+        async function tryBecomePrimary() { const { primaryUid } = await getPrimaryAdmin(); if (primaryUid !== null) return false; try { await publicAdminInfoRef.child(currentAdminUid).update({ lastActive: new Date().toISOString() }); const { isCurrentPrimary } = await getPrimaryAdmin(); return isCurrentPrimary; } catch(err) { return false; } }
+        function startRecheckLoop() { if (recheckInterval) clearInterval(recheckInterval); recheckInterval = setInterval(() => { evaluatePrimaryStatus(); }, UPDATE_INTERVAL); }
 
         async function loadAdminData(user) {
-            adminName.textContent = user.displayName || user.email;
-            adminEmail.textContent = user.email;
+            adminName.textContent = user.displayName || user.email; adminEmail.textContent = user.email;
             adminAvatar.innerHTML = user.photoURL ? `<img src="${user.photoURL}" style="width:100%;height:100%;border-radius:50%;">` : `<span>${(user.displayName || user.email).charAt(0).toUpperCase()}</span>`;
             try {
-                await database.ref(`adminUsers/${user.uid}`).update({
-                    email: user.email,
-                    name: user.displayName || '',
-                    photoURL: user.photoURL || '',
-                    lastLogin: firebase.database.ServerValue.TIMESTAMP,
-                    status: 'active'
-                });
+                await database.ref(`adminUsers/${user.uid}`).update({ email: user.email, name: user.displayName || '', photoURL: user.photoURL || '', lastLogin: firebase.database.ServerValue.TIMESTAMP, status: 'active' });
                 const existing = await publicAdminInfoRef.child(user.uid).once('value');
-                if (!existing.exists()) {
-                    await publicAdminInfoRef.child(user.uid).set({
-                        name: user.displayName || 'Admin',
-                        number: ''
-                    });
-                }
+                if (!existing.exists()) await publicAdminInfoRef.child(user.uid).set({ name: user.displayName || 'Admin', number: '' });
             } catch (err) { console.warn("Save admin info failed:", err); }
         }
         
         function checkAdminAuth() {
             auth.onAuthStateChanged(async (user) => {
                 if (user && ALLOWED_ADMIN_EMAILS.includes(user.email)) {
-                    currentAdminEmail = user.email;
-                    currentAdminUid = user.uid;
+                    currentAdminEmail = user.email; currentAdminUid = user.uid;
                     await loadAdminData(user);
-                    
-                    stopAllIntervals();
-                    isPrimaryAdmin = false;
-                    
-                    await evaluatePrimaryStatus();
-                    startRecheckLoop();
-                    
-                    showAdminPanel();
-                    loadOrders();
-                    setupTransactionsListener();
-                    fetchAdminCompletedTotal();
-                } else if (user) {
-                    await auth.signOut();
-                    showLoginScreen();
-                    showToast('এক্সেস নেই', 'error');
-                } else {
-                    stopAllIntervals();
-                    showLoginScreen();
-                }
+                    stopAllIntervals(); isPrimaryAdmin = false;
+                    await evaluatePrimaryStatus(); startRecheckLoop();
+                    showAdminPanel(); loadOrders(); setupTransactionsListener(); fetchAdminCompletedTotal();
+                } else if (user) { await auth.signOut(); showLoginScreen(); showToast('এক্সেস নেই', 'error'); }
+                else { stopAllIntervals(); showLoginScreen(); }
             });
         }
         
-        async function handleGoogleLogin() {
+        async function handleEmailPasswordLogin() {
+            const email = document.getElementById('adminEmailInput').value.trim();
+            const password = document.getElementById('adminPasswordInputField').value;
+            const errorDiv = document.getElementById('loginError');
+            errorDiv.textContent = '';
+            if (!email || !password) { errorDiv.textContent = 'ইমেইল ও পাসওয়ার্ড দিন'; return; }
+            const loginBtn = document.getElementById('emailLoginBtn');
+            loginBtn.disabled = true; loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> লগইন...';
             try {
-                const result = await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
-                if (!ALLOWED_ADMIN_EMAILS.includes(result.user.email)) {
-                    await auth.signOut();
-                    showToast('এক্সেস নেই', 'error');
-                }
-            } catch(e) { showToast('লগইন ব্যর্থ', 'error'); }
+                const userCred = await auth.signInWithEmailAndPassword(email, password);
+                if (!ALLOWED_ADMIN_EMAILS.includes(userCred.user.email)) {
+                    await auth.signOut(); errorDiv.textContent = 'আপনার এই এক্সেস নেই। অনুমোদিত এডমিন নন।';
+                } else { showToast('লগইন সফল!', 'success'); }
+            } catch (err) {
+                let msg = 'লগইন ব্যর্থ';
+                if (err.code === 'auth/user-not-found') msg = 'ইমেইল বা পাসওয়ার্ড ভুল';
+                else if (err.code === 'auth/wrong-password') msg = 'ইমেইল বা পাসওয়ার্ড ভুল';
+                else if (err.code === 'auth/invalid-email') msg = 'সঠিক ইমেইল দিন';
+                else msg = err.message;
+                errorDiv.textContent = msg;
+            } finally { loginBtn.disabled = false; loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> লগইন করুন'; }
         }
         
-        async function handleLogout() {
-            stopAllIntervals();
-            if (transactionsListenerRef) {
-                transactionsListenerRef.off();
-                transactionsListenerRef = null;
-            }
-            await auth.signOut();
-            showLoginScreen();
-            showToast('লগ আউট', 'success');
-        }
+        async function handleLogout() { stopAllIntervals(); if (transactionsListenerRef) { transactionsListenerRef.off(); transactionsListenerRef = null; } await auth.signOut(); showLoginScreen(); showToast('লগ আউট', 'success'); }
         
-        function showLoginScreen() { loginScreen.style.display = 'flex'; adminPanel.style.display = 'none'; }
+        function showLoginScreen() { loginScreen.style.display = 'flex'; adminPanel.style.display = 'none'; document.getElementById('adminEmailInput').value = ''; document.getElementById('adminPasswordInputField').value = ''; document.getElementById('loginError').textContent = ''; }
         function showAdminPanel() { loginScreen.style.display = 'none'; adminPanel.style.display = 'block'; updateSystemInfo(); }
         
-        // ---------- Orders (with password handling) ----------
-        async function loadOrders() {
-            if (globalAdminPassword) {
-                await fetchOrdersWithPassword(globalAdminPassword);
-            } else {
-                showPasswordModalForOrders(async (password) => {
-                    await fetchOrdersWithPassword(password);
-                });
-            }
-        }
-
+        async function loadOrders() { if (globalAdminPassword) await fetchOrdersWithPassword(globalAdminPassword); else showPasswordModalForOrders(async (password) => { await fetchOrdersWithPassword(password); }); }
         async function fetchOrdersWithPassword(password) {
             ordersTable.innerHTML = `<td colspan="8" class="loading-spinner"><div class="spinner"></div><p>লোড হচ্ছে...</p>`;
             try {
                 const url = `/api/relograde-orders?password=${encodeURIComponent(password)}`;
-                const res = await fetch(url);
-                const result = await res.json();
-                if (!res.ok || !result.success) {
-                    if (res.status === 401 || res.status === 403) {
-                        globalAdminPassword = null;
-                        showToast('পাসওয়ার্ড ভুল, আবার চেষ্টা করুন', 'error');
-                        loadOrders();
-                        return;
-                    }
-                    throw new Error(result.error || 'Failed to fetch orders');
-                }
-                orders = result.data || [];
-                orderCountEl.textContent = `(${orders.length}টি)`;
-                refreshOrdersDisplay();
-                showToast(`${orders.length}টি অর্ডার লোড হয়েছে`, 'success');
-            } catch(e) {
-                ordersTable.innerHTML = `<td colspan="8" class="no-data"><i class="fas fa-exclamation-triangle"></i><p>${e.message}</p><button onclick="location.reload()" class="refresh-btn">আবার চেষ্টা</button>`;
-                showToast(`অর্ডার লোড করতে ব্যর্থ: ${e.message}`, 'error');
-            }
+                const res = await fetch(url); const result = await res.json();
+                if (!res.ok || !result.success) { if (res.status === 401 || res.status === 403) { globalAdminPassword = null; showToast('পাসওয়ার্ড ভুল, আবার চেষ্টা করুন', 'error'); loadOrders(); return; } throw new Error(result.error || 'Failed to fetch orders'); }
+                orders = result.data || []; orderCountEl.textContent = `(${orders.length}টি)`; refreshOrdersDisplay(); showToast(`${orders.length}টি অর্ডার লোড হয়েছে`, 'success');
+            } catch(e) { ordersTable.innerHTML = `<td colspan="8" class="no-data"><i class="fas fa-exclamation-triangle"></i><p>${e.message}</p><button onclick="location.reload()" class="refresh-btn">আবার চেষ্টা</button>`; showToast(`অর্ডার লোড করতে ব্যর্থ: ${e.message}`, 'error'); }
         }
-        
-        function refreshOrdersDisplay() {
-            displayOrders(orders);
-        }
-        
-        function extractAdminNumber(reference) {
-            if (!reference) return '—';
-            try {
-                const parsed = JSON.parse(reference);
-                if (parsed && parsed.admin) {
-                    return parsed.admin;
-                }
-            } catch (e) {}
-            return reference.length > 30 ? reference.substring(0,30)+'...' : reference;
-        }
-        
+        function refreshOrdersDisplay() { displayOrders(orders); }
+        function extractAdminNumber(reference) { if (!reference) return '—'; try { const parsed = JSON.parse(reference); if (parsed && parsed.admin) return parsed.admin; } catch(e) {} return reference.length > 30 ? reference.substring(0,30)+'...' : reference; }
         function displayOrders(list) {
-            if (!list.length) {
-                ordersTable.innerHTML = '<td colspan="8" class="no-data">কোন অর্ডার নেই';
-                return;
-            }
+            if (!list.length) { ordersTable.innerHTML = '<td colspan="8" class="no-data">কোন অর্ডার নেই'; return; }
             let html = '';
             list.slice(0, 50).forEach(o => {
                 const date = o.dateCreated ? new Date(o.dateCreated).toLocaleString('bn-BD') : 'তারিখ নেই';
                 let statusClass = 'status-pending', statusText = o.orderStatus || 'unknown';
                 if (statusText === 'finished') { statusClass = 'status-completed'; statusText = 'সম্পূর্ণ'; }
-                else if (statusText === 'cancelled') { statusClass = 'status-cancelled'; statusText = 'ক্যানসেল'; }
-                else if (statusText === 'fail') { statusClass = 'status-cancelled'; statusText = 'ফেল'; }
+                else if (statusText === 'cancelled' || statusText === 'fail') { statusClass = 'status-cancelled'; statusText = 'ফেল'; }
                 else if (statusText === 'created') { statusClass = 'status-pending'; statusText = 'পেন্ডিং'; }
-                
                 const items = (o.items || []).map(i => `${i.product?.name || i.productSlug} x${i.amount}`).join('<br>') || '—';
-                const total = o.priceInclVat || o.priceAmount || 0;
-                const currency = o.priceCurrency || 'USD';
-                const adminNumber = extractAdminNumber(o.reference);
+                const total = o.priceInclVat || o.priceAmount || 0; const currency = o.priceCurrency || 'USD'; const adminNumber = extractAdminNumber(o.reference);
                 const isPending = (o.orderStatus === 'created');
-                
                 let actionButtonsHtml = '';
-                if (isPending && isPrimaryAdmin) {
-                    actionButtonsHtml = `
-                        <div class="action-buttons" onclick="event.stopPropagation()">
-                            <button class="action-btn action-complete" onclick="completeOrder('${o.trx}', event)"><i class="fas fa-check-circle"></i> সম্পন্ন</button>
-                            <button class="action-btn action-cancel" onclick="cancelOrder('${o.trx}', event)"><i class="fas fa-ban"></i> ক্যানসেল</button>
-                        </div>
-                    `;
-                } else {
-                    actionButtonsHtml = '<span style="color:#888;">—</span>';
-                }
-                
-                html += `<tr onclick="showOrderDetails('${o.trx}')" style="cursor:pointer;">
-                    <td style="font-family:monospace;">${o.trx || 'N/A'}   </td>
-                    <td>${date}</td>
-                    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-                    <td><div style="max-width:200px;font-size:0.85rem;">${items}</div></td>
-                    <td style="color:#00bcd4;">${total} ${currency}</td>
-                    <td><div style="max-width:150px;font-size:0.9rem; font-weight:500;" title="${(o.reference || '—').replace(/"/g, '&quot;')}">${adminNumber}</div></td>
-                    <td>${o.paymentCurrency || currency}</td>
-                    <td>${actionButtonsHtml}</td>
-                 </tr>`;
+                if (isPending && isPrimaryAdmin) actionButtonsHtml = `<div class="action-buttons" onclick="event.stopPropagation()"><button class="action-btn action-complete" onclick="completeOrder('${o.trx}', event)"><i class="fas fa-check-circle"></i> সম্পন্ন</button><button class="action-btn action-cancel" onclick="cancelOrder('${o.trx}', event)"><i class="fas fa-ban"></i> ক্যানসেল</button></div>`;
+                else actionButtonsHtml = '<span style="color:#888;">—</span>';
+                html += `<tr onclick="showOrderDetails('${o.trx}')" style="cursor:pointer;"><td style="font-family:monospace;">${o.trx || 'N/A'}   </td><td>${date}</td><td><span class="status-badge ${statusClass}">${statusText}</span></td><td><div style="max-width:200px;font-size:0.85rem;">${items}</div></td><td style="color:#00bcd4;">${total} ${currency}</td><td><div style="max-width:150px;font-size:0.9rem; font-weight:500;" title="${(o.reference || '—').replace(/"/g, '&quot;')}">${adminNumber}</div></td><td>${o.paymentCurrency || currency}</td><td>${actionButtonsHtml}</td></tr>`;
             });
             ordersTable.innerHTML = html;
         }
         
-        // ---------- Real‑time Transactions ----------
         function setupTransactionsListener() {
-            if (transactionsListenerRef) {
-                transactionsListenerRef.off();
-                transactionsListenerRef = null;
-            }
+            if (transactionsListenerRef) transactionsListenerRef.off();
             transactionsTable.innerHTML = `<td colspan="9" class="loading-spinner"><div class="spinner"></div><p>লেনদেন লোড হচ্ছে...</p>`;
             transactionsListenerRef = database.ref('transactions').on('value', (snapshot) => {
-                const data = snapshot.val() || {};
-                const transactionList = Object.values(data);
-                const filtered = transactionList.filter(tx => {
-                    const orderId = tx.orderId || tx.id || '';
-                    return orderId.toString().startsWith('E');
-                });
-                currentTransactions = filtered;
-                displayTransactions(filtered);
-                transactionCountSpan.textContent = `(${filtered.length}টি)`;
-                updateTransactionStats(filtered);
-            }, (error) => {
-                console.error('Transaction listener error:', error);
-                transactionsTable.innerHTML = `<td colspan="9" class="no-data"><i class="fas fa-exclamation-triangle"></i><p>লেনদেন লোড করতে ব্যর্থ: ${error.message}</p>`;
-            });
+                const data = snapshot.val() || {}; const transactionList = Object.values(data);
+                const filtered = transactionList.filter(tx => { const orderId = tx.orderId || tx.id || ''; return orderId.toString().startsWith('E'); });
+                currentTransactions = filtered; displayTransactions(filtered); transactionCountSpan.textContent = `(${filtered.length}টি)`; updateTransactionStats(filtered);
+            }, (error) => { transactionsTable.innerHTML = `<td colspan="9" class="no-data"><i class="fas fa-exclamation-triangle"></i><p>লেনদেন লোড করতে ব্যর্থ: ${error.message}</p>`; });
         }
-
-        function updateTransactionStats(transactions) {
-            const total = transactions.length;
-            let totalAmount = 0;
-            let completed = 0;
-            
-            transactions.forEach(tx => {
-                const amount = parseFloat(tx.amount || tx.totalAmount || 0);
-                if (!isNaN(amount)) totalAmount += amount;
-                const status = (tx.status || tx.orderStatus || '').toLowerCase();
-                if (status === 'completed' || status === 'success') completed++;
-            });
-            
-            totalAmountSumEl.textContent = totalAmount.toFixed(2);
-            completedTransactionsCountEl.textContent = completed;
-        }
-
+        function updateTransactionStats(transactions) { let totalAmount = 0, completed = 0; transactions.forEach(tx => { const amount = parseFloat(tx.amount || tx.totalAmount || 0); if (!isNaN(amount)) totalAmount += amount; const status = (tx.status || tx.orderStatus || '').toLowerCase(); if (status === 'completed' || status === 'success') completed++; }); totalAmountSumEl.textContent = totalAmount.toFixed(2); completedTransactionsCountEl.textContent = completed; }
         function displayTransactions(transactions) {
-            if (!transactions.length) {
-                transactionsTable.innerHTML = '<td colspan="9" class="no-data">কোনো লেনদেন নেই (E-আইডি সংবলিত)';
-                return;
-            }
-            let html = '';
-            transactions.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+            if (!transactions.length) { transactionsTable.innerHTML = '<td colspan="9" class="no-data">কোনো লেনদেন নেই (E-আইডি সংবলিত)'; return; }
+            let html = ''; transactions.sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));
             transactions.forEach(tx => {
-                const orderId = tx.orderId || tx.id || '—';
-                const amount = tx.amount || tx.totalAmount || 0;
-                const status = tx.status || tx.orderStatus || 'unknown';
-                let statusClass = 'status-pending';
-                let statusText = status;
-                if (status === 'completed' || status === 'success') {
-                    statusClass = 'status-completed';
-                    statusText = 'সম্পূর্ণ';
-                } else if (status === 'fail' || status === 'failed') {
-                    statusClass = 'status-cancelled';
-                    statusText = 'ফেল';
-                } else if (status === 'pending') {
-                    statusClass = 'status-pending';
-                    statusText = 'পেন্ডিং';
-                } else if (status === 'created') {
-                    statusClass = 'status-pending';
-                    statusText = 'পেন্ডিং';
-                }
-                const paymentMethod = tx.paymentMethod || tx.method || '—';
-                const phone = tx.phone || '—';
-                const txid = tx.txid || tx.transactionId || '—';
-                const relogradeTrx = tx.relogradeTrx || '—';
-                const adminNumber = tx.admin || '—';
-                const timestamp = tx.timestamp ? new Date(tx.timestamp).toLocaleString('bn-BD') : (tx.orderDate ? new Date(tx.orderDate).toLocaleString('bn-BD') : '—');
-                
-                html += `<tr>
-                    <td style="font-family:monospace;">${orderId}</td>
-                    <td style="color:#00bcd4;">${amount} ৳</td>
-                    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-                    <td>${paymentMethod}</td>
-                    <td>${phone}</td>
-                    <td style="font-family:monospace;">${txid}</td>
-                    <td style="font-family:monospace;">${relogradeTrx}</td>
-                    <td>${adminNumber}</td>
-                    <td>${timestamp}</td>
-                 </tr>`;
-            });
-            transactionsTable.innerHTML = html;
+                const orderId = tx.orderId || tx.id || '—'; const amount = tx.amount || tx.totalAmount || 0; const status = tx.status || tx.orderStatus || 'unknown';
+                let statusClass = 'status-pending', statusText = status;
+                if (status === 'completed' || status === 'success') { statusClass = 'status-completed'; statusText = 'সম্পূর্ণ'; }
+                else if (status === 'fail' || status === 'failed') { statusClass = 'status-cancelled'; statusText = 'ফেল'; }
+                else if (status === 'pending' || status === 'created') { statusClass = 'status-pending'; statusText = 'পেন্ডিং'; }
+                const paymentMethod = tx.paymentMethod || tx.method || '—'; const phone = tx.phone || '—'; const txid = tx.txid || tx.transactionId || '—'; const relogradeTrx = tx.relogradeTrx || '—'; const adminNumber = tx.admin || '—'; const timestamp = tx.timestamp ? new Date(tx.timestamp).toLocaleString('bn-BD') : (tx.orderDate ? new Date(tx.orderDate).toLocaleString('bn-BD') : '—');
+                html += `<tr><td style="font-family:monospace;">${orderId}</td><td style="color:#00bcd4;">${amount} ৳</td><td><span class="status-badge ${statusClass}">${statusText}</span></td><td>${paymentMethod}</td><td>${phone}</td><td style="font-family:monospace;">${txid}</td><td style="font-family:monospace;">${relogradeTrx}</td><td>${adminNumber}</td><td>${timestamp}</td></tr>`;
+            }); transactionsTable.innerHTML = html;
         }
-
-        function refreshTransactions() {
-            displayTransactions(currentTransactions);
-            transactionCountSpan.textContent = `(${currentTransactions.length}টি)`;
-            updateTransactionStats(currentTransactions);
-            showToast('লেনদেন তালিকা রিফ্রেশ করা হয়েছে', 'info');
-        }
+        function refreshTransactions() { displayTransactions(currentTransactions); transactionCountSpan.textContent = `(${currentTransactions.length}টি)`; updateTransactionStats(currentTransactions); showToast('লেনদেন তালিকা রিফ্রেশ করা হয়েছে', 'info'); }
         
-        // ---------- Order Details ----------
         window.showOrderDetails = function(trxId) {
-            const order = orders.find(o => o.trx === trxId);
-            if (!order) { showToast('অর্ডার পাওয়া যায়নি', 'error'); return; }
-            
-            orderInfoGrid.innerHTML = `
-                <div class="info-item"><div class="info-label">TRX ID</div><div class="info-value">${order.trx || 'N/A'}</div></div>
-                <div class="info-item"><div class="info-label">স্ট্যাটাস</div><div class="info-value">${order.orderStatus === 'finished' ? 'সম্পূর্ণ' : order.orderStatus === 'cancelled' ? 'ক্যানসেল' : order.orderStatus === 'fail' ? 'ফেল' : 'পেন্ডিং'}</div></div>
-                <div class="info-item"><div class="info-label">আইটেম</div><div class="info-value">${(order.items||[]).map(i=>`${i.product?.name||i.productSlug} x${i.amount}`).join(', ') || '—'}</div></div>
-                <div class="info-item"><div class="info-label">মোট দাম</div><div class="info-value">${(order.priceInclVat||order.priceAmount||0)} ${order.priceCurrency||'USD'}</div></div>
-                <div class="info-item"><div class="info-label">কারেন্সি</div><div class="info-value">${order.paymentCurrency||order.priceCurrency||'USD'}</div></div>
-                <div class="info-item"><div class="info-label">তারিখ</div><div class="info-value">${order.dateCreated ? new Date(order.dateCreated).toLocaleString('bn-BD') : '—'}</div></div>
-            `;
-            
-            const referenceRaw = order.reference || '';
-            let referenceItems = [];
-            try {
-                const parsed = JSON.parse(referenceRaw);
-                if (typeof parsed === 'object') {
-                    for (const [key, val] of Object.entries(parsed)) {
-                        referenceItems.push(`${key}: ${val}`);
-                    }
-                } else {
-                    referenceItems.push(String(parsed));
-                }
-            } catch(e) {
-                let candidates = referenceRaw.split(/[,\n\r]+/);
-                if (candidates.length === 1 && candidates[0].trim() === referenceRaw.trim()) {
-                    referenceItems = [referenceRaw.trim()];
-                } else {
-                    referenceItems = candidates.map(s => s.trim()).filter(s => s !== '');
-                }
-            }
-            
-            if (referenceItems.length === 0) {
-                referenceContainer.innerHTML = '<div class="empty-reference"><i class="fas fa-info-circle"></i> কোনো রেফারেন্স তথ্য নেই</div>';
-            } else {
-                let refHtml = '<ul class="reference-list">';
-                referenceItems.forEach(item => {
-                    const escapedItem = item.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                    refHtml += `
-                        <li class="reference-item" onclick="copyToClipboard('${escapeHtmlForOnClick(item)}')">
-                            <span class="reference-text">${escapedItem}</span>
-                            <span class="copy-icon"><i class="fas fa-copy"></i></span>
-                        </li>
-                    `;
-                });
-                refHtml += '</ul>';
-                referenceContainer.innerHTML = refHtml;
-            }
-            
+            const order = orders.find(o => o.trx === trxId); if (!order) { showToast('অর্ডার পাওয়া যায়নি', 'error'); return; }
+            orderInfoGrid.innerHTML = `<div class="info-item"><div class="info-label">TRX ID</div><div class="info-value">${order.trx || 'N/A'}</div></div><div class="info-item"><div class="info-label">স্ট্যাটাস</div><div class="info-value">${order.orderStatus === 'finished' ? 'সম্পূর্ণ' : order.orderStatus === 'cancelled' ? 'ক্যানসেল' : order.orderStatus === 'fail' ? 'ফেল' : 'পেন্ডিং'}</div></div><div class="info-item"><div class="info-label">আইটেম</div><div class="info-value">${(order.items||[]).map(i=>`${i.product?.name||i.productSlug} x${i.amount}`).join(', ') || '—'}</div></div><div class="info-item"><div class="info-label">মোট দাম</div><div class="info-value">${(order.priceInclVat||order.priceAmount||0)} ${order.priceCurrency||'USD'}</div></div><div class="info-item"><div class="info-label">কারেন্সি</div><div class="info-value">${order.paymentCurrency||order.priceCurrency||'USD'}</div></div><div class="info-item"><div class="info-label">তারিখ</div><div class="info-value">${order.dateCreated ? new Date(order.dateCreated).toLocaleString('bn-BD') : '—'}</div></div>`;
+            const referenceRaw = order.reference || ''; let referenceItems = [];
+            try { const parsed = JSON.parse(referenceRaw); if (typeof parsed === 'object') { for (const [key, val] of Object.entries(parsed)) referenceItems.push(`${key}: ${val}`); } else referenceItems.push(String(parsed)); } catch(e) { let candidates = referenceRaw.split(/[,\n\r]+/); if (candidates.length === 1 && candidates[0].trim() === referenceRaw.trim()) referenceItems = [referenceRaw.trim()]; else referenceItems = candidates.map(s => s.trim()).filter(s => s !== ''); }
+            if (referenceItems.length === 0) referenceContainer.innerHTML = '<div class="empty-reference"><i class="fas fa-info-circle"></i> কোনো রেফারেন্স তথ্য নেই</div>';
+            else { let refHtml = '<ul class="reference-list">'; referenceItems.forEach(item => { const escapedItem = item.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); refHtml += `<li class="reference-item" onclick="copyToClipboard('${escapeHtmlForOnClick(item)}')"><span class="reference-text">${escapedItem}</span><span class="copy-icon"><i class="fas fa-copy"></i></span></li>`; }); refHtml += '</ul>'; referenceContainer.innerHTML = refHtml; }
             orderDetailsModal.classList.add('active');
         };
+        function escapeHtmlForOnClick(str) { return str.replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
+        window.copyToClipboard = function(text) { navigator.clipboard.writeText(text).then(() => showToast('কপি করা হয়েছে!', 'success')).catch(() => showToast('কপি ব্যর্থ', 'error')); };
+        function updateSystemInfo() { const roleText = isPrimaryAdmin ? '<span style="color:#4caf50;">প্রধান এডমিন (সম্পূর্ণ অ্যাক্সেস)</span>' : '<span style="color:#ff9800;">শুধু দেখার (রিড-অনলি)</span>'; systemInfo.innerHTML = `<div style="display:flex;gap:20px;flex-wrap:wrap;"><div><strong>লগইন সময়:</strong> ${new Date().toLocaleString('bn-BD')}</div><div><strong>এডমিন:</strong> ${currentAdminEmail || 'N/A'}</div><div><strong>স্ট্যাটাস:</strong> অনলাইন</div><div><strong>রোল:</strong> ${roleText}</div></div>`; }
+        function showToast(msg, type) { const toast = document.createElement('div'); toast.className = 'toast'; toast.textContent = msg; toast.style.background = type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : '#ff9800'; document.body.appendChild(toast); setTimeout(() => { toast.style.animation = 'slideIn 0.3s ease reverse'; setTimeout(() => toast.remove(), 300); }, 3000); }
         
-        function escapeHtmlForOnClick(str) {
-            return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-        }
-        
-        window.copyToClipboard = function(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                showToast('কপি করা হয়েছে!', 'success');
-            }).catch(() => {
-                showToast('কপি ব্যর্থ', 'error');
-            });
-        };
-        
-        function updateSystemInfo() {
-            const roleText = isPrimaryAdmin ? '<span style="color:#4caf50;">প্রধান এডমিন (সম্পূর্ণ অ্যাক্সেস)</span>' : '<span style="color:#ff9800;">শুধু দেখার (রিড-অনলি)</span>';
-            systemInfo.innerHTML = `<div style="display:flex;gap:20px;flex-wrap:wrap;">
-                <div><strong>লগইন সময়:</strong> ${new Date().toLocaleString('bn-BD')}</div>
-                <div><strong>এডমিন:</strong> ${currentAdminEmail || 'N/A'}</div>
-                <div><strong>স্ট্যাটাস:</strong> অনলাইন</div>
-                <div><strong>রোল:</strong> ${roleText}</div>
-            </div>`;
-        }
-        
-        function showToast(msg, type) {
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.textContent = msg;
-            toast.style.background = type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : '#ff9800';
-            document.body.appendChild(toast);
-            setTimeout(() => {
-                toast.style.animation = 'slideIn 0.3s ease reverse';
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-        
-        window.completeOrder = completeOrder;
-        window.cancelOrder = cancelOrder;
-        window.showOrderDetails = showOrderDetails;
-        window.loadOrders = loadOrders;
-        window.refreshTransactions = refreshTransactions;
-        window.copyToClipboard = copyToClipboard;
+        window.completeOrder = completeOrder; window.cancelOrder = cancelOrder; window.showOrderDetails = showOrderDetails; window.loadOrders = loadOrders; window.refreshTransactions = refreshTransactions; window.copyToClipboard = copyToClipboard;
     </script>
 
-    <!-- ================== সম্পূর্ণ সিকিউরিটি স্ক্রিপ্ট ================== -->
+    <!-- ================== সম্পূর্ণ সিকিউরিটি স্ক্রিপ্ট (অপরিবর্তিত) ================== -->
     <script>
     (function() {
         'use strict';
-        
-        const SECURITY_CONFIG = {
-            SESSION_TIMEOUT: 30 * 60 * 1000,
-            MAX_ATTEMPTS: 5,
-            RATE_LIMIT_WINDOW: 15 * 60 * 1000,
-            ENFORCE_HTTPS: true,
-            REDIRECT_URL: 'https://www.easy-premium.com/privacy-refund-policy-terms-of-service'
-        };
-        
-        // HTTPS ফোর্স
-        if (SECURITY_CONFIG.ENFORCE_HTTPS && location.protocol !== 'https:' && location.hostname !== 'localhost' && !location.hostname.includes('127.0.0.1')) {
-            location.replace('https://' + location.host + location.pathname + location.search);
-        }
-        
-        // ক্লিকজ্যাকিং প্রোটেকশন
-        if (self !== top) {
-            try { top.location.href = self.location.href; } catch(e) { document.body.innerHTML = '<h1 style="color:red;text-align:center;padding:50px;">Access Denied</h1>'; throw new Error('Clickjacking protection'); }
-        }
-        
-        // DevTools Detection with Immediate Redirect
+        const SECURITY_CONFIG = { SESSION_TIMEOUT: 30 * 60 * 1000, MAX_ATTEMPTS: 5, RATE_LIMIT_WINDOW: 15 * 60 * 1000, ENFORCE_HTTPS: true, REDIRECT_URL: 'https://www.easy-premium.com/privacy-refund-policy-terms-of-service' };
+        if (SECURITY_CONFIG.ENFORCE_HTTPS && location.protocol !== 'https:' && location.hostname !== 'localhost' && !location.hostname.includes('127.0.0.1')) location.replace('https://' + location.host + location.pathname + location.search);
+        if (self !== top) { try { top.location.href = self.location.href; } catch(e) { document.body.innerHTML = '<h1 style="color:red;text-align:center;padding:50px;">Access Denied</h1>'; throw new Error('Clickjacking protection'); } }
         let devToolsOpened = false;
-        function detectDevTools() {
-            const start = performance.now();
-            debugger;
-            const end = performance.now();
-            if (end - start > 100 && !devToolsOpened) {
-                devToolsOpened = true;
-                window.location.href = SECURITY_CONFIG.REDIRECT_URL;
-            }
-            return false;
-        }
-        setInterval(detectDevTools, 1000);
-        setTimeout(detectDevTools, 500);
-        
-        // Rate Limiting
+        function detectDevTools() { const start = performance.now(); debugger; const end = performance.now(); if (end - start > 100 && !devToolsOpened) { devToolsOpened = true; window.location.href = SECURITY_CONFIG.REDIRECT_URL; } return false; }
+        setInterval(detectDevTools, 1000); setTimeout(detectDevTools, 500);
         window._rateLimitStore = window._rateLimitStore || { attempts: {}, blockUntil: {} };
-        window.checkRateLimit = function(action, userId = 'anonymous') {
-            const key = `${action}_${userId}`;
-            const now = Date.now();
-            if (window._rateLimitStore.blockUntil[key] && window._rateLimitStore.blockUntil[key] > now) {
-                const remaining = Math.ceil((window._rateLimitStore.blockUntil[key] - now) / 1000 / 60);
-                return { allowed: false, message: `অনেক চেষ্টা করেছেন। ${remaining} মিনিট পরে আবার চেষ্টা করুন।` };
-            }
-            if (!window._rateLimitStore.attempts[key]) window._rateLimitStore.attempts[key] = [];
-            window._rateLimitStore.attempts[key] = window._rateLimitStore.attempts[key].filter(t => t > now - SECURITY_CONFIG.RATE_LIMIT_WINDOW);
-            if (window._rateLimitStore.attempts[key].length >= SECURITY_CONFIG.MAX_ATTEMPTS) {
-                window._rateLimitStore.blockUntil[key] = now + SECURITY_CONFIG.RATE_LIMIT_WINDOW;
-                return { allowed: false, message: 'অনেক চেষ্টা করেছেন। ১৫ মিনিট পরে আবার চেষ্টা করুন।' };
-            }
-            window._rateLimitStore.attempts[key].push(now);
-            return { allowed: true };
-        };
-        
-        // Session Timeout
-        let sessionTimer;
-        function resetSessionTimer() {
-            if (sessionTimer) clearTimeout(sessionTimer);
-            sessionTimer = setTimeout(() => {
-                if (firebase && firebase.auth() && firebase.auth().currentUser) {
-                    if (confirm('আপনার সেশন শেষ হয়ে গেছে। আবার লগইন করবেন?')) firebase.auth().signOut().then(() => location.reload());
-                    else firebase.auth().signOut();
-                }
-            }, SECURITY_CONFIG.SESSION_TIMEOUT);
-        }
-        ['click', 'keypress', 'scroll', 'mousemove', 'touchstart'].forEach(event => document.addEventListener(event, resetSessionTimer, { passive: true }));
-        
-        // XSS Protection
-        function setupFormProtection() {
-            document.querySelectorAll('form').forEach(form => {
-                if (form._protected) return;
-                form._protected = true;
-                form.addEventListener('submit', function() {
-                    this.querySelectorAll('input[type="text"], input[type="tel"], input[type="email"], textarea, input[type="password"]').forEach(input => {
-                        if (input.value && typeof input.value === 'string' && /[<>"'`=]/.test(input.value)) {
-                            console.warn('সতর্কতা: ইনপুটে বিপজ্জনক ক্যারেক্টার পাওয়া গেছে');
-                        }
-                    });
-                }, true);
-            });
-        }
-        const formObserver = new MutationObserver(() => setupFormProtection());
-        formObserver.observe(document.body, { childList: true, subtree: true });
-        
-        // LocalStorage Encryption
-        const originalSetItem = localStorage.setItem, originalGetItem = localStorage.getItem;
-        const sensitiveKeys = ['user', 'session', 'token', 'auth', 'firebase'];
-        localStorage.setItem = function(key, value) {
-            if (sensitiveKeys.some(k => key.toLowerCase().includes(k))) {
-                try { const encoded = btoa(encodeURIComponent(value)); return originalSetItem.call(this, `_sec_${key}`, encoded); } catch(e) { console.warn('LocalStorage encoding error'); }
-            }
-            return originalSetItem.call(this, key, value);
-        };
-        localStorage.getItem = function(key) {
-            if (sensitiveKeys.some(k => key.toLowerCase().includes(k))) {
-                try { const encoded = originalGetItem.call(this, `_sec_${key}`); if (encoded) return decodeURIComponent(atob(encoded)); } catch(e) { console.warn('LocalStorage decoding error'); }
-            }
-            return originalGetItem.call(this, key);
-        };
-        
-        // Keyboard Shortcuts Block
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && e.keyCode === 85) { e.preventDefault(); return false; }
-            if (e.ctrlKey && e.keyCode === 83) { e.preventDefault(); return false; }
-            if (e.ctrlKey && e.shiftKey && e.keyCode === 73) { e.preventDefault(); return false; }
-            if (e.keyCode === 123) { e.preventDefault(); return false; }
-        });
-        
-        // Right-click Protection
-        document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; });
-        document.addEventListener('mousedown', function(e) { if (e.button === 2) { e.preventDefault(); return false; } });
-        document.addEventListener('dragstart', function(e) { e.preventDefault(); return false; });
-        document.addEventListener('selectstart', function(e) { e.preventDefault(); return false; });
-        
+        window.checkRateLimit = function(action, userId = 'anonymous') { const key = `${action}_${userId}`; const now = Date.now(); if (window._rateLimitStore.blockUntil[key] && window._rateLimitStore.blockUntil[key] > now) { const remaining = Math.ceil((window._rateLimitStore.blockUntil[key] - now) / 1000 / 60); return { allowed: false, message: `অনেক চেষ্টা করেছেন। ${remaining} মিনিট পরে আবার চেষ্টা করুন।` }; } if (!window._rateLimitStore.attempts[key]) window._rateLimitStore.attempts[key] = []; window._rateLimitStore.attempts[key] = window._rateLimitStore.attempts[key].filter(t => t > now - SECURITY_CONFIG.RATE_LIMIT_WINDOW); if (window._rateLimitStore.attempts[key].length >= SECURITY_CONFIG.MAX_ATTEMPTS) { window._rateLimitStore.blockUntil[key] = now + SECURITY_CONFIG.RATE_LIMIT_WINDOW; return { allowed: false, message: 'অনেক চেষ্টা করেছেন। ১৫ মিনিট পরে আবার চেষ্টা করুন।' }; } window._rateLimitStore.attempts[key].push(now); return { allowed: true }; };
+        let sessionTimer; function resetSessionTimer() { if (sessionTimer) clearTimeout(sessionTimer); sessionTimer = setTimeout(() => { if (firebase && firebase.auth() && firebase.auth().currentUser) { if (confirm('আপনার সেশন শেষ হয়ে গেছে। আবার লগইন করবেন?')) firebase.auth().signOut().then(() => location.reload()); else firebase.auth().signOut(); } }, SECURITY_CONFIG.SESSION_TIMEOUT); } ['click', 'keypress', 'scroll', 'mousemove', 'touchstart'].forEach(event => document.addEventListener(event, resetSessionTimer, { passive: true }));
+        function setupFormProtection() { document.querySelectorAll('form').forEach(form => { if (form._protected) return; form._protected = true; form.addEventListener('submit', function() { this.querySelectorAll('input[type="text"], input[type="tel"], input[type="email"], textarea, input[type="password"]').forEach(input => { if (input.value && typeof input.value === 'string' && /[<>"'`=]/.test(input.value)) console.warn('সতর্কতা: ইনপুটে বিপজ্জনক ক্যারেক্টার পাওয়া গেছে'); }); }, true); }); } const formObserver = new MutationObserver(() => setupFormProtection()); formObserver.observe(document.body, { childList: true, subtree: true });
+        const originalSetItem = localStorage.setItem, originalGetItem = localStorage.getItem; const sensitiveKeys = ['user', 'session', 'token', 'auth', 'firebase']; localStorage.setItem = function(key, value) { if (sensitiveKeys.some(k => key.toLowerCase().includes(k))) { try { const encoded = btoa(encodeURIComponent(value)); return originalSetItem.call(this, `_sec_${key}`, encoded); } catch(e) { console.warn('LocalStorage encoding error'); } } return originalSetItem.call(this, key, value); }; localStorage.getItem = function(key) { if (sensitiveKeys.some(k => key.toLowerCase().includes(k))) { try { const encoded = originalGetItem.call(this, `_sec_${key}`); if (encoded) return decodeURIComponent(atob(encoded)); } catch(e) { console.warn('LocalStorage decoding error'); } } return originalGetItem.call(this, key); };
+        document.addEventListener('keydown', function(e) { if (e.ctrlKey && e.keyCode === 85) { e.preventDefault(); return false; } if (e.ctrlKey && e.keyCode === 83) { e.preventDefault(); return false; } if (e.ctrlKey && e.shiftKey && e.keyCode === 73) { e.preventDefault(); return false; } if (e.keyCode === 123) { e.preventDefault(); return false; } });
+        document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; }); document.addEventListener('mousedown', function(e) { if (e.button === 2) { e.preventDefault(); return false; } }); document.addEventListener('dragstart', function(e) { e.preventDefault(); return false; }); document.addEventListener('selectstart', function(e) { e.preventDefault(); return false; });
         console.log('%c🔒 Easy Premium - অর্ডার ম্যানেজমেন্ট সুরক্ষিত মোড সক্রিয়', 'color: #4caf50; font-size: 14px; font-weight: bold;');
     })();
     </script>
