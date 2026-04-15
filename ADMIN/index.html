@@ -516,7 +516,7 @@
             width: 100%;
             padding: 12px;
             margin: 15px 0;
-            background: rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.1);
             border: 1px solid #ff9800;
             border-radius: 8px;
             color: white;
@@ -957,9 +957,53 @@
             } finally { loginBtn.disabled = false; loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> লগইন করুন'; }
         }
         
-        async function handleLogout() { stopAllIntervals(); if (transactionsListenerRef) { transactionsListenerRef.off(); transactionsListenerRef = null; } await auth.signOut(); showLoginScreen(); showToast('লগ আউট', 'success'); }
+        // FIXED LOGOUT: More robust and forces UI reset
+        async function handleLogout() {
+            try {
+                // Stop all background processes
+                stopAllIntervals();
+                if (transactionsListenerRef) {
+                    transactionsListenerRef.off();
+                    transactionsListenerRef = null;
+                }
+                // Clear stored global password
+                globalAdminPassword = null;
+                // Clear pending actions
+                pendingAction = null;
+                pendingTrxId = null;
+                pendingEvent = null;
+                pendingOrdersCallback = null;
+                // Sign out from Firebase
+                await auth.signOut();
+                // Force UI to login screen immediately
+                showLoginScreen();
+                showToast('লগ আউট সম্পন্ন হয়েছে', 'success');
+                // Reset any leftover data
+                orders = [];
+                currentTransactions = [];
+                if (ordersTable) ordersTable.innerHTML = '';
+                if (transactionsTable) transactionsTable.innerHTML = '';
+                if (orderCountEl) orderCountEl.textContent = '';
+                if (transactionCountSpan) transactionCountSpan.textContent = '';
+            } catch (error) {
+                console.error('Logout error:', error);
+                showToast('লগআউট ব্যর্থ, আবার চেষ্টা করুন', 'error');
+                // fallback: force page reload to clear session
+                // location.reload();
+            }
+        }
         
-        function showLoginScreen() { loginScreen.style.display = 'flex'; adminPanel.style.display = 'none'; document.getElementById('adminEmailInput').value = ''; document.getElementById('adminPasswordInputField').value = ''; document.getElementById('loginError').textContent = ''; }
+        function showLoginScreen() { 
+            loginScreen.style.display = 'flex'; 
+            adminPanel.style.display = 'none'; 
+            // clear input fields and errors
+            const emailInput = document.getElementById('adminEmailInput');
+            const passInput = document.getElementById('adminPasswordInputField');
+            if (emailInput) emailInput.value = '';
+            if (passInput) passInput.value = '';
+            const errorDiv = document.getElementById('loginError');
+            if (errorDiv) errorDiv.textContent = '';
+        }
         function showAdminPanel() { loginScreen.style.display = 'none'; adminPanel.style.display = 'block'; updateSystemInfo(); }
         
         async function loadOrders() { if (globalAdminPassword) await fetchOrdersWithPassword(globalAdminPassword); else showPasswordModalForOrders(async (password) => { await fetchOrdersWithPassword(password); }); }
@@ -1036,7 +1080,7 @@
         window.completeOrder = completeOrder; window.cancelOrder = cancelOrder; window.showOrderDetails = showOrderDetails; window.loadOrders = loadOrders; window.refreshTransactions = refreshTransactions; window.copyToClipboard = copyToClipboard;
     </script>
 
-    <!-- ================== সম্পূর্ণ সিকিউরিটি স্ক্রিপ্ট (অপরিবর্তিত) ================== -->
+    <!-- ================== সম্পূর্ণ সিকিউরিটি স্ক্রিপ্ট (শুধু LocalStorage অংশ মুছে ফেলা হয়েছে) ================== -->
     <script>
     (function() {
         'use strict';
@@ -1050,7 +1094,7 @@
         window.checkRateLimit = function(action, userId = 'anonymous') { const key = `${action}_${userId}`; const now = Date.now(); if (window._rateLimitStore.blockUntil[key] && window._rateLimitStore.blockUntil[key] > now) { const remaining = Math.ceil((window._rateLimitStore.blockUntil[key] - now) / 1000 / 60); return { allowed: false, message: `অনেক চেষ্টা করেছেন। ${remaining} মিনিট পরে আবার চেষ্টা করুন।` }; } if (!window._rateLimitStore.attempts[key]) window._rateLimitStore.attempts[key] = []; window._rateLimitStore.attempts[key] = window._rateLimitStore.attempts[key].filter(t => t > now - SECURITY_CONFIG.RATE_LIMIT_WINDOW); if (window._rateLimitStore.attempts[key].length >= SECURITY_CONFIG.MAX_ATTEMPTS) { window._rateLimitStore.blockUntil[key] = now + SECURITY_CONFIG.RATE_LIMIT_WINDOW; return { allowed: false, message: 'অনেক চেষ্টা করেছেন। ১৫ মিনিট পরে আবার চেষ্টা করুন।' }; } window._rateLimitStore.attempts[key].push(now); return { allowed: true }; };
         let sessionTimer; function resetSessionTimer() { if (sessionTimer) clearTimeout(sessionTimer); sessionTimer = setTimeout(() => { if (firebase && firebase.auth() && firebase.auth().currentUser) { if (confirm('আপনার সেশন শেষ হয়ে গেছে। আবার লগইন করবেন?')) firebase.auth().signOut().then(() => location.reload()); else firebase.auth().signOut(); } }, SECURITY_CONFIG.SESSION_TIMEOUT); } ['click', 'keypress', 'scroll', 'mousemove', 'touchstart'].forEach(event => document.addEventListener(event, resetSessionTimer, { passive: true }));
         function setupFormProtection() { document.querySelectorAll('form').forEach(form => { if (form._protected) return; form._protected = true; form.addEventListener('submit', function() { this.querySelectorAll('input[type="text"], input[type="tel"], input[type="email"], textarea, input[type="password"]').forEach(input => { if (input.value && typeof input.value === 'string' && /[<>"'`=]/.test(input.value)) console.warn('সতর্কতা: ইনপুটে বিপজ্জনক ক্যারেক্টার পাওয়া গেছে'); }); }, true); }); } const formObserver = new MutationObserver(() => setupFormProtection()); formObserver.observe(document.body, { childList: true, subtree: true });
-        const originalSetItem = localStorage.setItem, originalGetItem = localStorage.getItem; const sensitiveKeys = ['user', 'session', 'token', 'auth', 'firebase']; localStorage.setItem = function(key, value) { if (sensitiveKeys.some(k => key.toLowerCase().includes(k))) { try { const encoded = btoa(encodeURIComponent(value)); return originalSetItem.call(this, `_sec_${key}`, encoded); } catch(e) { console.warn('LocalStorage encoding error'); } } return originalSetItem.call(this, key, value); }; localStorage.getItem = function(key) { if (sensitiveKeys.some(k => key.toLowerCase().includes(k))) { try { const encoded = originalGetItem.call(this, `_sec_${key}`); if (encoded) return decodeURIComponent(atob(encoded)); } catch(e) { console.warn('LocalStorage decoding error'); } } return originalGetItem.call(this, key); };
+        // LocalStorage encryption and sensitive keys override removed as requested (it was breaking Firebase)
         document.addEventListener('keydown', function(e) { if (e.ctrlKey && e.keyCode === 85) { e.preventDefault(); return false; } if (e.ctrlKey && e.keyCode === 83) { e.preventDefault(); return false; } if (e.ctrlKey && e.shiftKey && e.keyCode === 73) { e.preventDefault(); return false; } if (e.keyCode === 123) { e.preventDefault(); return false; } });
         document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; }); document.addEventListener('mousedown', function(e) { if (e.button === 2) { e.preventDefault(); return false; } }); document.addEventListener('dragstart', function(e) { e.preventDefault(); return false; }); document.addEventListener('selectstart', function(e) { e.preventDefault(); return false; });
         console.log('%c🔒 Easy Premium - অর্ডার ম্যানেজমেন্ট সুরক্ষিত মোড সক্রিয়', 'color: #4caf50; font-size: 14px; font-weight: bold;');
