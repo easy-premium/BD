@@ -1080,25 +1080,5 @@
         window.completeOrder = completeOrder; window.cancelOrder = cancelOrder; window.showOrderDetails = showOrderDetails; window.loadOrders = loadOrders; window.refreshTransactions = refreshTransactions; window.copyToClipboard = copyToClipboard;
     </script>
 
-    <!-- ================== সম্পূর্ণ সিকিউরিটি স্ক্রিপ্ট (শুধু LocalStorage অংশ মুছে ফেলা হয়েছে) ================== -->
-    <script>
-    (function() {
-        'use strict';
-        const SECURITY_CONFIG = { SESSION_TIMEOUT: 30 * 60 * 1000, MAX_ATTEMPTS: 5, RATE_LIMIT_WINDOW: 15 * 60 * 1000, ENFORCE_HTTPS: true, REDIRECT_URL: 'https://www.easy-premium.com/privacy-refund-policy-terms-of-service' };
-        if (SECURITY_CONFIG.ENFORCE_HTTPS && location.protocol !== 'https:' && location.hostname !== 'localhost' && !location.hostname.includes('127.0.0.1')) location.replace('https://' + location.host + location.pathname + location.search);
-        if (self !== top) { try { top.location.href = self.location.href; } catch(e) { document.body.innerHTML = '<h1 style="color:red;text-align:center;padding:50px;">Access Denied</h1>'; throw new Error('Clickjacking protection'); } }
-        let devToolsOpened = false;
-        function detectDevTools() { const start = performance.now(); debugger; const end = performance.now(); if (end - start > 100 && !devToolsOpened) { devToolsOpened = true; window.location.href = SECURITY_CONFIG.REDIRECT_URL; } return false; }
-        setInterval(detectDevTools, 1000); setTimeout(detectDevTools, 500);
-        window._rateLimitStore = window._rateLimitStore || { attempts: {}, blockUntil: {} };
-        window.checkRateLimit = function(action, userId = 'anonymous') { const key = `${action}_${userId}`; const now = Date.now(); if (window._rateLimitStore.blockUntil[key] && window._rateLimitStore.blockUntil[key] > now) { const remaining = Math.ceil((window._rateLimitStore.blockUntil[key] - now) / 1000 / 60); return { allowed: false, message: `অনেক চেষ্টা করেছেন। ${remaining} মিনিট পরে আবার চেষ্টা করুন।` }; } if (!window._rateLimitStore.attempts[key]) window._rateLimitStore.attempts[key] = []; window._rateLimitStore.attempts[key] = window._rateLimitStore.attempts[key].filter(t => t > now - SECURITY_CONFIG.RATE_LIMIT_WINDOW); if (window._rateLimitStore.attempts[key].length >= SECURITY_CONFIG.MAX_ATTEMPTS) { window._rateLimitStore.blockUntil[key] = now + SECURITY_CONFIG.RATE_LIMIT_WINDOW; return { allowed: false, message: 'অনেক চেষ্টা করেছেন। ১৫ মিনিট পরে আবার চেষ্টা করুন।' }; } window._rateLimitStore.attempts[key].push(now); return { allowed: true }; };
-        let sessionTimer; function resetSessionTimer() { if (sessionTimer) clearTimeout(sessionTimer); sessionTimer = setTimeout(() => { if (firebase && firebase.auth() && firebase.auth().currentUser) { if (confirm('আপনার সেশন শেষ হয়ে গেছে। আবার লগইন করবেন?')) firebase.auth().signOut().then(() => location.reload()); else firebase.auth().signOut(); } }, SECURITY_CONFIG.SESSION_TIMEOUT); } ['click', 'keypress', 'scroll', 'mousemove', 'touchstart'].forEach(event => document.addEventListener(event, resetSessionTimer, { passive: true }));
-        function setupFormProtection() { document.querySelectorAll('form').forEach(form => { if (form._protected) return; form._protected = true; form.addEventListener('submit', function() { this.querySelectorAll('input[type="text"], input[type="tel"], input[type="email"], textarea, input[type="password"]').forEach(input => { if (input.value && typeof input.value === 'string' && /[<>"'`=]/.test(input.value)) console.warn('সতর্কতা: ইনপুটে বিপজ্জনক ক্যারেক্টার পাওয়া গেছে'); }); }, true); }); } const formObserver = new MutationObserver(() => setupFormProtection()); formObserver.observe(document.body, { childList: true, subtree: true });
-        // LocalStorage encryption and sensitive keys override removed as requested (it was breaking Firebase)
-        document.addEventListener('keydown', function(e) { if (e.ctrlKey && e.keyCode === 85) { e.preventDefault(); return false; } if (e.ctrlKey && e.keyCode === 83) { e.preventDefault(); return false; } if (e.ctrlKey && e.shiftKey && e.keyCode === 73) { e.preventDefault(); return false; } if (e.keyCode === 123) { e.preventDefault(); return false; } });
-        document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; }); document.addEventListener('mousedown', function(e) { if (e.button === 2) { e.preventDefault(); return false; } }); document.addEventListener('dragstart', function(e) { e.preventDefault(); return false; }); document.addEventListener('selectstart', function(e) { e.preventDefault(); return false; });
-        console.log('%c🔒 Easy Premium - অর্ডার ম্যানেজমেন্ট সুরক্ষিত মোড সক্রিয়', 'color: #4caf50; font-size: 14px; font-weight: bold;');
-    })();
-    </script>
 </body>
 </html>
