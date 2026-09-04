@@ -100,7 +100,7 @@
     <meta http-equiv="Expires" content="0">
     
     <style>
-        /* ========== সম্পূর্ণ আগের CSS (শুধু মোবাইলে সার্চ দেখানোর জন্য পরিবর্তন) ========== */
+        /* ========== সম্পূর্ণ CSS অপরিবর্তিত ========== */
         * {
             margin: 0;
             padding: 0;
@@ -659,7 +659,7 @@
                     allPlatforms = [];
                     Object.entries(pricingData).forEach(([id, platform]) => {
                         if (platform.status === undefined || platform.status === 'active') {
-                            // Product image from "Products" field (can be URL or base64)
+                            // Product image from "Products" field (URL or base64)
                             let imageSrc = '';
                             if (platform.Products) {
                                 imageSrc = platform.Products;
