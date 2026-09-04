@@ -659,7 +659,7 @@
                     allPlatforms = [];
                     Object.entries(pricingData).forEach(([id, platform]) => {
                         if (platform.status === undefined || platform.status === 'active') {
-                            // Determine image source: use Products field if available, otherwise empty
+                            // Product image from "Products" field (can be URL or base64)
                             let imageSrc = '';
                             if (platform.Products) {
                                 imageSrc = platform.Products;
