@@ -16,6 +16,7 @@
       "icon": "visa",
       "id": 1,
       "name": "Mobile Cooler",
+      "link": "Mobile Cooler",
       "order": 1,
       "price": "1000",
       "status": "active",
