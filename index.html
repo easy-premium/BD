@@ -100,7 +100,7 @@
     <meta http-equiv="Expires" content="0">
     
     <style>
-        /* ========== সম্পূর্ণ আগের CSS (অপরিবর্তিত) ========== */
+        /* ========== সম্পূর্ণ আগের CSS (শুধু মোবাইলে সার্চ দেখানোর জন্য পরিবর্তন) ========== */
         * {
             margin: 0;
             padding: 0;
@@ -154,6 +154,8 @@
             z-index: 1000;
             backdrop-filter: blur(10px);
             width: 100%;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         
         .header-left {
@@ -161,6 +163,7 @@
             align-items: center;
             gap: 15px;
             flex: 1;
+            min-width: 200px;
         }
         
         .logo {
@@ -169,6 +172,7 @@
             gap: 10px;
             text-decoration: none;
             transition: transform 0.3s;
+            flex-shrink: 0;
         }
         
         .logo:hover { transform: scale(1.02); }
@@ -196,8 +200,14 @@
         
         .header-right { display: flex; align-items: center; gap: 10px; }
         
-        /* সার্চ */
-        .search-container { display: block; flex: 1; max-width: 300px; margin-left: 20px; }
+        /* সার্চ - এখন মোবাইলেও দৃশ্যমান */
+        .search-container { 
+            display: block; 
+            flex: 1; 
+            max-width: 300px; 
+            margin-left: 20px;
+            min-width: 150px;
+        }
         .search-wrapper { position: relative; width: 100%; }
         .search-input {
             width: 100%;
@@ -289,7 +299,14 @@
         }
         .platform-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); border-color: #ff9800; }
         .platform-header { padding: 20px; text-align: center; background: rgba(0, 0, 0, 0.3); flex-shrink: 0; }
-        .platform-icon { width: auto; height: 5rem; margin-bottom: 10px; object-fit: contain; }
+        .platform-icon { 
+            width: auto; 
+            height: 5rem; 
+            margin-bottom: 10px; 
+            object-fit: contain;
+            max-width: 100%;
+            border-radius: 8px;
+        }
         .platform-name { font-size: 1.3rem; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .platform-description { padding: 15px; color: #b0bec5; font-size: 0.9rem; line-height: 1.4; flex: 1; }
         .platform-features { padding: 15px; background: rgba(0, 0, 0, 0.2); flex-shrink: 0; }
@@ -464,13 +481,34 @@
             100% { box-shadow: 0 0 0 0 rgba(0, 132, 255, 0); }
         }
         
+        /* ========== মোবাইল রেসপন্সিভ: সার্চ বার দৃশ্যমান ========== */
         @media (max-width: 768px) {
-            .search-container { display: none !important; }
+            .search-container { 
+                display: block !important; 
+                max-width: 100%; 
+                margin-left: 0; 
+                margin-top: 5px;
+                width: 100%;
+                flex-basis: 100%;
+                order: 3;
+            }
+            .header {
+                flex-wrap: wrap;
+                padding: 10px 12px;
+            }
+            .header-left {
+                flex-wrap: wrap;
+                gap: 8px;
+                width: 100%;
+            }
+            .logo {
+                flex-shrink: 0;
+            }
             .hero h1 { font-size: 1.7rem; }
             .platforms-grid { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
         }
         @media (max-width: 480px) {
-            .header { padding: 10px 12px; }
+            .header { padding: 8px 10px; }
             .logo-image-container { width: 40px; height: 40px; min-width: 40px; }
             .logo-main { font-size: 1.1rem; }
             .logo-sub { font-size: 0.7rem; }
@@ -489,6 +527,14 @@
             .social-link { width: 45px; height: 45px; font-size: 1.3rem; }
             .messenger-float { bottom: 20px; right: 20px; width: 55px; height: 55px; }
             .messenger-float i { font-size: 1.8rem; }
+            .search-container {
+                margin-top: 8px;
+                min-width: 100%;
+            }
+            .search-input {
+                font-size: 0.9rem;
+                padding: 10px 35px 10px 12px;
+            }
         }
     </style>
     
@@ -613,6 +659,12 @@
                     allPlatforms = [];
                     Object.entries(pricingData).forEach(([id, platform]) => {
                         if (platform.status === undefined || platform.status === 'active') {
+                            // Determine image source: use Products field if available, otherwise fallback
+                            let imageSrc = 'https://images.relograde.com/i/brands/circle/rewarble-visa.png'; // default fallback
+                            if (platform.Products) {
+                                // If Products is a base64 image or a URL, use it directly
+                                imageSrc = platform.Products;
+                            }
                             allPlatforms.push({
                                 id: id,
                                 name: platform.name || 'প্ল্যাটফর্ম',
@@ -620,7 +672,8 @@
                                 price: platform.price || '৳ 0',
                                 features: platform.features || [],
                                 icon: platform.icon || 'visa',
-                                link: platform.link || '#'
+                                link: platform.link || '#',
+                                image: imageSrc
                             });
                         }
                     });
@@ -644,7 +697,7 @@
                 card.dataset.link = platform.link;
                 card.innerHTML = `
                     <div class="platform-header">
-                        <img src="https://images.relograde.com/i/brands/circle/rewarble-visa.png" class="platform-icon">
+                        <img src="${platform.image}" class="platform-icon" alt="${platform.name}" onerror="this.src='https://images.relograde.com/i/brands/circle/rewarble-visa.png'">
                         <div class="platform-name">${platform.name}</div>
                     </div>
                     <div class="platform-description">${platform.description}</div>
@@ -669,7 +722,6 @@
                     if (!checkCookieConsent()) return;
                     const link = card.dataset.link;
                     if (link && link !== '#') {
-                        // Ensure proper URL format
                         let url = link;
                         if (!url.startsWith('http://') && !url.startsWith('https://')) {
                             url = 'https://' + url;
@@ -697,7 +749,7 @@
             results.forEach(p => {
                 const item = document.createElement('div');
                 item.className = 'search-result-item';
-                item.innerHTML = `<img src="https://images.relograde.com/i/brands/circle/rewarble-visa.png" class="search-result-icon"><div class="search-result-content"><div class="search-result-name">${p.name}</div><div class="search-result-desc">${p.description}</div></div><div class="search-result-price">${p.price}</div>`;
+                item.innerHTML = `<img src="${p.image}" class="search-result-icon" onerror="this.src='https://images.relograde.com/i/brands/circle/rewarble-visa.png'"><div class="search-result-content"><div class="search-result-name">${p.name}</div><div class="search-result-desc">${p.description}</div></div><div class="search-result-price">${p.price}</div>`;
                 item.addEventListener('click', () => { searchInput.value = ''; searchResults.style.display = 'none'; scrollToCard(p.name); });
                 searchResults.appendChild(item);
             });
@@ -789,7 +841,6 @@
         function resetSessionTimer() {
             if (sessionTimer) clearTimeout(sessionTimer);
             sessionTimer = setTimeout(() => {
-                // Simple alert after inactivity
                 alert('আপনি দীর্ঘ সময় ধরে সক্রিয় নন। পৃষ্ঠা রিফ্রেশ করা হচ্ছে।');
                 location.reload();
             }, CONFIG.SESSION_TIMEOUT);
