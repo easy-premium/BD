@@ -209,8 +209,6 @@
         
         .header-right { display: flex; align-items: center; gap: 10px; }
         
-        /* Cart and menu icons removed */
-        
         /* সার্চ - মোবাইল সহ সকল ডিভাইসে দৃশ্যমান */
         .search-container {
             display: block;
@@ -274,7 +272,7 @@
         }
         .search-result-item:hover { background: rgba(255, 152, 0, 0.1); }
         .search-result-item:last-child { border-bottom: none; }
-        .search-result-icon { width: 30px; height: 30px; object-fit: contain; }
+        .search-result-icon { width: 30px; height: 30px; object-fit: contain; border-radius: 4px; }
         .search-result-content { flex: 1; min-width: 0; }
         .search-result-name { font-weight: 600; color: #fff; margin-bottom: 3px; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .search-result-desc { font-size: 0.75rem; color: #b0bec5; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
@@ -312,7 +310,14 @@
         }
         .platform-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); border-color: #ff9800; }
         .platform-header { padding: 20px; text-align: center; background: rgba(0, 0, 0, 0.3); flex-shrink: 0; }
-        .platform-icon { width: auto; height: 5rem; margin-bottom: 10px; object-fit: contain; }
+        .platform-icon { 
+            width: auto; 
+            height: 5rem; 
+            margin-bottom: 10px; 
+            object-fit: contain; 
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+        }
         .platform-name { font-size: 1.3rem; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .platform-description { padding: 15px; color: #b0bec5; font-size: 0.9rem; line-height: 1.4; flex: 1; }
         .platform-features { padding: 15px; background: rgba(0, 0, 0, 0.2); flex-shrink: 0; }
@@ -720,7 +725,7 @@
             .logo-sub { font-size: 0.7rem; }
             
             .search-container {
-                display: block !important;  /* মোবাইলে দৃশ্যমান */
+                display: block !important;
                 flex: 1 1 100%;
                 max-width: 100%;
                 margin: 8px 0 0 0;
@@ -1040,7 +1045,8 @@
                                 description: platform.description || '',
                                 price: platform.price || '৳ 0',
                                 features: platform.features || [],
-                                icon: platform.icon || 'visa'
+                                icon: platform.icon || 'visa',
+                                productImage: platform.Products || ''   // <-- এখানে Products ফিল্ড থেকে ইমেজ লিংক নিচ্ছি
                             });
                         }
                     });
@@ -1061,9 +1067,13 @@
                 card.dataset.id = platform.id;
                 card.dataset.name = platform.name;
                 card.dataset.price = platform.price;
+                // ইমেজ সোর্স: যদি productImage থাকে তাহলে সেটা ব্যবহার করব, নাহলে ডিফল্ট ভিসা আইকন
+                const imgSrc = platform.productImage && platform.productImage.trim() !== '' 
+                    ? platform.productImage 
+                    : 'https://images.relograde.com/i/brands/circle/rewarble-visa.png';
                 card.innerHTML = `
                     <div class="platform-header">
-                        <img src="https://images.relograde.com/i/brands/circle/rewarble-visa.png" class="platform-icon">
+                        <img src="${imgSrc}" class="platform-icon" alt="${platform.name}" onerror="this.src='https://images.relograde.com/i/brands/circle/rewarble-visa.png'">
                         <div class="platform-name">${platform.name}</div>
                     </div>
                     <div class="platform-description">${platform.description}</div>
@@ -1105,9 +1115,19 @@
             searchResults.innerHTML = '';
             if (results.length === 0) { searchResults.innerHTML = '<div class="no-results">কিছু পাওয়া যায়নি</div>'; searchResults.style.display = 'block'; return; }
             results.forEach(p => {
+                const imgSrc = p.productImage && p.productImage.trim() !== '' 
+                    ? p.productImage 
+                    : 'https://images.relograde.com/i/brands/circle/rewarble-visa.png';
                 const item = document.createElement('div');
                 item.className = 'search-result-item';
-                item.innerHTML = `<img src="https://images.relograde.com/i/brands/circle/rewarble-visa.png" class="search-result-icon"><div class="search-result-content"><div class="search-result-name">${p.name}</div><div class="search-result-desc">${p.description}</div></div><div class="search-result-price">${p.price}</div>`;
+                item.innerHTML = `
+                    <img src="${imgSrc}" class="search-result-icon" onerror="this.src='https://images.relograde.com/i/brands/circle/rewarble-visa.png'">
+                    <div class="search-result-content">
+                        <div class="search-result-name">${p.name}</div>
+                        <div class="search-result-desc">${p.description}</div>
+                    </div>
+                    <div class="search-result-price">${p.price}</div>
+                `;
                 item.addEventListener('click', () => { searchInput.value = ''; searchResults.style.display = 'none'; scrollToCard(p.name); });
                 searchResults.appendChild(item);
             });
