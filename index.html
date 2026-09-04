@@ -685,6 +685,9 @@
                 });
         }
 
+        // ডিফল্ট ইমেজ (যখন কোনো ইমেজ সোর্স নেই বা লোড হয় না)
+        const DEFAULT_IMAGE = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150"%3E%3Crect width="150" height="150" fill="%23333"/%3E%3Ctext x="75" y="75" font-family="Arial" font-size="16" fill="%23aaa" text-anchor="middle" dominant-baseline="central"%3ENo Image%3C/text%3E%3C/svg%3E';
+
         function displayPlatforms(platforms) {
             platformsGrid.innerHTML = '';
             platforms.forEach(platform => {
@@ -696,7 +699,10 @@
                 card.dataset.link = platform.link;
                 card.innerHTML = `
                     <div class="platform-header">
-                        <img src="${platform.image}" class="platform-icon" alt="${platform.name}" onerror="this.style.display='none'">
+                        <img src="${platform.image || DEFAULT_IMAGE}" 
+                             class="platform-icon" 
+                             alt="${platform.name}"
+                             onerror="this.onerror=null; this.src='${DEFAULT_IMAGE}';">
                         <div class="platform-name">${platform.name}</div>
                     </div>
                     <div class="platform-description">${platform.description}</div>
@@ -748,7 +754,16 @@
             results.forEach(p => {
                 const item = document.createElement('div');
                 item.className = 'search-result-item';
-                item.innerHTML = `<img src="${p.image}" class="search-result-icon" onerror="this.style.display='none'"><div class="search-result-content"><div class="search-result-name">${p.name}</div><div class="search-result-desc">${p.description}</div></div><div class="search-result-price">${p.price}</div>`;
+                item.innerHTML = `
+                    <img src="${p.image || DEFAULT_IMAGE}" 
+                         class="search-result-icon" 
+                         onerror="this.onerror=null; this.src='${DEFAULT_IMAGE}';">
+                    <div class="search-result-content">
+                        <div class="search-result-name">${p.name}</div>
+                        <div class="search-result-desc">${p.description}</div>
+                    </div>
+                    <div class="search-result-price">${p.price}</div>
+                `;
                 item.addEventListener('click', () => { searchInput.value = ''; searchResults.style.display = 'none'; scrollToCard(p.name); });
                 searchResults.appendChild(item);
             });
