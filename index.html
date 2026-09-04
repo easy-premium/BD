@@ -1046,7 +1046,7 @@
                                 price: platform.price || '৳ 0',
                                 features: platform.features || [],
                                 icon: platform.icon || 'visa',
-                                productImage: platform.Products || ''   // <-- Products ফিল্ড থেকে ইমেজ লিংক নিচ্ছি (URL বা base64)
+                                productImage: platform.Products || ''   // Products ফিল্ড থেকে ইমেজ ডেটা (base64 বা URL)
                             });
                         }
                     });
@@ -1059,6 +1059,21 @@
                 });
         }
         
+        // হেল্পার ফাংশন: ইমেজ সোর্স প্রস্তুত করা
+        function getImageSource(productImage) {
+            if (!productImage || productImage.trim() === '') {
+                // কোনো ইমেজ না থাকলে ফাঁকা স্ট্রিং দিন (ইমেজ ট্যাগে onerror হ্যান্ডেল করবে)
+                return '';
+            }
+            // যদি ইতিমধ্যে data:image অথবা http/https দিয়ে শুরু হয়, তাহলে সেটাই ব্যবহার করব
+            if (productImage.startsWith('data:image') || productImage.startsWith('http://') || productImage.startsWith('https://')) {
+                return productImage;
+            }
+            // অন্যথায় ধরে নিচ্ছি এটি base64 এনকোডেড ডেটা (যেমন "iVBORw0KGgo...")
+            // সুতরাং আমরা PNG ধরে প্রিফিক্স যোগ করব (ব্যবহারকারী চাইলে অন্য ফরম্যাট দিতে পারেন)
+            return 'data:image/png;base64,' + productImage;
+        }
+        
         function displayPlatforms(platforms) {
             platformsGrid.innerHTML = '';
             platforms.forEach(platform => {
@@ -1067,13 +1082,11 @@
                 card.dataset.id = platform.id;
                 card.dataset.name = platform.name;
                 card.dataset.price = platform.price;
-                // ইমেজ সোর্স: productImage থাকলে সেটা ব্যবহার করব, নাহলে ডিফল্ট
-                const imgSrc = platform.productImage && platform.productImage.trim() !== '' 
-                    ? platform.productImage 
-                    : 'https://images.relograde.com/i/brands/circle/rewarble-visa.png';
+                // ইমেজ সোর্স তৈরি করুন
+                const imgSrc = getImageSource(platform.productImage);
                 card.innerHTML = `
                     <div class="platform-header">
-                        <img src="${imgSrc}" class="platform-icon" alt="${platform.name}" onerror="this.src='https://images.relograde.com/i/brands/circle/rewarble-visa.png'">
+                        <img src="${imgSrc}" class="platform-icon" alt="${platform.name}" onerror="this.style.display='none'">
                         <div class="platform-name">${platform.name}</div>
                     </div>
                     <div class="platform-description">${platform.description}</div>
@@ -1115,13 +1128,11 @@
             searchResults.innerHTML = '';
             if (results.length === 0) { searchResults.innerHTML = '<div class="no-results">কিছু পাওয়া যায়নি</div>'; searchResults.style.display = 'block'; return; }
             results.forEach(p => {
-                const imgSrc = p.productImage && p.productImage.trim() !== '' 
-                    ? p.productImage 
-                    : 'https://images.relograde.com/i/brands/circle/rewarble-visa.png';
+                const imgSrc = getImageSource(p.productImage);
                 const item = document.createElement('div');
                 item.className = 'search-result-item';
                 item.innerHTML = `
-                    <img src="${imgSrc}" class="search-result-icon" onerror="this.src='https://images.relograde.com/i/brands/circle/rewarble-visa.png'">
+                    <img src="${imgSrc}" class="search-result-icon" onerror="this.style.display='none'">
                     <div class="search-result-content">
                         <div class="search-result-name">${p.name}</div>
                         <div class="search-result-desc">${p.description}</div>
