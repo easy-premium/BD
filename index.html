@@ -261,7 +261,7 @@
         }
         .search-result-item:hover { background: rgba(255, 152, 0, 0.1); }
         .search-result-item:last-child { border-bottom: none; }
-        .search-result-icon { width: 30px; height: 30px; object-fit: contain; border-radius: 4px; }
+        .search-result-icon { width: 40px; height: 40px; object-fit: contain; border-radius: 4px; background: rgba(255,255,255,0.05); }
         .search-result-content { flex: 1; min-width: 0; }
         .search-result-name { font-weight: 600; color: #fff; margin-bottom: 3px; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .search-result-desc { font-size: 0.75rem; color: #b0bec5; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
@@ -300,15 +300,15 @@
         .platform-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); border-color: #ff9800; }
         .platform-header { padding: 20px; text-align: center; background: rgba(0, 0, 0, 0.3); flex-shrink: 0; }
         .platform-icon { 
-            width: auto; 
-            height: 5rem; 
-            margin-bottom: 10px; 
+            width: 100%;
+            height: 160px;
             object-fit: contain;
-            max-width: 100%;
+            margin-bottom: 10px;
             border-radius: 8px;
+            background: rgba(255,255,255,0.03);
         }
         .platform-name { font-size: 1.3rem; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .platform-description { padding: 15px; color: #b0bec5; font-size: 0.9rem; line-height: 1.4; flex: 1; }
+        .platform-description { padding: 15px; color: #b0bec5; font-size: 0.9rem; line-height: 1.4; flex: 1; min-height: 60px; }
         .platform-features { padding: 15px; background: rgba(0, 0, 0, 0.2); flex-shrink: 0; }
         .feature { display: flex; align-items: flex-start; margin-bottom: 8px; color: #b0bec5; font-size: 0.9rem; }
         .feature i { color: #4caf50; margin-right: 8px; font-size: 0.9rem; flex-shrink: 0; margin-top: 3px; }
@@ -506,6 +506,7 @@
             }
             .hero h1 { font-size: 1.7rem; }
             .platforms-grid { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
+            .platform-icon { height: 130px; }
         }
         @media (max-width: 480px) {
             .header { padding: 8px 10px; }
@@ -518,7 +519,7 @@
             .platforms-section { padding: 25px 12px; }
             .platforms-grid { grid-template-columns: 1fr; gap: 15px; }
             .platform-header { padding: 15px; }
-            .platform-icon { height: 4rem; }
+            .platform-icon { height: 110px; }
             .platform-name { font-size: 1.2rem; }
             .price { font-size: 1.3rem; }
             .footer { padding: 30px 15px 25px; }
@@ -643,7 +644,7 @@
         let allPlatforms = [];
 
         // ডিফল্ট ইমেজ (যখন কোনো ইমেজ সোর্স নেই বা লোড হয় না)
-        const DEFAULT_IMAGE = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150"%3E%3Crect width="150" height="150" fill="%23333"/%3E%3Ctext x="75" y="75" font-family="Arial" font-size="16" fill="%23aaa" text-anchor="middle" dominant-baseline="central"%3ENo Image%3C/text%3E%3C/svg%3E';
+        const DEFAULT_IMAGE = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"%3E%3Crect width="300" height="200" fill="%23222"/%3E%3Ctext x="150" y="100" font-family="Arial" font-size="18" fill="%23666" text-anchor="middle" dominant-baseline="central"%3ENo Image%3C/text%3E%3C/svg%3E';
 
         // ================== প্ল্যাটফর্ম লোড (publicData.json থেকে) ==================
         function loadPlatforms() {
@@ -667,14 +668,20 @@
                         if (platform.status === undefined || platform.status === 'active') {
                             // 🔥 Products ফিল্ড থেকে ইমেজ সোর্স নিন (URL বা Base64)
                             let imageSrc = DEFAULT_IMAGE;
-                            if (platform.Products) {
+                            if (platform.Products && platform.Products.trim() !== '') {
                                 imageSrc = platform.Products;
+                            }
+                            
+                            // description ফিল্ড থেকে D ফিল্ডে থাকলে নেওয়া
+                            let description = platform.description || '';
+                            if (!description && platform.D) {
+                                description = platform.D;
                             }
                             
                             allPlatforms.push({
                                 id: id,
                                 name: platform.name || 'প্ল্যাটফর্ম',
-                                description: platform.description || '',
+                                description: description,
                                 price: platform.price || '৳ 0',
                                 features: platform.features || [],
                                 icon: platform.icon || 'visa',
@@ -689,7 +696,7 @@
                 })
                 .catch(error => {
                     console.error('publicData.json লোড করতে ব্যর্থ:', error);
-                    platformsGrid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:#ff9800;">❤❤ আমাদের সার্ভার এর কাজ চলিতেছে খুব শীঘ্রই চালু করা হবে ❤❤</div>';
+                    platformsGrid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:#ff9800; padding:40px;">❤❤ আমাদের সার্ভার এর কাজ চলিতেছে খুব শীঘ্রই চালু করা হবে ❤❤</div>';
                 });
         }
 
@@ -703,6 +710,12 @@
                 card.dataset.price = platform.price;
                 card.dataset.link = platform.link;
                 
+                // description ছোট করে দেখানো
+                let shortDesc = platform.description;
+                if (shortDesc && shortDesc.length > 120) {
+                    shortDesc = shortDesc.substring(0, 120) + '...';
+                }
+                
                 card.innerHTML = `
                     <div class="platform-header">
                         <!-- 🔥 platform.image ব্যবহার করছি যা Products ফিল্ড থেকে আসছে -->
@@ -713,12 +726,14 @@
                              onerror="this.onerror=null; this.src='${DEFAULT_IMAGE}';">
                         <div class="platform-name">${platform.name}</div>
                     </div>
-                    <div class="platform-description">${platform.description}</div>
+                    <div class="platform-description">${shortDesc || 'পণ্যের বিবরণ'}</div>
                     <div class="platform-features">
-                        ${platform.features.map(f => `<div class="feature"><i class="fas fa-check-circle"></i><span>${f}</span></div>`).join('')}
+                        ${platform.features && platform.features.length > 0 
+                            ? platform.features.map(f => `<div class="feature"><i class="fas fa-check-circle"></i><span>${f}</span></div>`).join('') 
+                            : '<div class="feature"><i class="fas fa-check-circle"></i><span>প্রিমিয়াম কোয়ালিটি</span></div>'}
                     </div>
                     <div class="platform-price">
-                        <div class="price">${platform.price}</div>
+                        <div class="price">${platform.price} ৳</div>
                         <div class="price-desc">সম্পূর্ণ গাইডলাইন সেখানো হয়</div>
                     </div>
                     <button class="buy-button">Add to cart</button>
@@ -753,7 +768,7 @@
             if (term.length === 0) { searchResults.style.display = 'none'; return; }
             const filtered = allPlatforms.filter(p => 
                 p.name.toLowerCase().includes(term) || 
-                p.description.toLowerCase().includes(term)
+                (p.description && p.description.toLowerCase().includes(term))
             );
             displaySearchResults(filtered);
         });
@@ -777,9 +792,9 @@
                          onerror="this.onerror=null; this.src='${DEFAULT_IMAGE}';">
                     <div class="search-result-content">
                         <div class="search-result-name">${p.name}</div>
-                        <div class="search-result-desc">${p.description}</div>
+                        <div class="search-result-desc">${p.description ? p.description.substring(0, 60) + '...' : ''}</div>
                     </div>
-                    <div class="search-result-price">${p.price}</div>
+                    <div class="search-result-price">${p.price} ৳</div>
                 `;
                 item.addEventListener('click', () => { 
                     searchInput.value = ''; 
