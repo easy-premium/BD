@@ -164,13 +164,15 @@
             z-index: 1000;
             backdrop-filter: blur(10px);
             width: 100%;
+            flex-wrap: wrap;
         }
         
         .header-left {
             display: flex;
             align-items: center;
             gap: 15px;
-            flex: 1;
+            flex: 1 1 auto;
+            min-width: 0;
         }
         
         .logo {
@@ -179,6 +181,7 @@
             gap: 10px;
             text-decoration: none;
             transition: transform 0.3s;
+            flex-shrink: 0;
         }
         
         .logo:hover { transform: scale(1.02); }
@@ -207,10 +210,16 @@
         .header-right { display: flex; align-items: center; gap: 10px; }
         
         /* Cart and menu icons removed */
-        /* .cart-icon-container and .menu-icon-container are completely removed */
         
-        /* সার্চ */
-        .search-container { display: block; flex: 1; max-width: 300px; margin-left: 20px; }
+        /* সার্চ - মোবাইল সহ সকল ডিভাইসে দৃশ্যমান */
+        .search-container {
+            display: block;
+            flex: 1 1 100%;
+            max-width: 100%;
+            margin-left: 0;
+            margin-top: 8px;
+            order: 3;
+        }
         .search-wrapper { position: relative; width: 100%; }
         .search-input {
             width: 100%;
@@ -222,6 +231,7 @@
             font-size: 0.95rem;
             outline: none;
             transition: all 0.3s;
+            -webkit-appearance: none;
         }
         .search-input:focus { background: rgba(255, 255, 255, 0.15); box-shadow: 0 0 15px rgba(255, 152, 0, 0.4); }
         .search-input::placeholder { color: rgba(255, 255, 255, 0.6); }
@@ -687,17 +697,65 @@
         }
         .accept-btn:hover { background: linear-gradient(45deg, #ff2222, #0008ff); transform: translateY(-2px); }
         
+        /* ===== মোবাইল ডিভাইসের জন্য স্পেসিফিক ===== */
         @media (max-width: 768px) {
-            .search-container { display: none !important; }
+            .header {
+                flex-wrap: wrap;
+                padding: 10px 12px;
+            }
+            .header-left {
+                flex: 1 1 100%;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+            .logo {
+                flex-shrink: 0;
+            }
+            .logo-image-container {
+                width: 40px;
+                height: 40px;
+                min-width: 40px;
+            }
+            .logo-main { font-size: 1.2rem; }
+            .logo-sub { font-size: 0.7rem; }
+            
+            .search-container {
+                display: block !important;  /* মোবাইলে দৃশ্যমান */
+                flex: 1 1 100%;
+                max-width: 100%;
+                margin: 8px 0 0 0;
+                order: 2;
+            }
+            .search-input {
+                font-size: 1rem;
+                padding: 14px 45px 14px 15px;
+                border-radius: 30px;
+            }
+            .search-btn {
+                right: 12px;
+                font-size: 1.3rem;
+            }
+            .search-results {
+                max-height: 300px;
+            }
             .hero h1 { font-size: 1.7rem; }
             .platforms-grid { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
             .drawer { width: 80%; max-width: 300px; }
         }
         @media (max-width: 480px) {
-            .header { padding: 10px 12px; }
-            .logo-image-container { width: 40px; height: 40px; min-width: 40px; }
-            .logo-main { font-size: 1.1rem; }
-            .logo-sub { font-size: 0.7rem; }
+            .header { padding: 8px 10px; }
+            .logo-image-container { width: 36px; height: 36px; min-width: 36px; }
+            .logo-main { font-size: 1rem; }
+            .logo-sub { font-size: 0.65rem; }
+            .search-input {
+                padding: 12px 40px 12px 12px;
+                font-size: 0.95rem;
+                border-radius: 25px;
+            }
+            .search-btn {
+                right: 10px;
+                font-size: 1.1rem;
+            }
             .hero { padding: 30px 15px; min-height: 200px; }
             .hero h1 { font-size: 1.5rem; margin-bottom: 10px; }
             .hero p { font-size: 0.9rem; }
@@ -791,6 +849,7 @@
                 <div class="logo-image-container"><img src="https://cdn-icons-png.flaticon.com/512/8701/8701941.png" alt="Easy Premium Logo" class="logo-image"></div>
                 <div class="logo-text"><div class="logo-main">EASY PREMIUM</div><div class="logo-sub">Accessories Shop</div></div>
             </a>
+            <!-- সার্চ বার - মোবাইল সহ দৃশ্যমান -->
             <div class="search-container">
                 <div class="search-wrapper">
                     <input type="text" id="searchInput" class="search-input" placeholder="সার্চ করুন...">
@@ -869,7 +928,6 @@
         const googleLoginBtn = document.getElementById('googleLoginBtn');
         const closeLoginBtn = document.getElementById('closeLoginBtn');
         const profileModal = document.getElementById('profileModal');
-        const menuIcon = document.getElementById('menuIcon'); // no longer exists, but keep reference safe
         const drawer = document.getElementById('drawer');
         const drawerOverlay = document.getElementById('drawerOverlay');
         const drawerClose = document.getElementById('drawerClose');
@@ -879,7 +937,6 @@
         const logoutBtnProfile = document.getElementById('logoutBtnProfile');
         const deleteAccountBtn = document.getElementById('deleteAccountBtn');
         const ordersList = document.getElementById('ordersList');
-        const cartBadge = document.getElementById('cartBadge'); // no longer exists but keep
         const platformsGrid = document.getElementById('platforms-grid');
         const searchInput = document.getElementById('searchInput');
         const searchBtn = document.getElementById('searchBtn');
@@ -906,14 +963,13 @@
             location.reload();
         });
         
-        // ================== ড্রয়ার টগল (menu icon removed, so drawer won't open via icon; but keep functions for potential use) ==================
+        // ================== ড্রয়ার টগল (menu icon removed) ==================
         function closeDrawer() { drawer.classList.remove('active'); drawerOverlay.classList.remove('active'); }
         drawerOverlay.addEventListener('click', closeDrawer);
         drawerClose.addEventListener('click', closeDrawer);
         drawer.addEventListener('click', e => e.stopPropagation());
         
         // ================== কার্ট ক্লিক (removed) ==================
-        // cartIcon removed, so no handler
         
         closeLoginBtn.addEventListener('click', () => loginModal.style.display = 'none');
         loginModal.addEventListener('click', e => { if (e.target === loginModal) loginModal.style.display = 'none'; });
@@ -934,7 +990,6 @@
                     await userRef.child('lastLogin').set(firebase.database.ServerValue.TIMESTAMP);
                 }
                 loginModal.style.display = 'none';
-                // updateCartBadge removed since cart icon removed
                 if (pendingPurchase) { createOrderAndRedirect(pendingPurchase); pendingPurchase = null; }
             } catch(error) { alert('লগইন ব্যর্থ: ' + error.message); }
         });
