@@ -642,6 +642,9 @@
         const searchResults = document.getElementById('searchResults');
         let allPlatforms = [];
 
+        // ডিফল্ট ইমেজ (যখন কোনো ইমেজ সোর্স নেই বা লোড হয় না)
+        const DEFAULT_IMAGE = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150"%3E%3Crect width="150" height="150" fill="%23333"/%3E%3Ctext x="75" y="75" font-family="Arial" font-size="16" fill="%23aaa" text-anchor="middle" dominant-baseline="central"%3ENo Image%3C/text%3E%3C/svg%3E';
+
         // ================== প্ল্যাটফর্ম লোড (publicData.json থেকে) ==================
         function loadPlatforms() {
             fetch('publicData.json')
@@ -657,13 +660,17 @@
                         return;
                     }
                     allPlatforms = [];
+                    
+                    // লুপ করে প্রতিটি পণ্যের জন্য কার্ড তৈরি করুন
                     Object.entries(pricingData).forEach(([id, platform]) => {
+                        // শুধুমাত্র active স্ট্যাটাসের পণ্য দেখান (যদি status ফিল্ড থাকে)
                         if (platform.status === undefined || platform.status === 'active') {
-                            // Product image from "Products" field (URL or base64)
-                            let imageSrc = '';
+                            // 🔥 Products ফিল্ড থেকে ইমেজ সোর্স নিন (URL বা Base64)
+                            let imageSrc = DEFAULT_IMAGE;
                             if (platform.Products) {
                                 imageSrc = platform.Products;
                             }
+                            
                             allPlatforms.push({
                                 id: id,
                                 name: platform.name || 'প্ল্যাটফর্ম',
@@ -672,10 +679,11 @@
                                 features: platform.features || [],
                                 icon: platform.icon || 'visa',
                                 link: platform.link || '#',
-                                image: imageSrc
+                                image: imageSrc  // ← Products থেকে নেওয়া ইমেজ
                             });
                         }
                     });
+                    
                     displayPlatforms(allPlatforms);
                     attachBuyButtons();
                 })
@@ -684,9 +692,6 @@
                     platformsGrid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:#ff9800;">❤❤ আমাদের সার্ভার এর কাজ চলিতেছে খুব শীঘ্রই চালু করা হবে ❤❤</div>';
                 });
         }
-
-        // ডিফল্ট ইমেজ (যখন কোনো ইমেজ সোর্স নেই বা লোড হয় না)
-        const DEFAULT_IMAGE = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150"%3E%3Crect width="150" height="150" fill="%23333"/%3E%3Ctext x="75" y="75" font-family="Arial" font-size="16" fill="%23aaa" text-anchor="middle" dominant-baseline="central"%3ENo Image%3C/text%3E%3C/svg%3E';
 
         function displayPlatforms(platforms) {
             platformsGrid.innerHTML = '';
@@ -697,11 +702,14 @@
                 card.dataset.name = platform.name;
                 card.dataset.price = platform.price;
                 card.dataset.link = platform.link;
+                
                 card.innerHTML = `
                     <div class="platform-header">
-                        <img src="${platform.image || DEFAULT_IMAGE}" 
+                        <!-- 🔥 platform.image ব্যবহার করছি যা Products ফিল্ড থেকে আসছে -->
+                        <img src="${platform.image}" 
                              class="platform-icon" 
                              alt="${platform.name}"
+                             loading="lazy"
                              onerror="this.onerror=null; this.src='${DEFAULT_IMAGE}';">
                         <div class="platform-name">${platform.name}</div>
                     </div>
@@ -743,20 +751,29 @@
         searchInput.addEventListener('input', function() {
             const term = this.value.toLowerCase().trim();
             if (term.length === 0) { searchResults.style.display = 'none'; return; }
-            const filtered = allPlatforms.filter(p => p.name.toLowerCase().includes(term) || p.description.toLowerCase().includes(term));
+            const filtered = allPlatforms.filter(p => 
+                p.name.toLowerCase().includes(term) || 
+                p.description.toLowerCase().includes(term)
+            );
             displaySearchResults(filtered);
         });
+        
         searchBtn.addEventListener('click', () => searchInput.dispatchEvent(new Event('input')));
 
         function displaySearchResults(results) {
             searchResults.innerHTML = '';
-            if (results.length === 0) { searchResults.innerHTML = '<div class="no-results">কিছু পাওয়া যায়নি</div>'; searchResults.style.display = 'block'; return; }
+            if (results.length === 0) {
+                searchResults.innerHTML = '<div style="padding:15px; text-align:center; color:#b0bec5;">কিছু পাওয়া যায়নি</div>';
+                searchResults.style.display = 'block';
+                return;
+            }
             results.forEach(p => {
                 const item = document.createElement('div');
                 item.className = 'search-result-item';
                 item.innerHTML = `
-                    <img src="${p.image || DEFAULT_IMAGE}" 
+                    <img src="${p.image}" 
                          class="search-result-icon" 
+                         loading="lazy"
                          onerror="this.onerror=null; this.src='${DEFAULT_IMAGE}';">
                     <div class="search-result-content">
                         <div class="search-result-name">${p.name}</div>
@@ -764,7 +781,11 @@
                     </div>
                     <div class="search-result-price">${p.price}</div>
                 `;
-                item.addEventListener('click', () => { searchInput.value = ''; searchResults.style.display = 'none'; scrollToCard(p.name); });
+                item.addEventListener('click', () => { 
+                    searchInput.value = ''; 
+                    searchResults.style.display = 'none'; 
+                    scrollToCard(p.name); 
+                });
                 searchResults.appendChild(item);
             });
             searchResults.style.display = 'block';
@@ -782,7 +803,11 @@
             }
         }
 
-        document.addEventListener('click', e => { if (!searchResults.contains(e.target) && e.target !== searchInput) searchResults.style.display = 'none'; });
+        document.addEventListener('click', e => { 
+            if (!searchResults.contains(e.target) && e.target !== searchInput) {
+                searchResults.style.display = 'none'; 
+            }
+        });
 
         // ================== DOM রেডি হলে লোড ==================
         document.addEventListener('DOMContentLoaded', function() { 
