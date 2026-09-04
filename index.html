@@ -206,82 +206,8 @@
         
         .header-right { display: flex; align-items: center; gap: 10px; }
         
-        .cart-icon-container {
-            cursor: pointer;
-            transition: all 0.3s;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .cart-modern-icon {
-            position: relative;
-            width: 45px;
-            height: 45px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 10px;
-            background: linear-gradient(145deg, rgba(255, 152, 0, 0.15), rgba(255, 87, 34, 0.1));
-            border: 2px solid rgba(255, 152, 0, 0.3);
-            transition: all 0.4s;
-            overflow: hidden;
-        }
-        
-        .cart-modern-icon i { font-size: 1.4rem; color: #ff9800; transition: all 0.4s; position: relative; z-index: 2; }
-        .cart-icon-container:hover .cart-modern-icon { border-color: #ff9800; box-shadow: 0 0 20px rgba(255, 152, 0, 0.4); transform: translateY(-3px); }
-        .cart-icon-container:hover .cart-modern-icon i { color: #fff; transform: scale(1.1); }
-        
-        .cart-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: linear-gradient(45deg, #ff5722, #ff9800);
-            color: white;
-            border-radius: 50%;
-            width: 22px;
-            height: 22px;
-            font-size: 0.7rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            box-shadow: 0 3px 10px rgba(255, 87, 34, 0.5);
-            border: 2px solid #0a0a1a;
-            z-index: 10;
-            animation: badgePulse 2s infinite;
-        }
-        
-        @keyframes badgePulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-        
-        .menu-icon-container {
-            cursor: pointer;
-            transition: all 0.3s;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-left: 10px;
-        }
-        
-        .menu-modern-icon {
-            position: relative;
-            width: 45px;
-            height: 45px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 10px;
-            background: linear-gradient(145deg, rgba(255, 152, 0, 0.15), rgba(255, 87, 34, 0.1));
-            border: 2px solid rgba(255, 152, 0, 0.3);
-            transition: all 0.4s;
-            overflow: hidden;
-        }
-        
-        .menu-modern-icon i { font-size: 1.4rem; color: #ff9800; transition: all 0.4s; position: relative; z-index: 2; }
-        .menu-icon-container:hover .menu-modern-icon { border-color: #ff9800; box-shadow: 0 0 20px rgba(255, 152, 0, 0.4); transform: translateY(-3px); }
-        .menu-icon-container:hover .menu-modern-icon i { color: #fff; transform: scale(1.1); }
+        /* Cart and menu icons removed */
+        /* .cart-icon-container and .menu-icon-container are completely removed */
         
         /* সার্চ */
         .search-container { display: block; flex: 1; max-width: 300px; margin-left: 20px; }
@@ -616,7 +542,7 @@
         .social-link:nth-child(6) i { color: #0088cc; }
         .copyright { color: #b0bec5; font-size: 0.85rem; line-height: 1.6; max-width: 800px; margin: 0 auto; }
         
-        /* ড্রয়ার */
+        /* ড্রয়ার (removed cart/menu, but drawer remains for profile links if needed) */
         .drawer-overlay {
             position: fixed;
             top: 0;
@@ -772,8 +698,6 @@
             .logo-image-container { width: 40px; height: 40px; min-width: 40px; }
             .logo-main { font-size: 1.1rem; }
             .logo-sub { font-size: 0.7rem; }
-            .cart-modern-icon, .menu-modern-icon { width: 40px; height: 40px; }
-            .cart-modern-icon i, .menu-modern-icon i { font-size: 1.2rem; }
             .hero { padding: 30px 15px; min-height: 200px; }
             .hero h1 { font-size: 1.5rem; margin-bottom: 10px; }
             .hero p { font-size: 0.9rem; }
@@ -876,12 +800,11 @@
             </div>
         </div>
         <div class="header-right">
-            <div class="cart-icon-container" id="cartIcon"><div class="cart-modern-icon"><i class="fas fa-shopping-cart"></i></div><span class="cart-badge" id="cartBadge" style="display: none;">0</span></div>
-            <div class="menu-icon-container" id="menuIcon"><div class="menu-modern-icon"><i class="fas fa-bars"></i></div></div>
+            <!-- Cart and Menu icons completely removed -->
         </div>
     </header>
 
-    <!-- Drawer -->
+    <!-- Drawer (still available for profile links, but menu icon removed; drawer can be opened via code if needed) -->
     <div id="drawerOverlay" class="drawer-overlay"></div>
     <div id="drawer" class="drawer">
         <button class="drawer-close" id="drawerClose"><i class="fas fa-times"></i></button>
@@ -946,8 +869,7 @@
         const googleLoginBtn = document.getElementById('googleLoginBtn');
         const closeLoginBtn = document.getElementById('closeLoginBtn');
         const profileModal = document.getElementById('profileModal');
-        const cartIcon = document.getElementById('cartIcon');
-        const menuIcon = document.getElementById('menuIcon');
+        const menuIcon = document.getElementById('menuIcon'); // no longer exists, but keep reference safe
         const drawer = document.getElementById('drawer');
         const drawerOverlay = document.getElementById('drawerOverlay');
         const drawerClose = document.getElementById('drawerClose');
@@ -957,7 +879,7 @@
         const logoutBtnProfile = document.getElementById('logoutBtnProfile');
         const deleteAccountBtn = document.getElementById('deleteAccountBtn');
         const ordersList = document.getElementById('ordersList');
-        const cartBadge = document.getElementById('cartBadge');
+        const cartBadge = document.getElementById('cartBadge'); // no longer exists but keep
         const platformsGrid = document.getElementById('platforms-grid');
         const searchInput = document.getElementById('searchInput');
         const searchBtn = document.getElementById('searchBtn');
@@ -984,15 +906,14 @@
             location.reload();
         });
         
-        // ================== ড্রয়ার টগল ==================
-        menuIcon.addEventListener('click', function() { drawer.classList.add('active'); drawerOverlay.classList.add('active'); });
+        // ================== ড্রয়ার টগল (menu icon removed, so drawer won't open via icon; but keep functions for potential use) ==================
         function closeDrawer() { drawer.classList.remove('active'); drawerOverlay.classList.remove('active'); }
         drawerOverlay.addEventListener('click', closeDrawer);
         drawerClose.addEventListener('click', closeDrawer);
         drawer.addEventListener('click', e => e.stopPropagation());
         
-        // ================== কার্ট ক্লিক ==================
-        cartIcon.addEventListener('click', function() { if (!checkCookieConsent()) return; window.location.href = 'https://www.easy-premium.com/Profile'; });
+        // ================== কার্ট ক্লিক (removed) ==================
+        // cartIcon removed, so no handler
         
         closeLoginBtn.addEventListener('click', () => loginModal.style.display = 'none');
         loginModal.addEventListener('click', e => { if (e.target === loginModal) loginModal.style.display = 'none'; });
@@ -1013,12 +934,12 @@
                     await userRef.child('lastLogin').set(firebase.database.ServerValue.TIMESTAMP);
                 }
                 loginModal.style.display = 'none';
-                updateCartBadge(user.uid);
+                // updateCartBadge removed since cart icon removed
                 if (pendingPurchase) { createOrderAndRedirect(pendingPurchase); pendingPurchase = null; }
             } catch(error) { alert('লগইন ব্যর্থ: ' + error.message); }
         });
         
-        logoutBtnProfile.addEventListener('click', async function() { await auth.signOut(); profileModal.style.display = 'none'; userOrders = []; cartBadge.style.display = 'none'; });
+        logoutBtnProfile.addEventListener('click', async function() { await auth.signOut(); profileModal.style.display = 'none'; userOrders = []; });
         deleteAccountBtn.addEventListener('click', function() { window.open('AccountDelete.html', '_self'); });
         
         // ================== অর্ডার তৈরি ও পেমেন্ট লিংক ==================
@@ -1162,7 +1083,7 @@
             const snap = await database.ref(`userOrders/${user.uid}`).once('value');
             const orders = [];
             snap.forEach(child => orders.push({ id: child.key, ...child.val() }));
-            if (orders.length === 0) { ordersList.innerHTML = '<div class="no-orders">কোন অর্ডার নেই</div>'; cartBadge.style.display = 'none'; } else { displayOrders(orders); cartBadge.textContent = orders.length; cartBadge.style.display = 'flex'; }
+            if (orders.length === 0) { ordersList.innerHTML = '<div class="no-orders">কোন অর্ডার নেই</div>'; } else { displayOrders(orders); }
         }
         
         function displayOrders(orders) {
@@ -1171,15 +1092,6 @@
             html += '</div>';
             ordersList.innerHTML = html;
         }
-        
-        async function updateCartBadge(uid) {
-            const snap = await database.ref(`userOrders/${uid}`).once('value');
-            const count = snap.numChildren();
-            cartBadge.style.display = count ? 'flex' : 'none';
-            if (count) cartBadge.textContent = count;
-        }
-        
-        auth.onAuthStateChanged(user => { if (user) updateCartBadge(user.uid); else cartBadge.style.display = 'none'; });
         
         // ================== NEW FEATURE: Admin Online Status Check & Visitor IP Logging ==================
         const ACTIVE_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes active window
