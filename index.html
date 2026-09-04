@@ -1046,7 +1046,7 @@
                                 price: platform.price || '৳ 0',
                                 features: platform.features || [],
                                 icon: platform.icon || 'visa',
-                                productImage: platform.Products || ''   // <-- এখানে Products ফিল্ড থেকে ইমেজ লিংক নিচ্ছি
+                                productImage: platform.Products || ''   // <-- Products ফিল্ড থেকে ইমেজ লিংক নিচ্ছি (URL বা base64)
                             });
                         }
                     });
@@ -1067,7 +1067,7 @@
                 card.dataset.id = platform.id;
                 card.dataset.name = platform.name;
                 card.dataset.price = platform.price;
-                // ইমেজ সোর্স: যদি productImage থাকে তাহলে সেটা ব্যবহার করব, নাহলে ডিফল্ট ভিসা আইকন
+                // ইমেজ সোর্স: productImage থাকলে সেটা ব্যবহার করব, নাহলে ডিফল্ট
                 const imgSrc = platform.productImage && platform.productImage.trim() !== '' 
                     ? platform.productImage 
                     : 'https://images.relograde.com/i/brands/circle/rewarble-visa.png';
