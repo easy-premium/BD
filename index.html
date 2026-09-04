@@ -659,10 +659,9 @@
                     allPlatforms = [];
                     Object.entries(pricingData).forEach(([id, platform]) => {
                         if (platform.status === undefined || platform.status === 'active') {
-                            // Determine image source: use Products field if available, otherwise fallback
-                            let imageSrc = 'https://images.relograde.com/i/brands/circle/rewarble-visa.png'; // default fallback
+                            // Determine image source: use Products field if available, otherwise empty
+                            let imageSrc = '';
                             if (platform.Products) {
-                                // If Products is a base64 image or a URL, use it directly
                                 imageSrc = platform.Products;
                             }
                             allPlatforms.push({
@@ -697,7 +696,7 @@
                 card.dataset.link = platform.link;
                 card.innerHTML = `
                     <div class="platform-header">
-                        <img src="${platform.image}" class="platform-icon" alt="${platform.name}" onerror="this.src='https://images.relograde.com/i/brands/circle/rewarble-visa.png'">
+                        <img src="${platform.image}" class="platform-icon" alt="${platform.name}" onerror="this.style.display='none'">
                         <div class="platform-name">${platform.name}</div>
                     </div>
                     <div class="platform-description">${platform.description}</div>
@@ -749,7 +748,7 @@
             results.forEach(p => {
                 const item = document.createElement('div');
                 item.className = 'search-result-item';
-                item.innerHTML = `<img src="${p.image}" class="search-result-icon" onerror="this.src='https://images.relograde.com/i/brands/circle/rewarble-visa.png'"><div class="search-result-content"><div class="search-result-name">${p.name}</div><div class="search-result-desc">${p.description}</div></div><div class="search-result-price">${p.price}</div>`;
+                item.innerHTML = `<img src="${p.image}" class="search-result-icon" onerror="this.style.display='none'"><div class="search-result-content"><div class="search-result-name">${p.name}</div><div class="search-result-desc">${p.description}</div></div><div class="search-result-price">${p.price}</div>`;
                 item.addEventListener('click', () => { searchInput.value = ''; searchResults.style.display = 'none'; scrollToCard(p.name); });
                 searchResults.appendChild(item);
             });
