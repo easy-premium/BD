@@ -25,10 +25,8 @@
         .card-info { padding: 14px 16px 18px; }
         .card-name { font-size: 15px; font-weight: 500; color: #0f172a; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 42px; }
         .card-price { font-size: 20px; font-weight: 700; color: #0f172a; margin-top: 6px; }
-        .card-price small { font-weight: 400; font-size: 14px; color: #64748b; text-decoration: line-through; margin-left: 6px; }
         .no-result { grid-column: 1/-1; text-align: center; padding: 50px 20px; color: #475569; background: #fafcfd; border-radius: 30px; border: 1px dashed #cbd5e1; }
         .footer { margin-top: 35px; text-align: center; color: #94a3b8; font-size: 13px; border-top: 1px solid #e9edf2; padding-top: 22px; }
-        .error-msg { color: #dc2626; text-align: center; padding: 20px; }
         @media (max-width: 600px) { .container { padding: 16px 12px; } }
     </style>
 </head>
@@ -49,8 +47,8 @@
 
 <script>
     (function() {
-        // API endpoint (Vercel-এ /api/search)
-        const API_URL = '/api/search?s=';
+        // ⚠️ আপনার হোস্টিং-এর পাথ অনুযায়ী এই URL পরিবর্তন করুন
+        const API_URL = '/api/search.php?s=';
 
         const searchInput = document.getElementById('searchInput');
         const searchBtn = document.getElementById('searchBtn');
@@ -70,7 +68,7 @@
                 const response = await fetch(API_URL + encodeURIComponent(query.trim()));
                 const data = await response.json();
 
-                if (!response.ok) {
+                if (!response.ok || data.error) {
                     throw new Error(data.error || `HTTP ${response.status}`);
                 }
 
