@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Etel প্রোডাক্ট সার্চ</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: #f1f5f9; padding: 30px 15px; display: flex; justify-content: center; }
+        .container { max-width: 1300px; width: 100%; background: #fff; border-radius: 28px; padding: 28px 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.06); }
+        h1 { font-size: 26px; font-weight: 600; color: #0f172a; display: flex; align-items: center; gap: 10px; }
+        .sub { color: #475569; margin-bottom: 20px; border-left: 4px solid #3b82f6; padding-left: 14px; }
+        .search-box { display: flex; gap: 12px; flex-wrap: wrap; background: #f8fafc; padding: 14px 20px; border-radius: 50px; border: 1px solid #e2e8f0; margin-bottom: 30px; }
+        .search-box input { flex: 1; min-width: 180px; padding: 12px 18px; border: none; background: transparent; font-size: 16px; outline: none; }
+        .search-box button { background: #3b82f6; color: #fff; border: none; padding: 12px 32px; border-radius: 40px; font-size: 16px; font-weight: 500; cursor: pointer; transition: 0.2s; }
+        .search-box button:hover { background: #2563eb; transform: scale(1.02); }
+        #loading { display: none; text-align: center; padding: 30px; color: #475569; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top: 4px solid #3b82f6; border-radius: 50%; animation: spin 0.9s linear infinite; margin: 0 auto 12px; }
+        @keyframes spin { 0% { transform: rotate(0); } 100% { transform: rotate(360deg); } }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 24px 18px; margin-top: 8px; }
+        .card { background: #fff; border-radius: 18px; border: 1px solid #eef2f6; overflow: hidden; transition: 0.2s; }
+        .card:hover { border-color: #cbd5e1; transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.04); }
+        .card-img { width: 100%; aspect-ratio: 1/1; background: #f1f5f9; display: flex; align-items: center; justify-content: center; padding: 12px; }
+        .card-img img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .card-info { padding: 14px 16px 18px; }
+        .card-name { font-size: 15px; font-weight: 500; color: #0f172a; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 42px; }
+        .card-price { font-size: 20px; font-weight: 700; color: #0f172a; margin-top: 6px; }
+        .no-result { grid-column: 1/-1; text-align: center; padding: 50px 20px; color: #475569; background: #fafcfd; border-radius: 30px; border: 1px dashed #cbd5e1; }
+        .footer { margin-top: 35px; text-align: center; color: #94a3b8; font-size: 13px; border-top: 1px solid #e9edf2; padding-top: 22px; }
+        @media (max-width: 600px) { .container { padding: 16px 12px; } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🔍 প্রোডাক্ট ব্রাউজ</h1>
+    <div class="sub"><span style="background:#dbeafe; padding:2px 12px; border-radius:20px; font-size:13px;">Etel.com.bd</span> – নাম, ছবি ও দাম</div>
+
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="যেমন: Tecno Spark 8" value="tecno spark 8">
+        <button id="searchBtn">🔎 সার্চ</button>
+    </div>
+
+    <div id="loading"><div class="spinner"></div><div>ডেটা সংগ্রহ করা হচ্ছে...</div></div>
+    <div id="productContainer" class="grid"></div>
+    <div class="footer">⚡ শুধুমাত্র প্রোডাক্টের নাম, ছবি ও দাম প্রদর্শিত</div>
+</div>
+
+<script>
+    (function() {
+        // ⚠️ আপনার হোস্টিং-এর পাথ অনুযায়ী এই URL পরিবর্তন করুন
+        const API_URL = '/api/search.php?s=';
+
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const container = document.getElementById('productContainer');
+        const loading = document.getElementById('loading');
+
+        async function search(query) {
+            if (!query.trim()) {
+                container.innerHTML = `<div class="no-result">😕 দয়া করে একটি সার্চ টার্ম দিন</div>`;
+                return;
+            }
+
+            loading.style.display = 'block';
+            container.innerHTML = '';
+
+            try {
+                const response = await fetch(API_URL + encodeURIComponent(query.trim()));
+                const data = await response.json();
+
+                if (!response.ok || data.error) {
+                    throw new Error(data.error || `HTTP ${response.status}`);
+                }
+
+                if (!data.products || data.products.length === 0) {
+                    container.innerHTML = `<div class="no-result">😕 "${query}" এর জন্য কোনো প্রোডাক্ট পাওয়া যায়নি</div>`;
+                    return;
+                }
+
+                container.innerHTML = '';
+                data.products.forEach(p => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `
+                        <div class="card-img"><img src="${p.image}" alt="${p.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x300?text=Error'"></div>
+                        <div class="card-info">
+                            <div class="card-name">${p.name}</div>
+                            <div class="card-price">${p.price}</div>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+
+            } catch (err) {
+                container.innerHTML = `<div class="no-result">❌ সংযোগ সমস্যা: ${err.message}</div>`;
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        searchBtn.addEventListener('click', (e) => { e.preventDefault(); search(searchInput.value); });
+        searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); search(searchInput.value); } });
+        window.addEventListener('DOMContentLoaded', () => search(searchInput.value));
+    })();
+</script>
+</body>
+</html>
