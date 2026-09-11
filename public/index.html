@@ -80,8 +80,11 @@
                 data.products.forEach(p => {
                     const card = document.createElement('div');
                     card.className = 'card';
+                    // ⚠️ এখানে referrerpolicy="no-referrer" যোগ করা হয়েছে
                     card.innerHTML = `
-                        <div class="card-img"><img src="${p.image}" alt="${p.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x300?text=Error'"></div>
+                        <div class="card-img">
+                            <img src="${p.image}" alt="${p.name}" loading="lazy" referrerpolicy="no-referrer" onerror="this.src='https://via.placeholder.com/300x300?text=No+Image'">
+                        </div>
                         <div class="card-info">
                             <div class="card-name">${p.name}</div>
                             <div class="card-price">${p.price}</div>
