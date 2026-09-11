@@ -1,7 +1,6 @@
 const cheerio = require('cheerio');
 
 module.exports = async (req, res) => {
-    // CORS হেডার (যাতে যেকোনো ডোমেইন থেকে কল করা যায়)
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET');
 
@@ -24,13 +23,31 @@ module.exports = async (req, res) => {
         $('.product-wrapper').each((i, el) => {
             const name = $(el).find('.wd-entities-title a').text().trim();
 
-            let image = $(el).find('img.woocommerce_thumbnail').attr('src');
-            if (image && image.includes('lazy.svg')) {
-                image = $(el).find('img.woocommerce_thumbnail').attr('data-src') || image;
+            // --- আপডেট করা ছবি খোঁজার লজিক ---
+            let image = '';
+            const $img = $(el).find('img').first(); // প্রথম img ট্যাগটি নিন
+            
+            if ($img.length) {
+                // data-src আগে চেক করুন, না থাকলে src
+                image = $img.attr('data-src') || $img.attr('src');
+                
+                // যদি lazy.svg পায়, তাহলে data-srcset থেকে আসল ছবি বের করুন
+                if (image && image.includes('lazy.svg')) {
+                    const srcset = $img.attr('data-srcset');
+                    if (srcset) {
+                        // srcset থেকে প্রথম URL টি নিন (যেমন: "url1.jpg 430w, url2.jpg 300w")
+                        image = srcset.split(',')[0].trim().split(' ')[0];
+                    } else {
+                        image = ''; // কিছু না পেলে ফাঁকা রাখুন
+                    }
+                }
             }
+
+            // Relative URL ঠিক করা
             if (image && !image.startsWith('http')) {
                 image = `https://etel.com.bd${image.startsWith('/') ? '' : '/'}${image}`;
             }
+            // --------------------------------
 
             let price = '';
             const priceText = $(el).find('.price').text().trim();
