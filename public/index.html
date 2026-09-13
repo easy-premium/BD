@@ -128,7 +128,6 @@
         .search-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: #ff9800; cursor: pointer; font-size: 1.2rem; transition: all 0.3s; padding: 5px; }
 
         .hero { text-align: center; padding: 40px 20px; background: linear-gradient(rgba(10, 10, 26, 0.9), rgba(10, 10, 26, 0.9)), url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80'); background-size: cover; background-position: center; min-height: 250px; display: flex; flex-direction: column; justify-content: center; width: 100%; }
-        .hero h1 { font-size: 2rem; margin-bottom: 15px; color: #ff9800; line-height: 1.3; max-width: 800px; margin-left: auto; margin-right: auto; padding: 0 15px; }
         .hero p { font-size: 1rem; max-width: 800px; margin: 0 auto; color: #ddd; line-height: 1.6; padding: 0 15px; }
 
         .platforms-section { padding: 40px 20px; max-width: 1200px; margin: 0 auto; width: 100%; position: relative; z-index: 1; }
@@ -163,7 +162,7 @@
             width: 100%; 
             height: 100%; 
             object-fit: contain; 
-            transform: scale(1.50); /* জুম ১.৫০ করা হয়েছে যাতে E-TEL লেখা কেটে যায় */
+            transform: scale(1.50); /* জুম ১.৫০ করা হয়েছে যাতে E-TEL লেখা কেটে যায় */
             transition: transform 0.3s ease;
         }
         
@@ -182,7 +181,7 @@
             -webkit-box-orient: vertical; 
             overflow: hidden; 
             line-height: 1.4;
-            min-height: 3.6em; /* দুই লাইন টেক্সটের জন্য জায়গা */
+            min-height: 3.6em; /* দুই লাইন টেক্সটের জন্য জায়গা */
         }
         
         /* দামের সেকশন */
@@ -224,6 +223,80 @@
         .messenger-float:hover { transform: scale(1.1); box-shadow: 0 15px 30px rgba(0, 132, 255, 0.6); }
         .messenger-float i { color: white; font-size: 2rem; }
         @keyframes messengerPulse { 0% { box-shadow: 0 0 0 0 rgba(0, 132, 255, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(0, 132, 255, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 132, 255, 0); } }
+
+        /* ===== Popup Ad CSS (নতুন যোগ করা হয়েছে) ===== */
+        .ad-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            display: none; /* Initially hidden */
+            justify-content: center;
+            align-items: center;
+            z-index: 99999; /* Above everything */
+            padding: 20px;
+        }
+        .ad-popup-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            animation: fadeInAd 0.4s ease-out;
+        }
+        .ad-image-wrapper {
+            width: 400px;
+            height: 400px;
+            max-width: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #ff9800;
+        }
+        .ad-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .close-ad-btn {
+            background: linear-gradient(45deg, #ff2222, #ff5722);
+            color: white;
+            border: none;
+            padding: 14px 35px;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(255, 87, 34, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .close-ad-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(255, 87, 34, 0.6);
+        }
+        @keyframes fadeInAd {
+            from { opacity: 0; transform: scale(0.95) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        /* Mobile adjustments for Popup */
+        @media (max-width: 480px) {
+            .ad-image-wrapper {
+                width: 100%;
+                height: auto;
+                aspect-ratio: 1 / 1;
+                max-height: 400px;
+            }
+        }
+        /* ================================================= */
 
         @media (max-width: 768px) {
             .search-container { display: block !important; max-width: 100%; margin-left: 0; margin-top: 5px; width: 100%; flex-basis: 100%; order: 3; }
@@ -282,6 +355,17 @@
         </div>
     </div>
 
+    <!-- ===== Popup Ad Overlay (নতুন যোগ করা হয়েছে) ===== -->
+    <div id="adPopupOverlay" class="ad-popup-overlay">
+        <div class="ad-popup-content">
+            <div class="ad-image-wrapper">
+                <img id="popupAdImage" src="" alt="Advertisement">
+            </div>
+            <button id="closeAdBtn" class="close-ad-btn">বন্ধ করুন <i class="fas fa-times"></i></button>
+        </div>
+    </div>
+    <!-- ============================================== -->
+
     <!-- Header -->
     <header class="header">
         <div class="header-left">
@@ -318,7 +402,7 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-policy-links">
-            <!-- ⚠️ এখানে লিংক পরিবর্তন করা হয়েছে -->
+            <!-- ⚠️ এখানে লিংক পরিবর্তন করা হয়েছে -->
             <a href="/privacy-refund-policy-terms-of-service/">Privacy Policy</a>
             <a href="/privacy-refund-policy-terms-of-service/">Payment Solutions</a>
             <a href="/privacy-refund-policy-terms-of-service/">Terms and Conditions</a>
@@ -373,12 +457,52 @@
             location.reload();
         });
 
+        // ================== Popup Ad Logic (নতুন যোগ করা হয়েছে) ==================
+        async function loadPopupAd() {
+            try {
+                // GitHub-এর image.txt থেকে Base64 স্ট্রিংটি আনা
+                const response = await fetch('image.txt');
+                if (!response.ok) {
+                    console.error('Failed to load image.txt');
+                    return;
+                }
+                let base64String = await response.text();
+                base64String = base64String.trim(); // অপ্রয়োজনীয় স্পেস বা নিউলাইন মুছে ফেলা
+
+                // যদি স্ট্রিংটির শুরুতে data:image না থাকে, তাহলে PNG এর জন্য প্রিফিক্স যোগ করা
+                if (!base64String.startsWith('data:image')) {
+                    base64String = 'data:image/png;base64,' + base64String;
+                }
+
+                const adImage = document.getElementById('popupAdImage');
+                adImage.src = base64String;
+
+                // ইমেজ লোড হলে ওভারলে দেখানো
+                adImage.onload = () => {
+                    document.getElementById('adPopupOverlay').style.display = 'flex';
+                };
+                
+                adImage.onerror = () => {
+                    console.error('Base64 image failed to load');
+                };
+
+            } catch (err) {
+                console.error('Error fetching popup ad:', err);
+            }
+        }
+
+        // ক্লোজ বাটনের ইভেন্ট লিসেনার
+        document.getElementById('closeAdBtn').addEventListener('click', function() {
+            document.getElementById('adPopupOverlay').style.display = 'none';
+        });
+        // ==========================================================================
+
         // ================== এলিমেন্ট সিলেক্ট ==================
         const productContainer = document.getElementById('productContainer');
         const searchInput = document.getElementById('searchInput');
         const searchBtn = document.getElementById('searchBtn');
 
-        // ডিফল্ট ইমেজ (যখন কোনো ইমেজ সোর্স নেই বা লোড হয় না)
+        // ডিফল্ট ইমেজ (যখন কোনো ইমেজ সোর্স নেই বা লোড হয় না)
         const DEFAULT_IMAGE = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150"%3E%3Crect width="150" height="150" fill="%23333"/%3E%3Ctext x="75" y="75" font-family="Arial" font-size="16" fill="%23aaa" text-anchor="middle" dominant-baseline="central"%3ENo Image%3C/text%3E%3C/svg%3E';
 
         // ================== Etel প্রোডাক্ট সার্চ ফাংশন ==================
@@ -455,11 +579,11 @@
         // ================== DOM রেডি হলে লোড ==================
         document.addEventListener('DOMContentLoaded', function() {
             checkCookieConsent();
-            // পেজ লোড হওয়ার সময় কোনো সার্চ কল করা হয় না, তাই স্পিনারও আসে না।
+            loadPopupAd(); // পেজ লোড হওয়ার সাথে সাথে অ্যাড লোড করা
         });
     </script>
 
-    <!-- ================== সিকিউরিটি স্ক্রিপ্ট (রিডাইরেক্ট ছাড়া) ================== -->
+    <!-- ================== সিকিউরিটি স্ক্রিপ্ট (রিডাইরেক্ট ছাড়া) ================== -->
     <script>
         (function() {
             'use strict';
@@ -488,7 +612,7 @@
             document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; });
             document.addEventListener('mousedown', function(e) { if (e.button === 2) { e.preventDefault(); return false; } });
 
-            console.log('%c🔒 Easy Premium - সিকিউরিটি সক্রিয় (রিডাইরেক্ট ছাড়া)', 'color: #4caf50; font-size: 14px; font-weight: bold;');
+            console.log('%c🔒 Easy Premium - সিকিউরিটি সক্রিয় (রিডাইরেক্ট ছাড়া)', 'color: #4caf50; font-size: 14px; font-weight: bold;');
         })();
     </script>
 </body>
