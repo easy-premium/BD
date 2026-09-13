@@ -158,12 +158,12 @@
             position: relative;
         }
         
-        /* ===== ছবির জুম ইফেক্ট (আরও জুম করা হয়েছে যাতে লেখা মুছে যায়) ===== */
+        /* ===== ছবির জুম ইফেক্ট (লেখা মুছে ফেলার জন্য) ===== */
         .platform-icon { 
             width: 100%; 
             height: 100%; 
             object-fit: contain; 
-            transform: scale(1.50); /* জুম ১.২৫ থেকে বাড়িয়ে ১.৫০ করা হয়েছে */
+            transform: scale(1.50); /* জুম ১.৫০ করা হয়েছে যাতে E-TEL লেখা কেটে যায় */
             transition: transform 0.3s ease;
         }
         
@@ -277,7 +277,7 @@
     <div id="websiteOverlay" class="website-overlay">
         <div class="overlay-content">
             <div class="overlay-message">এই ওয়েবসাইট ব্যবহার করতে আপনাকে গোপনীয়তা নীতি সম্মতি প্রদান করতে হবে।</div>
-            <a href="https://www.easy-premium.com/privacy-refund-policy-terms-of-service.html" target="_blank" class="cookie-link">গোপনীয়তা নীতি দেখুন</a><br><br>
+            <a href="/privacy-refund-policy-terms-of-service/" class="cookie-link">গোপনীয়তা নীতি দেখুন</a><br><br>
             <button id="overlayAcceptBtn" class="accept-btn">সম্মতি দিন</button>
         </div>
     </div>
@@ -285,9 +285,9 @@
     <!-- Header -->
     <header class="header">
         <div class="header-left">
-            <a href="https://www.easy-premium.com" class="logo">
+            <a href="/" class="logo">
                 <div class="logo-image-container"><img src="https://cdn-icons-png.flaticon.com/512/8701/8701941.png" alt="Easy Premium Logo" class="logo-image"></div>
-                <div class="logo-text"><div class="logo-main">EASY PREMIUM</div><div class="logo-sub">Accessories Shop</div></div>
+                <div class="logo-text"><div class="logo-main">EASY PREMIUM</div><div class="logo-sub">Product Search</div></div>
             </a>
             <div class="search-container">
                 <div class="search-wrapper">
@@ -318,10 +318,11 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-policy-links">
-            <a href="https://easy-premium.com/privacy-refund-policy-terms-of-service?data=PrivacyPolicy">Privacy Policy</a>
-            <a href="https://easy-premium.com/privacy-refund-policy-terms-of-service?data=PaymentSolutions">Payment Solutions</a>
-            <a href="https://easy-premium.com/privacy-refund-policy-terms-of-service?data=TermsandConditions">Terms and Conditions</a>
-            <a href="https://easy-premium.com/privacy-refund-policy-terms-of-service?data=RefundandReturnsPolicy">Refund and Returns Policy</a>
+            <!-- ⚠️ এখানে লিংক পরিবর্তন করা হয়েছে -->
+            <a href="/privacy-refund-policy-terms-of-service/">Privacy Policy</a>
+            <a href="/privacy-refund-policy-terms-of-service/">Payment Solutions</a>
+            <a href="/privacy-refund-policy-terms-of-service/">Terms and Conditions</a>
+            <a href="/privacy-refund-policy-terms-of-service/">Refund and Returns Policy</a>
         </div>
         <div class="social-links">
             <a href="https://m.me/906635592542978" class="social-link"><i class="fab fa-facebook"></i></a>
@@ -381,7 +382,6 @@
         const DEFAULT_IMAGE = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150"%3E%3Crect width="150" height="150" fill="%23333"/%3E%3Ctext x="75" y="75" font-family="Arial" font-size="16" fill="%23aaa" text-anchor="middle" dominant-baseline="central"%3ENo Image%3C/text%3E%3C/svg%3E';
 
         // ================== Etel প্রোডাক্ট সার্চ ফাংশন ==================
-        // ⚠️ আপনার Vercel API URL এখানে বসান (শেষে ?s= থাকবে না)
         const API_URL = '/api/search?s=';
 
         async function searchEtel(query) {
@@ -412,10 +412,8 @@
                     const card = document.createElement('div');
                     card.className = 'platform-card';
                     
-                    // Etel এর প্রোডাক্ট লিংক (যদি API থেকে লিংক আসে, অন্যথায় '#')
                     const productLink = p.link || '#'; 
 
-                    // ⚠️ এখানে ছবিটিকে একটি wrapper এর ভেতরে রাখা হয়েছে জুম করার জন্য
                     card.innerHTML = `
                         <div class="platform-header">
                             <div class="platform-img-wrapper">
@@ -431,7 +429,7 @@
                         <div class="platform-price" style="border-top: none; margin-top: auto;">
                             <div class="price">${p.price}</div>
                         </div>
-                        <button class="buy-button" onclick="window.open('${productLink}', '_blank')">Order Now</button>
+                        <button class="buy-button" onclick="window.open('${productLink}', '_blank')">Buy Now</button>
                     `;
                     productContainer.appendChild(card);
                 });
@@ -461,24 +459,13 @@
         });
     </script>
 
-    <!-- ================== সম্পূর্ণ সিকিউরিটি স্ক্রিপ্ট (অপরিবর্তিত) ================== -->
+    <!-- ================== সিকিউরিটি স্ক্রিপ্ট (রিডাইরেক্ট ছাড়া) ================== -->
     <script>
         (function() {
             'use strict';
 
-            const CONFIG = {
-                SESSION_TIMEOUT: 30 * 60 * 1000,
-                MAX_ATTEMPTS: 5,
-                RATE_LIMIT_WINDOW: 15 * 60 * 1000,
-                ALERT_ON_DEVTOOLS: false,
-                ENABLE_ACTIVITY_LOG: false,
-                ENFORCE_HTTPS: true,
-                REDIRECT_URL: 'https://www.easy-premium.com/privacy-refund-policy-terms-of-service'
-            };
-
             // HTTPS ফোর্স
-            if (CONFIG.ENFORCE_HTTPS && location.protocol !== 'https:' && location.hostname !== 'localhost' && !location
-                .hostname.includes('127.0.0.1')) {
+            if (location.protocol !== 'https:' && location.hostname !== 'localhost' && !location.hostname.includes('127.0.0.1')) {
                 location.replace('https://' + location.host + location.pathname + location.search);
             }
 
@@ -489,100 +476,7 @@
                         'Clickjacking protection'); }
             }
 
-            // DevTools Detection with Immediate Redirect
-            let devToolsOpened = false;
-
-            function detectDevTools() {
-                const start = performance.now();
-                debugger;
-                const end = performance.now();
-                if (end - start > 100 && !devToolsOpened) {
-                    devToolsOpened = true;
-                    window.location.href = CONFIG.REDIRECT_URL;
-                }
-                return false;
-            }
-            setInterval(detectDevTools, 1000);
-            setTimeout(detectDevTools, 500);
-
-            // Rate Limiting
-            window._rateLimitStore = window._rateLimitStore || { attempts: {}, blockUntil: {} };
-            window.checkRateLimit = function(action, userId = 'anonymous') {
-                const key = `${action}_${userId}`;
-                const now = Date.now();
-                if (window._rateLimitStore.blockUntil[key] && window._rateLimitStore.blockUntil[key] > now) {
-                    const remaining = Math.ceil((window._rateLimitStore.blockUntil[key] - now) / 1000 / 60);
-                    return { allowed: false, message: `অনেক চেষ্টা করেছেন। ${remaining} মিনিট পরে আবার চেষ্টা করুন।` };
-                }
-                if (!window._rateLimitStore.attempts[key]) window._rateLimitStore.attempts[key] = [];
-                window._rateLimitStore.attempts[key] = window._rateLimitStore.attempts[key].filter(t => t > now - CONFIG
-                    .RATE_LIMIT_WINDOW);
-                if (window._rateLimitStore.attempts[key].length >= CONFIG.MAX_ATTEMPTS) {
-                    window._rateLimitStore.blockUntil[key] = now + CONFIG.RATE_LIMIT_WINDOW;
-                    return { allowed: false, message: 'অনেক চেষ্টা করেছেন। ১৫ মিনিট পরে আবার চেষ্টা করুন।' };
-                }
-                window._rateLimitStore.attempts[key].push(now);
-                return { allowed: true };
-            };
-
-            // Session Timeout
-            let sessionTimer;
-
-            function resetSessionTimer() {
-                if (sessionTimer) clearTimeout(sessionTimer);
-                sessionTimer = setTimeout(() => {
-                    alert('আপনি দীর্ঘ সময় ধরে সক্রিয় নন। পৃষ্ঠা রিফ্রেশ করা হচ্ছে।');
-                    location.reload();
-                }, CONFIG.SESSION_TIMEOUT);
-            }
-            ['click', 'keypress', 'scroll', 'mousemove', 'touchstart'].forEach(event => document.addEventListener(event,
-                resetSessionTimer, { passive: true }));
-
-            // XSS Protection
-            function sanitizeInput(input) {
-                if (typeof input !== 'string') return input;
-                return input.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-                    .replace(/'/g, '&#x27;').replace(/\//g, '&#x2F;').replace(/\\/g, '&#x5C;').replace(/`/g, '&#96;')
-                    .replace(/=/g, '&#61;');
-            }
-
-            function setupFormProtection() {
-                document.querySelectorAll('form').forEach(form => {
-                    if (form._protected) return;
-                    form._protected = true;
-                    form.addEventListener('submit', function() {
-                        this.querySelectorAll('input[type="text"], input[type="tel"], input[type="email"], textarea')
-                            .forEach(input => {
-                                if (input.value && typeof input.value === 'string' && /[<>"'`=]/.test(input
-                                    .value)) console.warn(
-                                    'সতর্কতা: ইনপুটে বিপজ্জনক ক্যারেক্টার পাওয়া গেছে');
-                            });
-                    }, true);
-                });
-            }
-            const formObserver = new MutationObserver(() => setupFormProtection());
-            formObserver.observe(document.body, { childList: true, subtree: true });
-
-            // LocalStorage Encryption
-            const originalSetItem = localStorage.setItem,
-                originalGetItem = localStorage.getItem;
-            const sensitiveKeys = ['user', 'session', 'token', 'auth'];
-            localStorage.setItem = function(key, value) {
-                if (sensitiveKeys.some(k => key.toLowerCase().includes(k))) {
-                    try { const encoded = btoa(encodeURIComponent(value)); return originalSetItem.call(this,
-                            `_sec_${key}`, encoded); } catch (e) { console.warn('LocalStorage encoding error'); }
-                }
-                return originalSetItem.call(this, key, value);
-            };
-            localStorage.getItem = function(key) {
-                if (sensitiveKeys.some(k => key.toLowerCase().includes(k))) {
-                    try { const encoded = originalGetItem.call(this, `_sec_${key}`); if (encoded) return decodeURIComponent(
-                            atob(encoded)); } catch (e) { console.warn('LocalStorage decoding error'); }
-                }
-                return originalGetItem.call(this, key);
-            };
-
-            // Keyboard Shortcuts Block
+            // Keyboard Shortcuts Block (Ctrl+U, Ctrl+S, F12, Ctrl+Shift+I)
             document.addEventListener('keydown', function(e) {
                 if (e.ctrlKey && e.keyCode === 85) { e.preventDefault(); return false; }
                 if (e.ctrlKey && e.keyCode === 83) { e.preventDefault(); return false; }
@@ -593,15 +487,8 @@
             // Right-click Protection
             document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; });
             document.addEventListener('mousedown', function(e) { if (e.button === 2) { e.preventDefault(); return false; } });
-            document.addEventListener('touchstart', function(e) {
-                let touchTimer;
-                const handleTouchEnd = function() { clearTimeout(touchTimer);
-                    document.removeEventListener('touchend', handleTouchEnd); };
-                if (e.touches.length === 1) { touchTimer = setTimeout(() => e.preventDefault(), 500);
-                    document.addEventListener('touchend', handleTouchEnd, { once: true }); }
-            }, { passive: false });
 
-            console.log('%c🔒 Easy Premium - উন্নত নিরাপত্তা সক্রিয়', 'color: #4caf50; font-size: 14px; font-weight: bold;');
+            console.log('%c🔒 Easy Premium - সিকিউরিটি সক্রিয় (রিডাইরেক্ট ছাড়া)', 'color: #4caf50; font-size: 14px; font-weight: bold;');
         })();
     </script>
 </body>
