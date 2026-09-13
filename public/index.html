@@ -143,21 +143,32 @@
         /* প্রোডাক্ট হেডার (ছবি ও নাম) */
         .platform-header { padding: 20px; text-align: center; background: rgba(0, 0, 0, 0.2); flex-shrink: 0; border-bottom: 1px solid rgba(255, 152, 0, 0.1); }
         
-        /* ===== ছবির সাইজ (অতিরিক্ত সাদা অংশ ছাড়া) ===== */
+        /* ===== ছবির র‍্যাপার (ছবি কাটার জন্য) ===== */
+        .platform-img-wrapper {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            max-height: 280px;
+            overflow: hidden; /* বাইরের অংশ কেটে ফেলার জন্য */
+            border-radius: 12px;
+            background: #ffffff; /* সাদা ব্যাকগ্রাউন্ড যাতে ছবির সাদা অংশের সাথে মিলে যায় */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        
+        /* ===== ছবির জুম ইফেক্ট (E-TEL লোগো ও টেক্সট কাটার জন্য) ===== */
         .platform-icon { 
             width: 100%; 
             height: 100%; 
-            aspect-ratio: 1 / 1; 
-            max-height: 280px; 
             object-fit: contain; 
-            /* background: #ffffff;  <-- এটি সরিয়ে দেওয়া হয়েছে */
-            /* padding: 15px;        <-- এটি সরিয়ে দেওয়া হয়েছে */
-            border-radius: 12px; 
-            margin-bottom: 15px; 
-            transition: transform 0.3s;
+            transform: scale(1.25); /* ২৫% জুম করা হচ্ছে যাতে বাইরের লেখা কেটে যায় */
+            transition: transform 0.3s ease;
         }
+        
         .platform-card:hover .platform-icon {
-            transform: scale(1.05); /* হোভার করলে ছবি হালকা জুম হবে */
+            transform: scale(1.35); /* হোভার করলে আরেকটু জুম হবে */
         }
         
         /* প্রোডাক্টের নাম */
@@ -233,7 +244,7 @@
             .platforms-section { padding: 25px 12px; }
             .platforms-grid { grid-template-columns: 1fr; gap: 20px; }
             .platform-header { padding: 15px; }
-            .platform-icon { max-height: 240px; } /* মোবাইলের জন্য ছবির সাইজ আরেকটু বড় */
+            .platform-img-wrapper { max-height: 240px; } /* মোবাইলের জন্য ছবির বক্সের সাইজ */
             .platform-name { font-size: 1.2rem; }
             .price { font-size: 1.6rem; }
             .footer { padding: 30px 15px 25px; }
@@ -405,14 +416,17 @@
                     // Etel এর প্রোডাক্ট লিংক (যদি API থেকে লিংক আসে, অন্যথায় '#')
                     const productLink = p.link || '#'; 
 
+                    // ⚠️ এখানে ছবিটিকে একটি wrapper এর ভেতরে রাখা হয়েছে জুম করার জন্য
                     card.innerHTML = `
                         <div class="platform-header">
-                            <img src="${p.image}" 
-                                 class="platform-icon" 
-                                 alt="${p.name}"
-                                 loading="lazy"
-                                 referrerpolicy="no-referrer"
-                                 onerror="this.onerror=null; this.src='${DEFAULT_IMAGE}';">
+                            <div class="platform-img-wrapper">
+                                <img src="${p.image}" 
+                                     class="platform-icon" 
+                                     alt="${p.name}"
+                                     loading="lazy"
+                                     referrerpolicy="no-referrer"
+                                     onerror="this.onerror=null; this.src='${DEFAULT_IMAGE}';">
+                            </div>
                             <div class="platform-name">${p.name}</div>
                         </div>
                         <div class="platform-price" style="border-top: none; margin-top: auto;">
