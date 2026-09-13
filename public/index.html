@@ -133,7 +133,7 @@
 
         .platforms-section { padding: 40px 20px; max-width: 1200px; margin: 0 auto; width: 100%; position: relative; z-index: 1; }
         
-        /* গ্রিড সিস্টেম - কার্ডগুলো একটু বড় করা হয়েছে */
+        /* গ্রিড সিস্টেম */
         .platforms-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px; }
         
         /* কার্ড ডিজাইন */
@@ -143,21 +143,21 @@
         /* প্রোডাক্ট হেডার (ছবি ও নাম) */
         .platform-header { padding: 20px; text-align: center; background: rgba(0, 0, 0, 0.2); flex-shrink: 0; border-bottom: 1px solid rgba(255, 152, 0, 0.1); }
         
-        /* ===== ছবির সাইজ বড় করা হয়েছে ===== */
+        /* ===== ছবির সাইজ (অতিরিক্ত সাদা অংশ ছাড়া) ===== */
         .platform-icon { 
             width: 100%; 
-            height: auto; 
-            aspect-ratio: 1 / 1; /* ছবি বর্গাকার থাকবে */
-            max-height: 250px; 
+            height: 100%; 
+            aspect-ratio: 1 / 1; 
+            max-height: 280px; 
             object-fit: contain; 
-            background: #ffffff; /* ছবির ব্যাকগ্রাউন্ড সাদা করা হয়েছে যাতে প্রোডাক্ট ফুটে ওঠে */
-            padding: 15px; 
+            /* background: #ffffff;  <-- এটি সরিয়ে দেওয়া হয়েছে */
+            /* padding: 15px;        <-- এটি সরিয়ে দেওয়া হয়েছে */
             border-radius: 12px; 
             margin-bottom: 15px; 
             transition: transform 0.3s;
         }
         .platform-card:hover .platform-icon {
-            transform: scale(1.03);
+            transform: scale(1.05); /* হোভার করলে ছবি হালকা জুম হবে */
         }
         
         /* প্রোডাক্টের নাম */
@@ -233,7 +233,7 @@
             .platforms-section { padding: 25px 12px; }
             .platforms-grid { grid-template-columns: 1fr; gap: 20px; }
             .platform-header { padding: 15px; }
-            .platform-icon { max-height: 220px; padding: 10px; } /* মোবাইলের জন্য ছবির সাইজ */
+            .platform-icon { max-height: 240px; } /* মোবাইলের জন্য ছবির সাইজ আরেকটু বড় */
             .platform-name { font-size: 1.2rem; }
             .price { font-size: 1.6rem; }
             .footer { padding: 30px 15px 25px; }
@@ -297,7 +297,6 @@
 
     <!-- Main Content Section -->
     <section class="platforms-section">
-        <!-- ⚠️ এখান থেকে স্ট্যাটিক স্পিনার সরিয়ে একটি প্রাথমিক মেসেজ দেওয়া হয়েছে -->
         <div id="productContainer" class="platforms-grid">
             <div class="initial-message" style="grid-column: 1/-1; text-align: center; padding: 50px 20px; color: #b0bec5; background: rgba(20, 20, 40, 0.5); border-radius: 16px; border: 1px dashed #334155;">
                 <i class="fas fa-search" style="font-size: 2.5rem; margin-bottom: 15px; color: #ff9800; opacity: 0.8;"></i>
