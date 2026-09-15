@@ -258,7 +258,6 @@
             align-items: center;
             justify-content: center;
             /* ⚠️ কমলা বর্ডারটি সরিয়ে দেওয়া হয়েছে */
-            /* border: 2px solid #ff9800; */
         }
         .ad-image-wrapper img {
             width: 400px;
@@ -443,6 +442,108 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        // ================== IndexedDB ক্যাশিং সিস্টেম (নতুন যোগ করা হয়েছে) ==================
+        // এই সিস্টেমের মাধ্যমে প্রোডাক্টের ইমেজ ইউজারের মোবাইলে সেভ হয়ে থাকবে।
+        const CACHE_DB_NAME = 'EasyPremiumImageCache';
+        const CACHE_DB_VERSION = 1;
+        const CACHE_STORE_NAME = 'productImages';
+        const CACHE_EXPIRY_DAYS = 30; // ৩০ দিন পর ক্যাশ অটো ডিলিট হবে
+
+        // ডাটাবেস ওপেন করা
+        function openCacheDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(CACHE_DB_NAME, CACHE_DB_VERSION);
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => resolve(request.result);
+                request.onupgradeneeded = (event) => {
+                    const database = event.target.result;
+                    if (!database.objectStoreNames.contains(CACHE_STORE_NAME)) {
+                        database.createObjectStore(CACHE_STORE_NAME, { keyPath: 'url' });
+                    }
+                };
+            });
+        }
+
+        // ক্যাশ থেকে ইমেজ আনা
+        async function getCachedImage(url) {
+            try {
+                const database = await openCacheDB();
+                const tx = database.transaction(CACHE_STORE_NAME, 'readonly');
+                const store = tx.objectStore(CACHE_STORE_NAME);
+                const request = store.get(url);
+                return new Promise((resolve) => {
+                    request.onsuccess = () => {
+                        const result = request.result;
+                        if (result) {
+                            // ক্যাশ এক্সপায়ারি চেক
+                            const ageInDays = (Date.now() - result.timestamp) / (1000 * 60 * 60 * 24);
+                            if (ageInDays < CACHE_EXPIRY_DAYS) {
+                                resolve(result.data);
+                            } else {
+                                // পুরোনো ক্যাশ ডিলিট করে দেওয়া
+                                resolve(null);
+                            }
+                        } else {
+                            resolve(null);
+                        }
+                    };
+                    request.onerror = () => resolve(null);
+                });
+            } catch (e) {
+                console.warn('Cache read error:', e);
+                return null;
+            }
+        }
+
+        // ইমেজ ক্যাশে সেভ করা
+        async function saveImageToCache(url, base64Data) {
+            try {
+                const database = await openCacheDB();
+                const tx = database.transaction(CACHE_STORE_NAME, 'readwrite');
+                const store = tx.objectStore(CACHE_STORE_NAME);
+                store.put({ url: url, data: base64Data, timestamp: Date.now() });
+                return new Promise((resolve) => {
+                    tx.oncomplete = () => resolve(true);
+                    tx.onerror = () => resolve(false);
+                });
+            } catch (e) {
+                console.warn('Cache save error:', e);
+                return false;
+            }
+        }
+
+        // নেটওয়ার্ক থেকে ইমেজ এনে Base64-এ কনভার্ট করে ক্যাশে সেভ করা
+        async function fetchImageAndCache(url) {
+            // প্রথমে ক্যাশ থেকে খোঁজা
+            const cached = await getCachedImage(url);
+            if (cached) {
+                return { data: cached, fromCache: true };
+            }
+
+            // ক্যাশে না থাকলে নেটওয়ার্ক থেকে আনা
+            try {
+                const response = await fetch(url, { referrerPolicy: 'no-referrer' });
+                if (!response.ok) throw new Error('Image fetch failed');
+                const blob = await response.blob();
+
+                const base64 = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                });
+
+                // ক্যাশে সেভ করা (ব্যাকগ্রাউন্ডে, ইউজারকে অপেক্ষা করানো ছাড়াই)
+                saveImageToCache(url, base64).catch(e => console.warn('Cache save failed:', e));
+
+                return { data: base64, fromCache: false };
+            } catch (e) {
+                console.warn('Image fetch failed, using original URL:', e);
+                return { data: url, fromCache: false };
+            }
+        }
+        // ==================================================================================
+
         // ================== কুকি চেক ==================
         function checkCookieConsent() {
             if (localStorage.getItem('cookieAccepted') === 'true') {
@@ -459,19 +560,17 @@
             location.reload();
         });
 
-        // ================== Popup Ad Logic (নতুন যোগ করা হয়েছে) ==================
+        // ================== Popup Ad Logic ==================
         async function loadPopupAd() {
             try {
-                // GitHub-এর image.txt থেকে Base64 স্ট্রিংটি আনা
                 const response = await fetch('image.txt');
                 if (!response.ok) {
                     console.error('Failed to load image.txt');
                     return;
                 }
                 let base64String = await response.text();
-                base64String = base64String.trim(); // অপ্রয়োজনীয় স্পেস বা নিউলাইন মুছে ফেলা
+                base64String = base64String.trim();
 
-                // যদি স্ট্রিংটির শুরুতে data:image না থাকে, তাহলে PNG এর জন্য প্রিফিক্স যোগ করা
                 if (!base64String.startsWith('data:image')) {
                     base64String = 'data:image/png;base64,' + base64String;
                 }
@@ -479,7 +578,6 @@
                 const adImage = document.getElementById('popupAdImage');
                 adImage.src = base64String;
 
-                // ইমেজ লোড হলে ওভারলে দেখানো
                 adImage.onload = () => {
                     document.getElementById('adPopupOverlay').style.display = 'flex';
                 };
@@ -493,12 +591,10 @@
             }
         }
 
-        // ক্লোজ বাটনের ইভেন্ট লিসেনার
         document.getElementById('closeAdBtn').addEventListener('click', function() {
             document.getElementById('adPopupOverlay').style.display = 'none';
         });
 
-        // ===== অ্যাডে ক্লিক করার ইভেন্ট লিসেনার (নতুন যোগ করা হয়েছে) =====
         document.querySelector('.ad-image-wrapper').addEventListener('click', async function() {
             try {
                 const clickResponse = await fetch('click.txt');
@@ -524,7 +620,6 @@
         const searchInput = document.getElementById('searchInput');
         const searchBtn = document.getElementById('searchBtn');
 
-        // ডিফল্ট ইমেজ (যখন কোনো ইমেজ সোর্স নেই বা লোড হয় না)
         const DEFAULT_IMAGE = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150"%3E%3Crect width="150" height="150" fill="%23333"/%3E%3Ctext x="75" y="75" font-family="Arial" font-size="16" fill="%23aaa" text-anchor="middle" dominant-baseline="central"%3ENo Image%3C/text%3E%3C/svg%3E';
 
         // ================== Etel প্রোডাক্ট সার্চ ফাংশন ==================
@@ -552,20 +647,34 @@
                     return;
                 }
 
+                // ===== প্রতিটি প্রোডাক্টের ইমেজ ক্যাশ থেকে লোড করা (নতুন যোগ করা হয়েছে) =====
+                // প্রতিটি প্রোডাক্টের ইমেজ URL ব্যবহার করে ক্যাশে খোঁজা, না পেলে নেটওয়ার্ক থেকে আনা
+                const imagePromises = data.products.map(p => {
+                    if (p.image && p.image.startsWith('http')) {
+                        return fetchImageAndCache(p.image);
+                    }
+                    return Promise.resolve({ data: p.image || DEFAULT_IMAGE, fromCache: false });
+                });
+
+                const imageResults = await Promise.all(imagePromises);
+
+                // ==========================================================================
+
                 // প্রোডাক্ট কার্ড রেন্ডার করা
                 productContainer.innerHTML = '';
-                data.products.forEach(p => {
+                data.products.forEach((p, index) => {
                     const card = document.createElement('div');
                     card.className = 'platform-card';
                     
-                    // ⚠️ বায় নাউ বাটনে ক্লিক করলে শুধুমাত্র WhatsApp ওপেন হবে
-                    // আপনার WhatsApp নম্বরটি এখানে বসিয়ে নিন (দেশের কোড সহ, যেমন: 880)
+                    // ক্যাশ থেকে আসা ইমেজ ব্যবহার করা
+                    const finalImage = imageResults[index].data || DEFAULT_IMAGE;
+                    
                     const whatsappLink = 'https://wa.me/8801770584994';
 
                     card.innerHTML = `
                         <div class="platform-header">
                             <div class="platform-img-wrapper">
-                                <img src="${p.image}" 
+                                <img src="${finalImage}" 
                                      class="platform-icon" 
                                      alt="${p.name}"
                                      loading="lazy"
@@ -603,7 +712,7 @@
         // ================== DOM রেডি হলে লোড ==================
         document.addEventListener('DOMContentLoaded', function() {
             checkCookieConsent();
-            loadPopupAd(); // পেজ লোড হওয়ার সাথে সাথে অ্যাড লোড করা
+            loadPopupAd();
         });
     </script>
 
@@ -612,19 +721,16 @@
         (function() {
             'use strict';
 
-            // HTTPS ফোর্স
             if (location.protocol !== 'https:' && location.hostname !== 'localhost' && !location.hostname.includes('127.0.0.1')) {
                 location.replace('https://' + location.host + location.pathname + location.search);
             }
 
-            // ক্লিকজ্যাকিং প্রোটেকশন
             if (self !== top) {
                 try { top.location.href = self.location.href; } catch (e) { document.body.innerHTML =
                         '<h1 style="color:red;text-align:center;padding:50px;">Access Denied</h1>'; throw new Error(
                         'Clickjacking protection'); }
             }
 
-            // Keyboard Shortcuts Block (Ctrl+U, Ctrl+S, F12, Ctrl+Shift+I)
             document.addEventListener('keydown', function(e) {
                 if (e.ctrlKey && e.keyCode === 85) { e.preventDefault(); return false; }
                 if (e.ctrlKey && e.keyCode === 83) { e.preventDefault(); return false; }
@@ -632,11 +738,10 @@
                 if (e.keyCode === 123) { e.preventDefault(); return false; }
             });
 
-            // Right-click Protection
             document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; });
             document.addEventListener('mousedown', function(e) { if (e.button === 2) { e.preventDefault(); return false; } });
 
-            console.log('%c🔒 Easy Premium - সিকিউরিটি সক্রিয় (রিডাইরেক্ট ছাড়া)', 'color: #4caf50; font-size: 14px; font-weight: bold;');
+            console.log('%c🔒 Easy Premium - সিকিউরিটি সক্রিয় + IndexedDB ক্যাশিং চালু', 'color: #4caf50; font-size: 14px; font-weight: bold;');
         })();
     </script>
 </body>
