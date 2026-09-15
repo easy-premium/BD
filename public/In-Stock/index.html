@@ -946,14 +946,65 @@
         const searchResults = document.getElementById('searchResults');
         let allPlatforms = [];
 
-        // ডিফল্ট ইমেজ (যখন কোনো ইমেজ সোর্স নেই বা লোড হয় না)
+        // ডিফল্ট ইমেজ (যখন কোনো ইমেজ সোর্স নেই বা লোড হয় না)
         const DEFAULT_IMAGE = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150"%3E%3Crect width="150" height="150" fill="%23333"/%3E%3Ctext x="75" y="75" font-family="Arial" font-size="16" fill="%23aaa" text-anchor="middle" dominant-baseline="central"%3ENo Image%3C/text%3E%3C/svg%3E';
+
+        // ================== IndexedDB Image Caching Logic (নতুন ফিচার) ==================
+        const DB_NAME = 'EasyPremiumImageCache';
+        const DB_VERSION = 1;
+        const STORE_NAME = 'product_images';
+
+        function openImageDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        db.createObjectStore(STORE_NAME);
+                    }
+                };
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function getCachedImage(productId) {
+            try {
+                const db = await openImageDB();
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction(STORE_NAME, 'readonly');
+                    const store = transaction.objectStore(STORE_NAME);
+                    const request = store.get(productId);
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+            } catch (error) {
+                console.error('Error getting cached image:', error);
+                return null;
+            }
+        }
+
+        async function saveImageToCache(productId, imageBase64) {
+            try {
+                const db = await openImageDB();
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction(STORE_NAME, 'readwrite');
+                    const store = transaction.objectStore(STORE_NAME);
+                    const request = store.put(imageBase64, productId);
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => reject(request.error);
+                });
+            } catch (error) {
+                console.error('Error saving image to cache:', error);
+            }
+        }
+        // ================================================================================
 
         // ================== প্ল্যাটফর্ম লোড (Firebase Realtime Database থেকে) ==================
         function loadPlatforms() {
             const pricingRef = db.ref('pricingPlans1');
 
-            pricingRef.get().then((snapshot) => {
+            pricingRef.get().then(async (snapshot) => { // <-- এখানে async যোগ করা হয়েছে
                 const pricingData = snapshot.val();
                 platformsGrid.innerHTML = '';
 
@@ -965,13 +1016,22 @@
                 allPlatforms = [];
 
                 // লুপ করে প্রতিটি পণ্যের জন্য কার্ড তৈরি করুন
-                Object.entries(pricingData).forEach(([id, platform]) => {
-                    // শুধুমাত্র active স্ট্যাটাসের পণ্য দেখান (যদি status ফিল্ড থাকে)
+                for (const [id, platform] of Object.entries(pricingData)) { // <-- for...of লুপ ব্যবহার করা হয়েছে
+                    // শুধুমাত্র active স্ট্যাটাসের পণ্য দেখান (স্টক চেক)
                     if (platform.status === undefined || platform.status === 'active') {
-                        // 🔥 Products ফিল্ড থেকে ইমেজ সোর্স নিন (URL বা Base64)
+                        
                         let imageSrc = DEFAULT_IMAGE;
-                        if (platform.Products) {
+                        
+                        // 1. চেক করুন ইমেজ ক্যাশে (IndexedDB) আছে কিনা
+                        const cachedImage = await getCachedImage(id);
+                        
+                        if (cachedImage) {
+                            // 2. ক্যাশে থাকলে সেটি ব্যবহার করুন (মোবাইলের মেমোরি থেকে)
+                            imageSrc = cachedImage;
+                        } else if (platform.Products) {
+                            // 3. ক্যাশে না থাকলে ডাটাবেজ থেকে নিন এবং ক্যাশে সেভ করুন
                             imageSrc = platform.Products;
+                            await saveImageToCache(id, imageSrc);
                         }
 
                         allPlatforms.push({
@@ -982,10 +1042,10 @@
                             features: platform.features || [],
                             icon: platform.icon || 'visa',
                             link: platform.link || '#',
-                            image: imageSrc // ← Products থেকে নেওয়া ইমেজ
+                            image: imageSrc // ← Products থেকে নেওয়া ইমেজ (বা ক্যাশ থেকে)
                         });
                     }
-                });
+                }
 
                 displayPlatforms(allPlatforms);
                 attachBuyButtons();
