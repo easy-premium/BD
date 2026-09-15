@@ -946,126 +946,81 @@
         const searchResults = document.getElementById('searchResults');
         let allPlatforms = [];
 
-        // ডিফল্ট ইমেজ (যখন কোনো ইমেজ সোর্স নেই বা লোড হয় না)
+        // ডিফল্ট ইমেজ (যখন কোনো ইমেজ সোর্স নেই বা লোড হয় না)
         const DEFAULT_IMAGE = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150"%3E%3Crect width="150" height="150" fill="%23333"/%3E%3Ctext x="75" y="75" font-family="Arial" font-size="16" fill="%23aaa" text-anchor="middle" dominant-baseline="central"%3ENo Image%3C/text%3E%3C/svg%3E';
 
-        // ================== IndexedDB Image Caching Logic (নিখুঁত ও নিরাপদ পদ্ধতি) ==================
-        const DB_NAME = 'EasyPremiumImageCache';
-        const DB_VERSION = 1;
-        const STORE_NAME = 'product_images';
+        // ================== নতুন লজিক: GitHub -> Firebase ==================
+        async function loadPlatforms() {
+            let pricingData = null;
 
-        function openImageDB() {
-            return new Promise((resolve, reject) => {
+            // ১. প্রথমে গিটহাব থেকে ডেটা লোড করার চেষ্টা করা
+            try {
+                // আমরা সরাসরি firebas_data.json ফাইলটি খুঁজছি (যেহেতু এই HTML ফাইলটি In-Stock ফোল্ডারেই আছে)
+                const response = await fetch('firebas_data.json');
+                if (response.ok) {
+                    const jsonData = await response.json();
+                    // যদি JSON ফাইলে কোনো ডেটা থাকে (খালি না হয়)
+                    if (jsonData && Object.keys(jsonData).length > 0) {
+                        pricingData = jsonData;
+                        console.log('✅ গিটহাব (JSON) থেকে ডেটা সফলভাবে লোড হয়েছে।');
+                    } else {
+                        console.log('⚠️ গিটহাবের JSON ফাইল খালি। ফায়ারবেস থেকে লোড করা হচ্ছে...');
+                    }
+                } else {
+                    console.log('⚠️ গিটহাবে JSON ফাইল পাওয়া যায়নি। ফায়ারবেস থেকে লোড করা হচ্ছে...');
+                }
+            } catch (error) {
+                console.log('⚠️ গিটহাব থেকে লোড করতে সমস্যা হয়েছে। ফায়ারবেস থেকে লোড করা হচ্ছে...', error);
+            }
+
+            // ২. যদি গিটহাব থেকে ডেটা না পাওয়া যায়, তবে ফায়ারবেস থেকে নেওয়া
+            if (!pricingData) {
                 try {
-                    const request = indexedDB.open(DB_NAME, DB_VERSION);
-                    request.onupgradeneeded = (event) => {
-                        const db = event.target.result;
-                        if (!db.objectStoreNames.contains(STORE_NAME)) {
-                            db.createObjectStore(STORE_NAME);
-                        }
-                    };
-                    request.onsuccess = () => resolve(request.result);
-                    request.onerror = () => reject(request.error);
-                } catch (e) {
-                    reject(e);
+                    const snapshot = await db.ref('pricingPlans1').get();
+                    pricingData = snapshot.val();
+                    console.log('✅ ফায়ারবেস থেকে ডেটা সফলভাবে লোড হয়েছে।');
+                } catch (error) {
+                    console.error('❌ ফায়ারবেস থেকেও ডেটা লোড করা যায়নি:', error);
+                }
+            }
+
+            // ৩. ডেটা প্রসেস করা (ডেটা যেখান থেকেই আসুক, লজিক একই থাকবে)
+            platformsGrid.innerHTML = '';
+
+            if (!pricingData) {
+                platformsGrid.innerHTML = '<div style="grid-column:1/-1; text-align:center;">কোন প্ল্যাটফর্ম নেই</div>';
+                return;
+            }
+
+            allPlatforms = [];
+
+            // লুপ করে প্রতিটি পণ্যের জন্য কার্ড তৈরি করুন
+            Object.entries(pricingData).forEach(([id, platform]) => {
+                // শুধুমাত্র active স্ট্যাটাসের পণ্য দেখান (যদি status ফিল্ড থাকে)
+                if (platform.status === undefined || platform.status === 'active') {
+                    // 🔥 Products ফিল্ড থেকে ইমেজ সোর্স নিন (URL বা Base64)
+                    let imageSrc = DEFAULT_IMAGE;
+                    if (platform.Products) {
+                        imageSrc = platform.Products;
+                    }
+
+                    allPlatforms.push({
+                        id: id,
+                        name: platform.name || 'প্ল্যাটফর্ম',
+                        description: platform.description || '',
+                        price: platform.price || '৳ 0',
+                        features: platform.features || [],
+                        icon: platform.icon || 'visa',
+                        link: platform.link || '#',
+                        image: imageSrc // ← Products থেকে নেওয়া ইমেজ
+                    });
                 }
             });
-        }
 
-        // সুরক্ষিত উপায়ে ক্যাশ থেকে ইমেজ আনা (যদি ব্লক থাকে তবে null রিটার্ন করবে)
-        async function getCachedImage(productId) {
-            try {
-                const db = await openImageDB();
-                return new Promise((resolve, reject) => {
-                    const transaction = db.transaction(STORE_NAME, 'readonly');
-                    const store = transaction.objectStore(STORE_NAME);
-                    const request = store.get(productId);
-                    request.onsuccess = () => resolve(request.result || null);
-                    request.onerror = () => reject(request.error);
-                });
-            } catch (error) {
-                return null; // কোনো এরর হলে সাইট লোডিং আটকে দেবে না
-            }
-        }
-
-        // সুরক্ষিত উপায়ে ক্যাশে ইমেজ সেভ করা
-        async function saveImageToCache(productId, imageBase64) {
-            try {
-                const db = await openImageDB();
-                return new Promise((resolve, reject) => {
-                    const transaction = db.transaction(STORE_NAME, 'readwrite');
-                    const store = transaction.objectStore(STORE_NAME);
-                    const request = store.put(imageBase64, productId);
-                    request.onsuccess = () => resolve();
-                    request.onerror = () => reject(request.error);
-                });
-            } catch (error) {
-                // কোনো এরর হলে সাইট লোডিং আটকে দেবে না
-            }
+            displayPlatforms(allPlatforms);
+            attachBuyButtons();
         }
         // ================================================================================
-
-        // ================== প্ল্যাটফর্ম লোড (Firebase Realtime Database থেকে) ==================
-        function loadPlatforms() {
-            const pricingRef = db.ref('pricingPlans1');
-
-            pricingRef.get().then(async (snapshot) => { // ক্যাশ চেক করার জন্য async
-                const pricingData = snapshot.val();
-                platformsGrid.innerHTML = '';
-
-                if (!pricingData) {
-                    platformsGrid.innerHTML = '<div style="grid-column:1/-1; text-align:center;">কোন প্ল্যাটফর্ম নেই</div>';
-                    return;
-                }
-
-                const platformEntries = Object.entries(pricingData);
-
-                // ১. সমান্তরালে (Parallel) সব প্রোডাক্টের ক্যাশ মেমোরি চেক করা (অত্যন্ত দ্রুত)
-                const cachePromises = platformEntries.map(([id]) => getCachedImage(id));
-                const cachedImages = await Promise.all(cachePromises);
-
-                allPlatforms = [];
-
-                // ২. প্রতিটি পণ্যের জন্য ডেটা তৈরি করা
-                platformEntries.forEach(([id, platform], index) => {
-                    // শুধুমাত্র active স্ট্যাটাসের পণ্য দেখান (স্টক চেক)
-                    if (platform.status === undefined || platform.status === 'active') {
-                        
-                        let imageSrc = DEFAULT_IMAGE;
-                        const cachedImage = cachedImages[index];
-
-                        if (cachedImage) {
-                            // যদি ক্যাশে থাকে, তবে মোবাইলের মেমোরি থেকে ইমেজ নিন (Firebase ডাউনলোড হবে না)
-                            imageSrc = cachedImage;
-                        } else if (platform.Products) {
-                            // যদি ক্যাশে না থাকে, তবে Firebase থেকে নিন এবং ভবিষ্যতের জন্য সেভ করে রাখুন
-                            imageSrc = platform.Products;
-                            // ব্যাকগ্রাউন্ডে সেভ করা হচ্ছে, যাতে UI ব্লক না হয়
-                            saveImageToCache(id, imageSrc).catch(e => console.warn('Background cache save skipped:', e));
-                        }
-
-                        allPlatforms.push({
-                            id: id,
-                            name: platform.name || 'প্ল্যাটফর্ম',
-                            description: platform.description || '',
-                            price: platform.price || '৳ 0',
-                            features: platform.features || [],
-                            icon: platform.icon || 'visa',
-                            link: platform.link || '#',
-                            image: imageSrc // ← Products থেকে নেওয়া ইমেজ (বা ক্যাশ থেকে)
-                        });
-                    }
-                });
-
-                // ৩. স্ক্রিনে দেখানো
-                displayPlatforms(allPlatforms);
-                attachBuyButtons();
-
-            }).catch((error) => {
-                console.error('Firebase থেকে ডেটা লোড করতে ব্যর্থ:', error);
-                platformsGrid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:#ff9800;">❤❤ আমাদের সার্ভার এর কাজ চলিতেছে খুব শীঘ্রই চালু করা হবে ❤❤</div>';
-            });
-        }
 
         function displayPlatforms(platforms) {
             platformsGrid.innerHTML = '';
@@ -1185,7 +1140,7 @@
         // ================== DOM রেডি হলে লোড ==================
         document.addEventListener('DOMContentLoaded', function() {
             checkCookieConsent();
-            loadPlatforms();
+            loadPlatforms(); // এই ফাংশনটি এখন নতুন লজিক অনুযায়ী কাজ করবে
         });
     </script>
 
