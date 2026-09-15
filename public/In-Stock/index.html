@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Mobile Servicing and Accessories Shop</title>
     <meta name="description" content="মোবাইল সার্ভিসিং ও এক্সেসরি শপ">
-    <meta name="keywords" content="Rewarble Voucher Services, visa card $5-$20,  visa card $5,  visa card $6,  visa card $7,  visa card $8,  visa card $9,  visa card $10,  visa card $11,  visa card $12, visa card $13, visa card $14,  visa card $15, visa card $16,  visa card $17,  visa card $18,  visa card $19,  visa card $20, visa card">
+    <meta name="keywords" content="Rewarble Voucher Services, visa card $5-$20,  visa card $5,  visa card $6,  visa card $7,  visa card $8,  visa card $9,  visa card $10,  visa card $11,  visa card $12, visa card $13, visa card $14,  visa card $15, visa card $16,  visa card $17,  visa card $18, visa card $19,  visa card $20, visa card">
     <meta name="author" content="Easy Premium">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://www.easy-premium.com">
@@ -923,6 +923,9 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        // ================== 🔥 JSON ফাইলের URL (আপনার ডোমেইন) ==================
+        const JSON_DATA_URL = 'https://www.easy-premium.com/In-Stock/firebas_data.json';
+
         // ================== কুকি চেক ==================
         function checkCookieConsent() {
             if (localStorage.getItem('cookieAccepted') === 'true') {
@@ -949,56 +952,49 @@
         // ডিফল্ট ইমেজ (যখন কোনো ইমেজ সোর্স নেই বা লোড হয় না)
         const DEFAULT_IMAGE = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150"%3E%3Crect width="150" height="150" fill="%23333"/%3E%3Ctext x="75" y="75" font-family="Arial" font-size="16" fill="%23aaa" text-anchor="middle" dominant-baseline="central"%3ENo Image%3C/text%3E%3C/svg%3E';
 
-        // ================== নতুন লজিক: GitHub -> Firebase ==================
-        async function loadPlatforms() {
-            let pricingData = null;
-
-            // ১. প্রথমে গিটহাব থেকে ডেটা লোড করার চেষ্টা করা
+        // ================== 🌐 JSON ফাইল থেকে লোড করার চেষ্টা ==================
+        async function loadFromJSON() {
             try {
-                // আমরা সরাসরি firebas_data.json ফাইলটি খুঁজছি (যেহেতু এই HTML ফাইলটি In-Stock ফোল্ডারেই আছে)
-                const response = await fetch('firebas_data.json');
-                if (response.ok) {
-                    const jsonData = await response.json();
-                    // যদি JSON ফাইলে কোনো ডেটা থাকে (খালি না হয়)
-                    if (jsonData && Object.keys(jsonData).length > 0) {
-                        pricingData = jsonData;
-                        console.log('✅ গিটহাব (JSON) থেকে ডেটা সফলভাবে লোড হয়েছে।');
-                    } else {
-                        console.log('⚠️ গিটহাবের JSON ফাইল খালি। ফায়ারবেস থেকে লোড করা হচ্ছে...');
-                    }
+                const res = await fetch(JSON_DATA_URL, { cache: 'no-store' });
+                if (!res.ok) return null;
+                const data = await res.json();
+                if (!data) return null;
+
+                // সাপোর্ট: সরাসরি array অথবা { pricingPlans1: [...] } অথবা object
+                let pricingData = null;
+                if (Array.isArray(data)) {
+                    pricingData = data;
+                } else if (data.pricingPlans1) {
+                    pricingData = data.pricingPlans1;
                 } else {
-                    console.log('⚠️ গিটহাবে JSON ফাইল পাওয়া যায়নি। ফায়ারবেস থেকে লোড করা হচ্ছে...');
+                    pricingData = data;
                 }
-            } catch (error) {
-                console.log('⚠️ গিটহাব থেকে লোড করতে সমস্যা হয়েছে। ফায়ারবেস থেকে লোড করা হচ্ছে...', error);
-            }
 
-            // ২. যদি গিটহাব থেকে ডেটা না পাওয়া যায়, তবে ফায়ারবেস থেকে নেওয়া
-            if (!pricingData) {
-                try {
-                    const snapshot = await db.ref('pricingPlans1').get();
-                    pricingData = snapshot.val();
-                    console.log('✅ ফায়ারবেস থেকে ডেটা সফলভাবে লোড হয়েছে।');
-                } catch (error) {
-                    console.error('❌ ফায়ারবেস থেকেও ডেটা লোড করা যায়নি:', error);
-                }
-            }
+                if (!pricingData) return null;
 
-            // ৩. ডেটা প্রসেস করা (ডেটা যেখান থেকেই আসুক, লজিক একই থাকবে)
+                // খালি কিনা চেক
+                const isEmpty = Array.isArray(pricingData)
+                    ? pricingData.filter(x => x && typeof x === 'object').length === 0
+                    : Object.keys(pricingData).length === 0;
+
+                if (isEmpty) return null;
+
+                return pricingData;
+            } catch (e) {
+                console.warn('JSON ফাইল থেকে ডেটা লোড ব্যর্থ:', e);
+                return null;
+            }
+        }
+
+        // ================== প্রোডাক্ট ডেটা প্রসেস করে রেন্ডার ==================
+        function renderPricingData(pricingData) {
             platformsGrid.innerHTML = '';
-
-            if (!pricingData) {
-                platformsGrid.innerHTML = '<div style="grid-column:1/-1; text-align:center;">কোন প্ল্যাটফর্ম নেই</div>';
-                return;
-            }
-
             allPlatforms = [];
 
-            // লুপ করে প্রতিটি পণ্যের জন্য কার্ড তৈরি করুন
             Object.entries(pricingData).forEach(([id, platform]) => {
-                // শুধুমাত্র active স্ট্যাটাসের পণ্য দেখান (যদি status ফিল্ড থাকে)
+                if (!platform || typeof platform !== 'object') return;
+
                 if (platform.status === undefined || platform.status === 'active') {
-                    // 🔥 Products ফিল্ড থেকে ইমেজ সোর্স নিন (URL বা Base64)
                     let imageSrc = DEFAULT_IMAGE;
                     if (platform.Products) {
                         imageSrc = platform.Products;
@@ -1012,15 +1008,50 @@
                         features: platform.features || [],
                         icon: platform.icon || 'visa',
                         link: platform.link || '#',
-                        image: imageSrc // ← Products থেকে নেওয়া ইমেজ
+                        image: imageSrc
                     });
                 }
             });
 
+            if (allPlatforms.length === 0) {
+                platformsGrid.innerHTML = '<div style="grid-column:1/-1; text-align:center;">কোন প্ল্যাটফর্ম নেই</div>';
+                return;
+            }
+
             displayPlatforms(allPlatforms);
             attachBuyButtons();
         }
-        // ================================================================================
+
+        // ================== 🔥 Firebase Fallback ==================
+        function loadFromFirebase() {
+            const pricingRef = db.ref('pricingPlans1');
+
+            pricingRef.get().then((snapshot) => {
+                const pricingData = snapshot.val();
+
+                if (!pricingData) {
+                    platformsGrid.innerHTML = '<div style="grid-column:1/-1; text-align:center;">কোন প্ল্যাটফর্ম নেই</div>';
+                    return;
+                }
+
+                renderPricingData(pricingData);
+            }).catch((error) => {
+                console.error('Firebase থেকে ডেটা লোড করতে ব্যর্থ:', error);
+                platformsGrid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:#ff9800;">❤❤ আমাদের সার্ভার এর কাজ চলিতেছে খুব শীঘ্রই চালু করা হবে ❤❤</div>';
+            });
+        }
+
+        // ================== মেইন লোডার: প্রথমে JSON ফাইল → না পেলে Firebase ==================
+        async function loadPlatforms() {
+            const jsonData = await loadFromJSON();
+            if (jsonData) {
+                console.log('✅ JSON ফাইল থেকে প্রোডাক্ট লোড হয়েছে');
+                renderPricingData(jsonData);
+                return;
+            }
+            console.log('ℹ️ JSON ফাইলে ডেটা নেই, Firebase থেকে লোড করা হচ্ছে...');
+            loadFromFirebase();
+        }
 
         function displayPlatforms(platforms) {
             platformsGrid.innerHTML = '';
@@ -1140,7 +1171,7 @@
         // ================== DOM রেডি হলে লোড ==================
         document.addEventListener('DOMContentLoaded', function() {
             checkCookieConsent();
-            loadPlatforms(); // এই ফাংশনটি এখন নতুন লজিক অনুযায়ী কাজ করবে
+            loadPlatforms();
         });
     </script>
 
