@@ -41,10 +41,6 @@
     <!-- EXTERNAL CSS & JS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- ================== FIREBASE SDK (CDN) ================== -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-
     <!-- ================== সিকিউরিটি মেটা ট্যাগ ================== -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval'; img-src 'self' https: data:; font-src 'self' https: data:; style-src 'self' https: 'unsafe-inline'; script-src 'self' https: 'unsafe-inline' 'unsafe-eval';">
     <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -320,7 +316,7 @@
             flex-shrink: 0;
         }
 
-        /* ========== প্রোডাক্ট বিবরণ (এখন বাটনের নিচে) ========== */
+        /* ========== প্রোডাক্ট বিবরণ ========== */
         .product-description {
             color: #b0bec5;
             font-size: 1rem;
@@ -331,7 +327,7 @@
             border-left: 3px solid #00bcd4;
         }
 
-        /* ========== বায় নাউ বাটন (এখন ফিচার এবং ডেসক্রিপশনের মাঝে) ========== */
+        /* ========== বায় নাউ বাটন ========== */
         .buy-now-btn {
             display: flex;
             align-items: center;
@@ -350,9 +346,8 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             box-shadow: 0 5px 20px rgba(255, 87, 34, 0.4);
-            
             margin-top: 5px;
-            margin-bottom: 15px; 
+            margin-bottom: 15px;
         }
 
         .buy-now-btn:hover {
@@ -632,32 +627,57 @@
         <!-- Product Gallery -->
         <div class="product-gallery">
             <div class="main-image-wrapper">
-                <img id="mainProductImage" src="" alt="Product Image" class="main-image">
+                <!-- ⚠️ এখানে মেইন ছবির লিংক বসান -->
+                <img id="mainProductImage" src="https://via.placeholder.com/500x500/1a1a3a/ff9800?text=Product+Image+1" alt="Product Image" class="main-image">
             </div>
-            <div class="thumbnail-grid" id="thumbnailGrid">
-                <!-- Thumbnails will be dynamically added -->
+            <div class="thumbnail-grid">
+                <!-- ⚠️ এখানে ৫টি থাম্বনেইল ছবির লিংক বসান -->
+                <div class="thumbnail-item active" onclick="changeImage(this, 'https://via.placeholder.com/500x500/1a1a3a/ff9800?text=Product+Image+1')">
+                    <img src="https://via.placeholder.com/500x500/1a1a3a/ff9800?text=Product+Image+1" alt="Thumbnail 1">
+                </div>
+                <div class="thumbnail-item" onclick="changeImage(this, 'https://via.placeholder.com/500x500/1a1a3a/00bcd4?text=Product+Image+2')">
+                    <img src="https://via.placeholder.com/500x500/1a1a3a/00bcd4?text=Product+Image+2" alt="Thumbnail 2">
+                </div>
+                <div class="thumbnail-item" onclick="changeImage(this, 'https://via.placeholder.com/500x500/1a1a3a/ff9800?text=Product+Image+3')">
+                    <img src="https://via.placeholder.com/500x500/1a1a3a/ff9800?text=Product+Image+3" alt="Thumbnail 3">
+                </div>
+                <div class="thumbnail-item" onclick="changeImage(this, 'https://via.placeholder.com/500x500/1a1a3a/00bcd4?text=Product+Image+4')">
+                    <img src="https://via.placeholder.com/500x500/1a1a3a/00bcd4?text=Product+Image+4" alt="Thumbnail 4">
+                </div>
+                <div class="thumbnail-item" onclick="changeImage(this, 'https://via.placeholder.com/500x500/1a1a3a/ff9800?text=Product+Image+5')">
+                    <img src="https://via.placeholder.com/500x500/1a1a3a/ff9800?text=Product+Image+5" alt="Thumbnail 5">
+                </div>
             </div>
         </div>
 
         <!-- Product Info -->
         <div class="product-info">
-            <h1 class="product-title" id="productName">প্রোডাক্ট লোড হচ্ছে...</h1>
-            <div class="product-price" id="productPrice">৳ ০</div>
+            <!-- ⚠️ এখানে প্রোডাক্টের নাম বসান -->
+            <h1 class="product-title">Tecno Spark 20 Pro Plus Backshell Price in Bangladesh</h1>
+            
+            <!-- ⚠️ এখানে প্রোডাক্টের দাম বসান -->
+            <div class="product-price">৳ 899</div>
             
             <!-- Features Section -->
-            <div class="product-features" id="productFeatures">
+            <div class="product-features">
                 <h3>ফিচারসমূহ</h3>
-                <!-- Features will be dynamically added -->
+                <!-- ⚠️ এখানে ফিচারগুলো বসান -->
+                <div class="feature-item"><i class="fas fa-check-circle"></i><span>প্রিমিয়াম কোয়ালিটি ম্যাটেরিয়াল</span></div>
+                <div class="feature-item"><i class="fas fa-check-circle"></i><span>Tecno Spark 20 Pro Plus এর জন্য পারফেক্ট ফিট</span></div>
+                <div class="feature-item"><i class="fas fa-check-circle"></i><span>সহজে ইনস্টল করা যায়</span></div>
+                <div class="feature-item"><i class="fas fa-check-circle"></i><span>টেকসই এবং দীর্ঘস্থায়ী</span></div>
+                <div class="feature-item"><i class="fas fa-check-circle"></i><span>স্ক্র্যাচ ও ড্রপ থেকে সুরক্ষা</span></div>
             </div>
             
-            <!-- Buy Now Button (এখন ফিচার এবং ডেসক্রিপশনের মাঝে) -->
+            <!-- Buy Now Button -->
             <button class="buy-now-btn" id="buyNowBtn">
                 <i class="fab fa-whatsapp"></i> Buy Now
             </button>
             
-            <!-- Description Section (এখন বাটনের নিচে) -->
-            <div class="product-description" id="productDescription">
-                প্রোডাক্টের বিবরণ লোড হচ্ছে...
+            <!-- Description Section -->
+            <div class="product-description">
+                <!-- ⚠️ এখানে প্রোডাক্টের বিবরণ বসান -->
+                Tecno Spark 20 Pro Plus এর জন্য উচ্চমানের ব্যাকশেল। এটি প্রিমিয়াম ম্যাটেরিয়াল দিয়ে তৈরি, যা আপনার ফোনকে স্ক্র্যাচ ও ড্রপ থেকে সুরক্ষা দেয়। সহজে ইনস্টল করা যায় এবং দীর্ঘস্থায়ী।
             </div>
         </div>
     </div>
@@ -688,113 +708,24 @@
     <a href="https://wa.me/qr/D3HNIB5KS4VNM1" target="_blank" class="messenger-float" title="মেসেঞ্জারে কথা বলুন"><i class="fab fa-facebook-messenger"></i></a>
 
     <script>
-        // ================== PRODUCT VIEW PAGE LOGIC ==================
-        // URL থেকে product ID নিন (যেমন: produx-view.html?id=123)
-        function getProductIdFromURL() {
-            const params = new URLSearchParams(window.location.search);
-            return params.get('id');
+        // ================== ছবি পরিবর্তন করার ফাংশন ==================
+        function changeImage(element, imageSrc) {
+            // সব থাম্বনেইল থেকে active ক্লাস সরান
+            document.querySelectorAll('.thumbnail-item').forEach(item => item.classList.remove('active'));
+            // এই থাম্বনেইলে active ক্লাস যোগ করুন
+            element.classList.add('active');
+            // মেইন ইমেজ পরিবর্তন করুন
+            document.getElementById('mainProductImage').src = imageSrc;
         }
 
-        // ডিফল্ট ইমেজ
-        const DEFAULT_IMAGE = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150"%3E%3Crect width="150" height="150" fill="%23333"/%3E%3Ctext x="75" y="75" font-family="Arial" font-size="16" fill="%23aaa" text-anchor="middle" dominant-baseline="central"%3ENo Image%3C/text%3E%3C/svg%3E';
-
-        // ৫টি ইমেজের জন্য প্লেসহোল্ডার (আপনি চাইলে আপনার নিজের ইমেজ URL বা Base64 এখানে বসাতে পারেন)
-        const productImages = [
-            'https://via.placeholder.com/500x500/1a1a3a/ff9800?text=Image+1',
-            'https://via.placeholder.com/500x500/1a1a3a/00bcd4?text=Image+2',
-            'https://via.placeholder.com/500x500/1a1a3a/ff9800?text=Image+3',
-            'https://via.placeholder.com/500x500/1a1a3a/00bcd4?text=Image+4',
-            'https://via.placeholder.com/500x500/1a1a3a/ff9800?text=Image+5'
-        ];
-
-        // ডামি প্রোডাক্ট ডেটা (বাস্তবে আপনি API থেকে ডেটা আনবেন)
-        const dummyProduct = {
-            id: 'demo1',
-            name: 'Tecno Spark 20 Pro Plus Backshell Price in Bangladesh',
-            price: '899',
-            description: 'This is a high-quality backshell replacement for Tecno Spark 20 Pro Plus. Made from premium materials, it provides excellent protection and a perfect fit. Easy to install and durable.',
-            features: [
-                'Premium quality material',
-                'Perfect fit for Tecno Spark 20 Pro Plus',
-                'Easy installation',
-                'Durable and long-lasting',
-                'Protects your phone from scratches and drops'
-            ],
-            images: productImages
-        };
-
-        // পেজ লোড হলে প্রোডাক্ট ডেটা দেখান
-        function loadProduct() {
-            const productId = getProductIdFromURL();
-            
-            // আপাতত ডামি ডেটা ব্যবহার করছি
-            // ভবিষ্যতে আপনি productId ব্যবহার করে API থেকে ডেটা আনবেন
-            const product = dummyProduct;
-
-            // প্রোডাক্ট নাম
-            document.getElementById('productName').textContent = product.name;
-
-            // প্রোডাক্ট দাম
-            document.getElementById('productPrice').textContent = `৳ ${product.price}`;
-
-            // প্রোডাক্ট বিবরণ
-            document.getElementById('productDescription').textContent = product.description;
-
-            // প্রোডাক্ট ফিচার
-            const featuresContainer = document.getElementById('productFeatures');
-            featuresContainer.innerHTML = '<h3>ফিচারসমূহ</h3>';
-            product.features.forEach(feature => {
-                const div = document.createElement('div');
-                div.className = 'feature-item';
-                div.innerHTML = `<i class="fas fa-check-circle"></i><span>${feature}</span>`;
-                featuresContainer.appendChild(div);
-            });
-
-            // প্রোডাক্ট ইমেজ গ্যালারি
-            const mainImage = document.getElementById('mainProductImage');
-            const thumbnailGrid = document.getElementById('thumbnailGrid');
-            
-            mainImage.src = product.images[0];
-            mainImage.onerror = function() {
-                this.onerror = null;
-                this.src = DEFAULT_IMAGE;
-            };
-
-            thumbnailGrid.innerHTML = '';
-            product.images.forEach((imgSrc, index) => {
-                const thumbnailItem = document.createElement('div');
-                thumbnailItem.className = 'thumbnail-item' + (index === 0 ? ' active' : '');
-                thumbnailItem.innerHTML = `<img src="${imgSrc}" alt="Thumbnail ${index + 1}" onerror="this.onerror=null; this.src='${DEFAULT_IMAGE}';">`;
-                
-                thumbnailItem.addEventListener('click', function() {
-                    // সব থাম্বনেইল থেকে active ক্লাস সরান
-                    document.querySelectorAll('.thumbnail-item').forEach(item => item.classList.remove('active'));
-                    // এই থাম্বনেইলে active ক্লাস যোগ করুন
-                    this.classList.add('active');
-                    // মেইন ইমেজ পরিবর্তন করুন
-                    mainImage.src = imgSrc;
-                });
-                
-                thumbnailGrid.appendChild(thumbnailItem);
-            });
-
-            // Buy Now বাটনে ক্লিক করলে WhatsApp ওপেন হবে
-            document.getElementById('buyNowBtn').addEventListener('click', function() {
-                const whatsappNumber = '8801770584994'; // আপনার WhatsApp নম্বর
-                const message = encodeURIComponent(`আমি এই প্রোডাক্টটি কিনতে চাই: ${product.name} - ৳${product.price}`);
-                window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank');
-            });
-        }
-
-        // ⚠️ DOM রেডি হলে প্রোডাক্ট লোড করার কোডটি বন্ধ (Disable) করে দেওয়া হলো
-        // যাতে পেজ লোড হওয়ার সাথে সাথে ডামি প্রোডাক্ট না আসে। 
-        // আপনি যখন আসল ডেটা লোড করবেন, তখন নিচের কমেন্টটি খুলে দিবেন (Uncomment করবেন)।
-        
-        /*
-        document.addEventListener('DOMContentLoaded', function() {
-            loadProduct();
+        // ================== Buy Now বাটনে ক্লিক করলে WhatsApp ওপেন হবে ==================
+        document.getElementById('buyNowBtn').addEventListener('click', function() {
+            const whatsappNumber = '8801770584994'; // আপনার WhatsApp নম্বর
+            const productName = document.querySelector('.product-title').textContent;
+            const productPrice = document.querySelector('.product-price').textContent;
+            const message = encodeURIComponent(`আমি এই প্রোডাক্টটি কিনতে চাই: ${productName} - ${productPrice}`);
+            window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank');
         });
-        */
     </script>
 
     <!-- ================== সিকিউরিটি স্ক্রিপ্ট (অপরিবর্তিত) ================== -->
