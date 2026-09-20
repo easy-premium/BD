@@ -320,7 +320,7 @@
             flex-shrink: 0;
         }
 
-        /* ========== প্রোডাক্ট বিবরণ ========== */
+        /* ========== প্রোডাক্ট বিবরণ (এখন বাটনের নিচে) ========== */
         .product-description {
             color: #b0bec5;
             font-size: 1rem;
@@ -331,7 +331,7 @@
             border-left: 3px solid #00bcd4;
         }
 
-        /* ========== বায় নাউ বাটন (এখন অনেক নিচে) ========== */
+        /* ========== বায় নাউ বাটন (এখন ফিচার এবং ডেসক্রিপশনের মাঝে) ========== */
         .buy-now-btn {
             display: flex;
             align-items: center;
@@ -351,8 +351,9 @@
             letter-spacing: 1px;
             box-shadow: 0 5px 20px rgba(255, 87, 34, 0.4);
             
-            /* ⚠️ এখানে পরিবর্তন করা হয়েছে */
-            margin-top: 60px; /* উপরের এলিমেন্ট থেকে অনেক বড় গ্যাপ */
+            /* ⚠️ এখানে স্পেসিং অ্যাডজাস্ট করা হয়েছে */
+            margin-top: 5px;
+            margin-bottom: 15px; 
         }
 
         .buy-now-btn:hover {
@@ -555,7 +556,8 @@
             .buy-now-btn {
                 font-size: 1rem;
                 padding: 14px;
-                margin-top: 40px; /* মোবাইলের জন্য গ্যাপ অ্যাডজাস্ট */
+                margin-top: 5px;
+                margin-bottom: 10px;
             }
 
             .footer {
@@ -649,15 +651,15 @@
                 <!-- Features will be dynamically added -->
             </div>
             
-            <!-- Description Section -->
-            <div class="product-description" id="productDescription">
-                প্রোডাক্টের বিবরণ লোড হচ্ছে...
-            </div>
-            
-            <!-- Buy Now Button (সবার নিচে) -->
+            <!-- Buy Now Button (এখন ফিচার এবং ডেসক্রিপশনের মাঝে) -->
             <button class="buy-now-btn" id="buyNowBtn">
                 <i class="fab fa-whatsapp"></i> Buy Now
             </button>
+            
+            <!-- Description Section (এখন বাটনের নিচে) -->
+            <div class="product-description" id="productDescription">
+                প্রোডাক্টের বিবরণ লোড হচ্ছে...
+            </div>
         </div>
     </div>
 
