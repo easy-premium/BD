@@ -188,34 +188,10 @@
             gap: 10px;
         }
 
-        /* ========== ব্রেডক্রাম্ব ========== */
-        .breadcrumb {
-            padding: 15px 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-            width: 100%;
-            font-size: 0.9rem;
-            color: #b0bec5;
-        }
-
-        .breadcrumb a {
-            color: #00bcd4;
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-
-        .breadcrumb a:hover {
-            color: #ff9800;
-        }
-
-        .breadcrumb span {
-            margin: 0 8px;
-        }
-
-        /* ========== প্রোডাক্ট ভিউ কন্টেইনার ========== */
+        /* ========== প্রোডাক্ট ভিউ কন্টেইনার (Breadcrumb বাদ দেওয়ায় margin-top যোগ করা হয়েছে) ========== */
         .product-view-container {
             max-width: 1200px;
-            margin: 0 auto;
+            margin: 25px auto 0; /* উপরে ২৫ পিক্সেল গ্যাপ */
             padding: 20px;
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -503,6 +479,7 @@
                 grid-template-columns: 1fr;
                 gap: 25px;
                 padding: 15px;
+                margin-top: 15px;
             }
 
             .product-title {
@@ -640,14 +617,7 @@
         </div>
     </header>
 
-    <!-- Breadcrumb -->
-    <div class="breadcrumb">
-        <a href="/">হোম</a>
-        <span>/</span>
-        <span id="breadcrumbProductName">প্রোডাক্ট</span>
-    </div>
-
-    <!-- Product View Container -->
+    <!-- Product View Container (Breadcrumb ছাড়া) -->
     <div class="product-view-container">
         <!-- Product Gallery -->
         <div class="product-gallery">
@@ -713,7 +683,6 @@
         const DEFAULT_IMAGE = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150"%3E%3Crect width="150" height="150" fill="%23333"/%3E%3Ctext x="75" y="75" font-family="Arial" font-size="16" fill="%23aaa" text-anchor="middle" dominant-baseline="central"%3ENo Image%3C/text%3E%3C/svg%3E';
 
         // ৫টি ইমেজের জন্য প্লেসহোল্ডার (আপনি চাইলে আপনার নিজের ইমেজ URL বা Base64 এখানে বসাতে পারেন)
-        // এই উদাহরণে আমরা ডামি ইমেজ ব্যবহার করছি। বাস্তবে আপনি API থেকে আসা ইমেজগুলো ব্যবহার করবেন।
         const productImages = [
             'https://via.placeholder.com/500x500/1a1a3a/ff9800?text=Image+1',
             'https://via.placeholder.com/500x500/1a1a3a/00bcd4?text=Image+2',
@@ -748,7 +717,6 @@
 
             // প্রোডাক্ট নাম
             document.getElementById('productName').textContent = product.name;
-            document.getElementById('breadcrumbProductName').textContent = product.name;
 
             // প্রোডাক্ট দাম
             document.getElementById('productPrice').textContent = `৳ ${product.price}`;
