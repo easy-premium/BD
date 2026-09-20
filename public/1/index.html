@@ -188,10 +188,10 @@
             gap: 10px;
         }
 
-        /* ========== প্রোডাক্ট ভিউ কন্টেইনার (Breadcrumb বাদ দেওয়ায় margin-top যোগ করা হয়েছে) ========== */
+        /* ========== প্রোডাক্ট ভিউ কন্টেইনার ========== */
         .product-view-container {
             max-width: 1200px;
-            margin: 25px auto 0; /* উপরে ২৫ পিক্সেল গ্যাপ */
+            margin: 25px auto 0;
             padding: 20px;
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -292,12 +292,6 @@
             border-bottom: 1px solid rgba(255, 152, 0, 0.3);
         }
 
-        .product-description {
-            color: #b0bec5;
-            font-size: 1rem;
-            line-height: 1.7;
-        }
-
         .product-features {
             background: rgba(20, 20, 40, 0.9);
             border-radius: 12px;
@@ -326,7 +320,18 @@
             flex-shrink: 0;
         }
 
-        /* ========== বায় নাউ বাটন ========== */
+        /* ========== প্রোডাক্ট বিবরণ (এখন নিচে) ========== */
+        .product-description {
+            color: #b0bec5;
+            font-size: 1rem;
+            line-height: 1.7;
+            background: rgba(20, 20, 40, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 3px solid #00bcd4;
+        }
+
+        /* ========== বায় নাউ বাটন (সবার নিচে) ========== */
         .buy-now-btn {
             display: flex;
             align-items: center;
@@ -345,6 +350,7 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             box-shadow: 0 5px 20px rgba(255, 87, 34, 0.4);
+            margin-top: 10px; /* উপরের এলিমেন্ট থেকে একটু গ্যাপ */
         }
 
         .buy-now-btn:hover {
@@ -617,7 +623,7 @@
         </div>
     </header>
 
-    <!-- Product View Container (Breadcrumb ছাড়া) -->
+    <!-- Product View Container -->
     <div class="product-view-container">
         <!-- Product Gallery -->
         <div class="product-gallery">
@@ -633,13 +639,19 @@
         <div class="product-info">
             <h1 class="product-title" id="productName">প্রোডাক্ট লোড হচ্ছে...</h1>
             <div class="product-price" id="productPrice">৳ ০</div>
-            <div class="product-description" id="productDescription">
-                প্রোডাক্টের বিবরণ লোড হচ্ছে...
-            </div>
+            
+            <!-- Features Section -->
             <div class="product-features" id="productFeatures">
                 <h3>ফিচারসমূহ</h3>
                 <!-- Features will be dynamically added -->
             </div>
+            
+            <!-- Description Section (এখন ফিচারের নিচে) -->
+            <div class="product-description" id="productDescription">
+                প্রোডাক্টের বিবরণ লোড হচ্ছে...
+            </div>
+            
+            <!-- Buy Now Button (সবার নিচে) -->
             <button class="buy-now-btn" id="buyNowBtn">
                 <i class="fab fa-whatsapp"></i> Buy Now
             </button>
