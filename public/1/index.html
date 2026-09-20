@@ -320,7 +320,7 @@
             flex-shrink: 0;
         }
 
-        /* ========== প্রোডাক্ট বিবরণ (এখন নিচে) ========== */
+        /* ========== প্রোডাক্ট বিবরণ ========== */
         .product-description {
             color: #b0bec5;
             font-size: 1rem;
@@ -331,7 +331,7 @@
             border-left: 3px solid #00bcd4;
         }
 
-        /* ========== বায় নাউ বাটন (সবার নিচে) ========== */
+        /* ========== বায় নাউ বাটন (এখন অনেক নিচে) ========== */
         .buy-now-btn {
             display: flex;
             align-items: center;
@@ -350,7 +350,9 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             box-shadow: 0 5px 20px rgba(255, 87, 34, 0.4);
-            margin-top: 10px; /* উপরের এলিমেন্ট থেকে একটু গ্যাপ */
+            
+            /* ⚠️ এখানে পরিবর্তন করা হয়েছে */
+            margin-top: 60px; /* উপরের এলিমেন্ট থেকে অনেক বড় গ্যাপ */
         }
 
         .buy-now-btn:hover {
@@ -553,6 +555,7 @@
             .buy-now-btn {
                 font-size: 1rem;
                 padding: 14px;
+                margin-top: 40px; /* মোবাইলের জন্য গ্যাপ অ্যাডজাস্ট */
             }
 
             .footer {
@@ -646,7 +649,7 @@
                 <!-- Features will be dynamically added -->
             </div>
             
-            <!-- Description Section (এখন ফিচারের নিচে) -->
+            <!-- Description Section -->
             <div class="product-description" id="productDescription">
                 প্রোডাক্টের বিবরণ লোড হচ্ছে...
             </div>
