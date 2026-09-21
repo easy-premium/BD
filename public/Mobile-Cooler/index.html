@@ -42,7 +42,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- ================== সিকিউরিটি মেটা ট্যাগ ================== -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval'; img-src 'self' https: data:; font-src 'self' https: data:; style-src 'self' https: 'unsafe-inline'; script-src 'self' https: 'unsafe-inline' 'unsafe-eval'; media-src 'self' https: data: blob:;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval'; img-src 'self' https: data:; font-src 'self' https: data:; style-src 'self' https: 'unsafe-inline'; script-src 'self' https: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https:;">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta name="format-detection" content="telephone=no, address=no, email=no">
     <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
@@ -683,19 +683,26 @@
     <a href="https://wa.me/qr/D3HNIB5KS4VNM1" target="_blank" class="messenger-float" title="মেসেঞ্জারে কথা বলুন"><i class="fab fa-facebook-messenger"></i></a>
 
     <script>
-        // ================== Base64 ইমেজ লোড করার সিস্টেম ==================
-        
-        // ইমেজের নামের অ্যারে (আপনার .txt ফাইলগুলোর নাম)
-        const imageFiles = ['image1.txt', 'image2.txt', 'image3.txt', 'image4.txt', 'image5.txt'];
-        
+        // ============================================================
+        // ✅ ৫টি .txt ফাইলের সম্পূর্ণ লিংক এখানে বসানো হয়েছে
+        // ============================================================
+        const imageFiles = [
+            'https://www.easy-premium.com/Mobile-Cooler/image1.txt',
+            'https://www.easy-premium.com/Mobile-Cooler/image2.txt',
+            'https://www.easy-premium.com/Mobile-Cooler/image3.txt',
+            'https://www.easy-premium.com/Mobile-Cooler/image4.txt',
+            'https://www.easy-premium.com/Mobile-Cooler/image5.txt'
+        ];
+        // ============================================================
+
         // লোড হওয়া ইমেজগুলো এখানে জমা হবে
         const loadedImages = [];
 
         // একটি .txt ফাইল থেকে Base64 ডেটা লোড করার ফাংশন
-        async function loadBase64Image(fileName) {
+        async function loadBase64Image(fileUrl) {
             try {
-                const response = await fetch(fileName);
-                if (!response.ok) throw new Error('File not found');
+                const response = await fetch(fileUrl);
+                if (!response.ok) throw new Error('File not found: ' + fileUrl);
                 let base64Data = await response.text();
                 base64Data = base64Data.trim();
                 
@@ -705,7 +712,7 @@
                 }
                 return base64Data;
             } catch (err) {
-                console.warn('ইমেজ লোড ব্যর্থ: ' + fileName, err);
+                console.warn('ইমেজ লোড ব্যর্থ: ' + fileUrl, err);
                 // ব্যর্থ হলে একটি প্লেসহোল্ডার ইমেজ রিটার্ন করুন
                 return 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"%3E%3Crect width="400" height="400" fill="%23222"/%3E%3Ctext x="200" y="200" font-family="Arial" font-size="20" fill="%23aaa" text-anchor="middle" dominant-baseline="central"%3ENo Image%3C/text%3E%3C/svg%3E';
             }
@@ -713,10 +720,10 @@
 
         // সব ইমেজ লোড করা
         async function loadAllImages() {
-            const promises = imageFiles.map(file => loadBase64Image(file));
+            const promises = imageFiles.map(url => loadBase64Image(url));
             const results = await Promise.all(promises);
             
-            // লোড হওয়া ইমেজগুলো savedImages অ্যারেতে রাখুন
+            // লোড হওয়া ইমেজগুলো loadedImages অ্যারেতে রাখুন
             results.forEach((img, index) => {
                 loadedImages[index] = img;
             });
@@ -744,11 +751,8 @@
                 
                 // ক্লিক ইভেন্ট - মেইন ইমেজ পরিবর্তন
                 thumbnailItem.addEventListener('click', function() {
-                    // সব থাম্বনেইল থেকে active ক্লাস সরান
                     document.querySelectorAll('.thumbnail-item').forEach(item => item.classList.remove('active'));
-                    // এই থাম্বনেইলে active ক্লাস যোগ করুন
                     this.classList.add('active');
-                    // মেইন ইমেজ পরিবর্তন করুন
                     mainImage.src = imgSrc;
                 });
                 
