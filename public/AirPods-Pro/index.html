@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>প্রোডাক্ট ভিউ - Easy Premium</title>
+    <meta name="author" content="Easy Premium">
+    <link rel="canonical" href="https://www.easy-premium.com">
+
+    <!-- FAVICONS -->
+    <link rel="icon" type="image/png" sizes="32x32" href="https://cdn-icons-png.flaticon.com/512/8701/8701941.png">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/8701/8701941.png">
+    <meta name="theme-color" content="#0a0a1a">
+
+    <!-- FONT AWESOME -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- সিকিউরিটি মেটা ট্যাগ -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval'; img-src 'self' https: data:; font-src 'self' https: data:; style-src 'self' https: 'unsafe-inline'; script-src 'self' https: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https:;">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', 'Noto Sans Bengali', sans-serif; -webkit-tap-highlight-color: transparent; color: #fff; }
+        html { scroll-behavior: smooth; overflow-x: hidden; width: 100%; height: 100%; background-color: #0a0a1a; }
+        body { background: linear-gradient(135deg, #0a0a1a 0%, #121230 50%, #1a1a3a 100%); background-attachment: fixed; min-height: 100vh; color: #fff; position: relative; }
+        body::before { content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(circle at 20% 30%, rgba(255, 152, 0, 0.05) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(0, 188, 212, 0.05) 0%, transparent 50%); z-index: -1; pointer-events: none; }
+
+        .header { background: rgba(10, 10, 26, 0.95); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5); position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(10px); width: 100%; flex-wrap: wrap; gap: 10px; }
+        .header-left { display: flex; align-items: center; gap: 15px; flex: 1; min-width: 200px; }
+        .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; transition: transform 0.3s; flex-shrink: 0; }
+        .logo:hover { transform: scale(1.02); }
+        .logo-image-container { width: 45px; height: 45px; min-width: 45px; display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 15px rgba(255, 152, 0, 0.3); border-radius: 8px; background: white; padding: 5px; }
+        .logo-image { width: 100%; height: 100%; object-fit: contain; }
+        .logo-text { display: flex; flex-direction: column; line-height: 1; }
+        .logo-main { font-size: 1.3rem; font-weight: 800; color: #ff9800; text-transform: uppercase; white-space: nowrap; }
+        .logo-sub { font-size: 0.75rem; font-weight: 600; color: #00bcd4; margin-top: 2px; white-space: nowrap; }
+
+        .product-view-container { max-width: 1200px; margin: 25px auto 0; padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; width: 100%; }
+        .product-gallery { display: flex; flex-direction: column; gap: 15px; }
+
+        .main-image-wrapper { background: rgba(20, 20, 40, 0.9); border-radius: 16px; padding: 20px; display: flex; align-items: center; justify-content: center; min-height: 400px; border: 2px solid transparent; transition: border-color 0.3s; overflow: hidden; position: relative; }
+        .main-image-wrapper:hover { border-color: #ff9800; }
+        .main-image { width: 100%; height: 100%; max-height: 450px; object-fit: contain; transition: transform 0.3s ease; border-radius: 12px; }
+
+        .loading-indicator { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #b0bec5; z-index: 5; }
+        .loading-indicator .spinner { border: 4px solid rgba(255, 255, 255, 0.1); border-top: 4px solid #ff9800; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .thumbnail-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+        .thumbnail-item { background: rgba(20, 20, 40, 0.9); border-radius: 10px; padding: 8px; cursor: pointer; border: 2px solid transparent; transition: all 0.3s; display: flex; align-items: center; justify-content: center; position: relative; aspect-ratio: 1 / 1; overflow: hidden; }
+        .thumbnail-item:hover { border-color: #ff9800; transform: translateY(-3px); }
+        .thumbnail-item.active { border-color: #ff9800; box-shadow: 0 0 15px rgba(255, 152, 0, 0.4); }
+        .thumbnail-item img { width: 100%; height: 100%; object-fit: contain; border-radius: 6px; }
+
+        .product-info { display: flex; flex-direction: column; gap: 20px; }
+        .product-title { font-size: 2rem; font-weight: 700; color: #fff; line-height: 1.3; }
+        .product-price { font-size: 2.2rem; font-weight: 800; color: #ff9800; padding: 15px 0; border-bottom: 1px solid rgba(255, 152, 0, 0.3); }
+        .product-features { background: rgba(20, 20, 40, 0.9); border-radius: 12px; padding: 20px; border: 1px solid rgba(255, 152, 0, 0.2); }
+        .product-features h3 { color: #ff9800; margin-bottom: 15px; font-size: 1.2rem; }
+        .feature-item { display: flex; align-items: flex-start; margin-bottom: 12px; color: #b0bec5; font-size: 0.95rem; }
+        .feature-item i { color: #4caf50; margin-right: 10px; margin-top: 3px; flex-shrink: 0; }
+        .product-description { color: #b0bec5; font-size: 1rem; line-height: 1.7; background: rgba(20, 20, 40, 0.5); padding: 15px; border-radius: 10px; }
+
+        .buy-now-btn { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; padding: 18px; background: linear-gradient(45deg, #0008ff, #ff5722); color: white; border: none; border-radius: 12px; font-size: 1.2rem; font-weight: 700; cursor: pointer; transition: all 0.3s; text-transform: uppercase; box-shadow: 0 5px 20px rgba(255, 87, 34, 0.4); margin-top: 5px; margin-bottom: 15px; }
+        .buy-now-btn:hover { background: linear-gradient(45deg, #ff5722, #ff9800); transform: translateY(-3px); }
+        .buy-now-btn i { font-size: 1.4rem; }
+
+        .footer { background: rgba(10, 10, 26, 0.95); padding: 40px 20px 30px; text-align: center; width: 100%; margin-top: 60px; }
+        .footer-policy-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-bottom: 30px; }
+        .footer-policy-links a { color: #fff; text-decoration: none; font-size: 0.95rem; font-weight: 500; padding: 5px 10px; border-radius: 5px; transition: all 0.3s; }
+        .footer-policy-links a:hover { color: #ff9800; background: rgba(255, 152, 0, 0.1); }
+        .social-links { display: flex; justify-content: center; gap: 15px; margin: 0 auto 30px; flex-wrap: wrap; max-width: 500px; }
+        .social-link { color: #fff; font-size: 1.5rem; transition: all 0.3s; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(255, 255, 255, 0.1); text-decoration: none; }
+        .social-link:hover { background: rgba(255, 152, 0, 0.2); transform: translateY(-5px) scale(1.1); }
+        .social-link:nth-child(1) i { color: #1877F2; } .social-link:nth-child(2) i { color: #E4405F; } .social-link:nth-child(3) i { color: #FF0000; } .social-link:nth-child(4) i { color: #000000; } .social-link:nth-child(5) i { color: #25D366; } .social-link:nth-child(6) i { color: #0088cc; }
+        .copyright { color: #b0bec5; font-size: 0.85rem; line-height: 1.6; max-width: 800px; margin: 0 auto; }
+
+        .messenger-float { position: fixed; bottom: 30px; right: 30px; z-index: 999; display: flex; align-items: center; justify-content: center; width: 60px; height: 60px; background: linear-gradient(45deg, #0084ff, #00b2ff); border-radius: 50%; box-shadow: 0 10px 25px rgba(0, 132, 255, 0.4); transition: all 0.3s; text-decoration: none; animation: messengerPulse 2s infinite; }
+        .messenger-float:hover { transform: scale(1.1); }
+        .messenger-float i { color: white; font-size: 2rem; }
+        @keyframes messengerPulse { 0% { box-shadow: 0 0 0 0 rgba(0, 132, 255, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(0, 132, 255, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 132, 255, 0); } }
+
+        @media (max-width: 768px) {
+            .product-view-container { grid-template-columns: 1fr; gap: 25px; padding: 15px; margin-top: 15px; }
+            .product-title { font-size: 1.5rem; }
+            .product-price { font-size: 1.8rem; }
+            .main-image-wrapper { min-height: 300px; }
+            .thumbnail-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+        @media (max-width: 480px) {
+            .logo-image-container { width: 40px; height: 40px; min-width: 40px; }
+            .logo-main { font-size: 1.1rem; }
+            .logo-sub { font-size: 0.7rem; }
+            .product-title { font-size: 1.3rem; }
+            .product-price { font-size: 1.5rem; }
+            .main-image-wrapper { min-height: 250px; padding: 10px; }
+            .thumbnail-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+            .buy-now-btn { font-size: 1rem; padding: 14px; }
+            .footer-policy-links { gap: 10px; flex-direction: column; }
+            .social-link { width: 45px; height: 45px; font-size: 1.3rem; }
+            .messenger-float { bottom: 20px; right: 20px; width: 55px; height: 55px; }
+        }
+    </style>
+
+    <noscript>
+        <style> body { display: none !important; } html { background: #000 !important; height: 100% !important; overflow: hidden !important; } </style>
+        <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:#000;color:#ff0000;display:flex;align-items:center;justify-content:center;z-index:999999;font-family:monospace;text-align:center;flex-direction:column;">
+            <h1 style="font-size:72px;margin:20px 0;">JavaScript is DISABLED</h1>
+            <p style="font-size:18px;color:#ff6666;">Enable JavaScript to access this site</p>
+        </div>
+    </noscript>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <a href="/" class="logo">
+                <div class="logo-image-container"><img src="https://cdn-icons-png.flaticon.com/512/8701/8701941.png" alt="Easy Premium Logo" class="logo-image"></div>
+                <div class="logo-text"><div class="logo-main">EASY PREMIUM</div><div class="logo-sub">Accessories Shop</div></div>
+            </a>
+        </div>
+    </header>
+
+    <!-- Product View Container -->
+    <div class="product-view-container">
+        <div class="product-gallery">
+            <div class="main-image-wrapper">
+                <div class="loading-indicator" id="loadingIndicator">
+                    <div class="spinner"></div>
+                    <p>ছবি লোড হচ্ছে...</p>
+                </div>
+                <img id="mainProductImage" src="" alt="Product Image" class="main-image" style="display:none;">
+            </div>
+            <div class="thumbnail-grid" id="thumbnailGrid"></div>
+        </div>
+
+        <div class="product-info">
+            <h1 class="product-title">K5 Mobile Cooler 15W Low Noise Freeze Semiconductor Heat Sink For Gaming RGB Lights</h1>
+            
+            <div class="product-price">৳ 899</div>
+            
+            <div class="product-features">
+                <h3>ফিচারসমূহ</h3>
+                <div class="feature-item"><i class="fas fa-check-circle"></i><span>প্রিমিয়াম কোয়ালিটি ম্যাটেরিয়াল</span></div>
+                <div class="feature-item"><i class="fas fa-check-circle"></i><span>পুরুত্ব/উচ্চতা: ২২ মিলিমিটার</span></div>
+                <div class="feature-item"><i class="fas fa-check-circle"></i><span>ডিভাইসটি চলার সময় প্রায় ১১ ওয়াট</span></div>
+                <div class="feature-item"><i class="fas fa-check-circle"></i><span>ডিভাইসটি ৫ ভোল্ট এবং ৩ অ্যাম্পিয়ার শক্তিতে চলে</span></div>
+                <div class="feature-item"><i class="fas fa-check-circle"></i><span>স্ক্র্যাচ ও ড্রপ থেকে সুরক্ষা</span></div>
+            </div>
+            
+            <button class="buy-now-btn" id="buyNowBtn">
+                <i class="fab fa-whatsapp"></i> Buy Now
+            </button>
+            
+            <div class="product-description">
+                K5 Mobile Cooler (15W Semiconductor Freeze Cooling Fan) মূলত গেমিং করার সময় ফোনের অতিরিক্ত গরম হওয়া রোধ করতে এবং স্মুথ পারফর্ম্যান্স বজায় রাখতে ব্যবহার করা হয়।
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-policy-links">
+            <a href="https://easy-premium.com/privacy-refund-policy-terms-of-service?data=PrivacyPolicy">Privacy Policy</a>
+            <a href="https://easy-premium.com/privacy-refund-policy-terms-of-service?data=PaymentSolutions">Payment Solutions</a>
+            <a href="https://easy-premium.com/privacy-refund-policy-terms-of-service?data=TermsandConditions">Terms and Conditions</a>
+            <a href="https://easy-premium.com/privacy-refund-policy-terms-of-service?data=RefundandReturnsPolicy">Refund and Returns Policy</a>
+        </div>
+        <div class="social-links">
+            <a href="https://m.me/906635592542978" class="social-link"><i class="fab fa-facebook"></i></a>
+            <a href="https://www.instagram.com/easy__premium/" class="social-link"><i class="fab fa-instagram"></i></a>
+            <a href="https://www.youtube.com/@Easy_Premium" class="social-link"><i class="fab fa-youtube"></i></a>
+            <a href="https://twitter.com/EasyPremium2026" class="social-link"><i class="fab fa-twitter"></i></a>
+            <a href="https://wa.me/1770584994" class="social-link"><i class="fab fa-whatsapp"></i></a>
+            <a href="https://t.me/Easy_Pemium" class="social-link"><i class="fab fa-telegram"></i></a>
+        </div>
+        <div class="copyright">
+            © 2026 Easy Premium. TIN : 478475635566<br>
+            কন্টাক্ট: support@easy-premium.com | হেল্পলাইন: +8801321782961
+        </div>
+    </footer>
+
+    <!-- Floating Messenger -->
+    <a href="https://wa.me/qr/D3HNIB5KS4VNM1" target="_blank" class="messenger-float"><i class="fab fa-facebook-messenger"></i></a>
+
+    <script>
+        // ============================================================
+        // ✅ ৫টি .txt ফাইলের সম্পূর্ণ URL (Full URL) - আপনি চেয়েছিলেন
+        // ============================================================
+        const imageFiles = [
+            'https://www.easy-premium.com/Mobile-Cooler/image1.txt',
+            'https://www.easy-premium.com/Mobile-Cooler/image2.txt',
+            'https://www.easy-premium.com/Mobile-Cooler/image3.txt',
+            'https://www.easy-premium.com/Mobile-Cooler/image4.txt',
+            'https://www.easy-premium.com/Mobile-Cooler/image5.txt'
+        ];
+        // ============================================================
+
+        const loadedImages = [];
+
+        // একটি .txt ফাইল থেকে Base64 ডেটা লোড করার ফাংশন
+        async function loadBase64Image(fileUrl) {
+            try {
+                console.log('📥 লোড হচ্ছে: ' + fileUrl);
+                const response = await fetch(fileUrl);
+                
+                if (!response.ok) {
+                    throw new Error('HTTP ' + response.status + ' - ফাইল পাওয়া যায়নি');
+                }
+                
+                let base64Data = await response.text();
+                console.log('📄 পাওয়া গেছে (' + base64Data.length + ' ক্যারেক্টার)');
+
+                // 🔥 সবচেয়ে গুরুত্বপূর্ণ ফিক্স: সব whitespace (নিউলাইন, স্পেস, ট্যাব) মুছে ফেলা
+                base64Data = base64Data.replace(/\s/g, '');
+                
+                // যদি ডেটা খুব ছোট হয় বা HTML থাকে (404 পেজ)
+                if (!base64Data || base64Data.length < 100) {
+                    throw new Error('ফাইলে যথেষ্ট ডেটা নেই');
+                }
+                
+                // যদি HTML থাকে (404 error page)
+                if (base64Data.includes('<html') || base64Data.includes('<!DOCTYPE') || base64Data.includes('<body')) {
+                    throw new Error('ফাইলের বদলে HTML পেজ পাওয়া গেছে (404)');
+                }
+                
+                // যদি data:image প্রিফিক্স আগে থেকে না থাকে, তাহলে যোগ করুন
+                if (!base64Data.startsWith('data:image')) {
+                    base64Data = 'data:image/png;base64,' + base64Data;
+                }
+                
+                console.log('✅ সফল: ' + fileUrl);
+                return base64Data;
+                
+            } catch (err) {
+                console.error('❌ ব্যর্থ: ' + fileUrl + ' → ' + err.message);
+                return null;
+            }
+        }
+
+        // সব ইমেজ লোড করা
+        async function loadAllImages() {
+            const results = await Promise.all(
+                imageFiles.map(url => loadBase64Image(url))
+            );
+            
+            results.forEach((img, index) => {
+                if (img) loadedImages[index] = img;
+            });
+            
+            // যদি একটি ইমেজও লোড না হয়
+            if (loadedImages.filter(x => x).length === 0) {
+                showError();
+                return;
+            }
+            
+            renderGallery();
+        }
+
+        // গ্যালারি রেন্ডার করা
+        function renderGallery() {
+            const mainImage = document.getElementById('mainProductImage');
+            const thumbnailGrid = document.getElementById('thumbnailGrid');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            
+            // মেইন ইমেজ (প্রথম সফল ইমেজ)
+            const firstImage = loadedImages.find(img => img);
+            if (firstImage) {
+                mainImage.src = firstImage;
+                mainImage.style.display = 'block';
+                if (loadingIndicator) loadingIndicator.style.display = 'none';
+            }
+            
+            // থাম্বনেইল গ্রিড
+            thumbnailGrid.innerHTML = '';
+            loadedImages.forEach((imgSrc, index) => {
+                if (!imgSrc) return;
+                
+                const thumbnailItem = document.createElement('div');
+                thumbnailItem.className = 'thumbnail-item' + (index === 0 ? ' active' : '');
+                thumbnailItem.innerHTML = '<img src="' + imgSrc + '" alt="Thumbnail ' + (index + 1) + '">';
+                
+                thumbnailItem.addEventListener('click', function() {
+                    document.querySelectorAll('.thumbnail-item').forEach(item => item.classList.remove('active'));
+                    this.classList.add('active');
+                    mainImage.src = imgSrc;
+                });
+                
+                thumbnailGrid.appendChild(thumbnailItem);
+            });
+        }
+
+        // সব ইমেজ ব্যর্থ হলে এরর দেখানো
+        function showError() {
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            if (loadingIndicator) {
+                loadingIndicator.innerHTML = '<i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #ff9800; margin-bottom: 15px;"></i><p style="color: #ff5722; font-size: 1.1rem;">ছবি লোড করা সম্ভব হয়নি</p><p style="color: #b0bec5; font-size: 0.85rem; margin-top: 10px;">Console (F12) চেক করুন</p>';
+            }
+        }
+
+        // Buy Now বাটন
+        function setupBuyNowButton() {
+            const btn = document.getElementById('buyNowBtn');
+            if (!btn) return;
+            btn.addEventListener('click', function() {
+                const whatsappNumber = '8801770584994';
+                const productName = document.querySelector('.product-title').textContent;
+                const productPrice = document.querySelector('.product-price').textContent;
+                const message = encodeURIComponent('আমি এই প্রোডাক্টটি কিনতে চাই: ' + productName + ' - ' + productPrice);
+                window.open('https://wa.me/' + whatsappNumber + '?text=' + message, '_blank');
+            });
+        }
+
+        // ইনিশিয়ালাইজ
+        function init() {
+            console.log('🚀 Easy Premium Product View চালু হচ্ছে...');
+            console.log('📁 মোট ' + imageFiles.length + ' টি ইমেজ লোড হবে');
+            setupBuyNowButton();
+            loadAllImages();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+</body>
+</html>
