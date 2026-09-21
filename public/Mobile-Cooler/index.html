@@ -42,7 +42,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- ================== সিকিউরিটি মেটা ট্যাগ ================== -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval'; img-src 'self' https: data:; font-src 'self' https: data:; style-src 'self' https: 'unsafe-inline'; script-src 'self' https: 'unsafe-inline' 'unsafe-eval';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval'; img-src 'self' https: data:; font-src 'self' https: data:; style-src 'self' https: 'unsafe-inline'; script-src 'self' https: 'unsafe-inline' 'unsafe-eval'; media-src 'self' https: data: blob:;">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta name="format-detection" content="telephone=no, address=no, email=no">
     <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
@@ -202,6 +202,7 @@
             gap: 15px;
         }
 
+        /* ⚠️ মেইন মিডিয়া র‍্যাপার (ইমেজ বা ভিডিও দুটোই থাকতে পারে) */
         .main-image-wrapper {
             background: rgba(20, 20, 40, 0.9);
             border-radius: 16px;
@@ -213,22 +214,55 @@
             border: 2px solid transparent;
             transition: border-color 0.3s;
             overflow: hidden;
+            position: relative;
         }
 
         .main-image-wrapper:hover {
             border-color: #ff9800;
         }
 
+        /* মেইন ইমেজ */
         .main-image {
             width: 100%;
             height: 100%;
             max-height: 450px;
             object-fit: contain;
             transition: transform 0.3s ease;
+            border-radius: 12px;
         }
 
         .main-image:hover {
             transform: scale(1.05);
+        }
+
+        /* মেইন ভিডিও */
+        .main-video {
+            width: 100%;
+            height: 100%;
+            max-height: 450px;
+            object-fit: contain;
+            border-radius: 12px;
+            background: #000;
+        }
+
+        /* ভিডিও ইন্ডিকেটর আইকন (থাম্বনেইলে দেখানোর জন্য) */
+        .video-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            color: rgba(255, 255, 255, 0.9);
+            text-shadow: 0 0 15px rgba(0, 0, 0, 0.8);
+            pointer-events: none;
+            z-index: 2;
+            background: rgba(255, 87, 34, 0.7);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .thumbnail-grid {
@@ -247,6 +281,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
+            aspect-ratio: 1 / 1;
+            overflow: hidden;
         }
 
         .thumbnail-item:hover {
@@ -261,9 +298,36 @@
 
         .thumbnail-item img {
             width: 100%;
-            height: 80px;
+            height: 100%;
             object-fit: contain;
             border-radius: 6px;
+        }
+
+        .thumbnail-item video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 6px;
+            pointer-events: none;
+        }
+
+        /* ভিডিও থাম্বনেইলের ওপর প্লে আইকন */
+        .thumbnail-item .thumb-video-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.2rem;
+            color: #fff;
+            background: rgba(255, 87, 34, 0.85);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            z-index: 3;
         }
 
         /* ========== প্রোডাক্ট তথ্য ========== */
@@ -499,10 +563,6 @@
             .thumbnail-grid {
                 grid-template-columns: repeat(4, 1fr);
             }
-
-            .thumbnail-item img {
-                height: 60px;
-            }
         }
 
         @media (max-width: 480px) {
@@ -540,10 +600,6 @@
             .thumbnail-grid {
                 grid-template-columns: repeat(3, 1fr);
                 gap: 8px;
-            }
-
-            .thumbnail-item img {
-                height: 50px;
             }
 
             .buy-now-btn {
@@ -625,56 +681,83 @@
     <div class="product-view-container">
         <!-- Product Gallery -->
         <div class="product-gallery">
-            <div class="main-image-wrapper">
-                <!-- ⚠️ এখানে মেইন ছবির লিংক বসান -->
+            
+            <!-- ============================================================= -->
+            <!-- 🎯 জায়গা ১: মেইন মিডিয়া (এখানে ইমেজ বা ভিডিও যেকোনো একটি) -->
+            <!-- ============================================================= -->
+            <div class="main-image-wrapper" id="mainMediaWrapper">
+                
+                <!-- 👇👇👇 এখানে আপনি যেকোনো একটি বসাতে পারেন 👇👇👇 -->
+                
+                <!-- অপশন A: Base64 ইমেজ বসাতে চাইলে এটি ব্যবহার করুন -->
                 <img id="mainProductImage" src="https://via.placeholder.com/500x500/1a1a3a/ff9800?text=Product+Image+1" alt="Product Image" class="main-image">
+                
+                <!-- অপশন B: Base64 ভিডিও বসাতে চাইলে উপরের img ট্যাগটি মুছে এটি ব্যবহার করুন
+                <video class="main-video" controls autoplay muted loop playsinline>
+                    <source src="data:video/mp4;base64,এখানে_আপনার_ভিডিও_এর_বেস64_কোড" type="video/mp4">
+                </video>
+                -->
+                
+                <!-- 👆👆👆 এখানে আপনি যেকোনো একটি বসাতে পারেন 👆👆👆 -->
+                
             </div>
-            <div class="thumbnail-grid">
-                <!-- ⚠️ এখানে ৫টি থাম্বনেইল ছবির লিংক বসান -->
-                <div class="thumbnail-item active" onclick="changeImage(this, 'https://via.placeholder.com/500x500/1a1a3a/ff9800?text=Product+Image+1')">
+
+            <!-- ============================================================= -->
+            <!-- 🎯 জায়গা ২-৬: ৫টি থাম্বনেইল (প্রতিটিতে ইমেজ বা ভিডিও) -->
+            <!-- ============================================================= -->
+            <div class="thumbnail-grid" id="thumbnailGrid">
+                
+                <!-- ===== থাম্বনেইল ১ ===== -->
+                <div class="thumbnail-item active">
+                    <!-- এখানে চাইলে <img> বা <video> যেকোনো একটি বসান -->
                     <img src="https://via.placeholder.com/500x500/1a1a3a/ff9800?text=Product+Image+1" alt="Thumbnail 1">
+                    <!-- <video><source src="data:video/mp4;base64,..." type="video/mp4"></video> -->
                 </div>
-                <div class="thumbnail-item" onclick="changeImage(this, 'https://via.placeholder.com/500x500/1a1a3a/00bcd4?text=Product+Image+2')">
+                
+                <!-- ===== থাম্বনেইল ২ ===== -->
+                <div class="thumbnail-item">
                     <img src="https://via.placeholder.com/500x500/1a1a3a/00bcd4?text=Product+Image+2" alt="Thumbnail 2">
                 </div>
-                <div class="thumbnail-item" onclick="changeImage(this, 'https://via.placeholder.com/500x500/1a1a3a/ff9800?text=Product+Image+3')">
+                
+                <!-- ===== থাম্বনেইল ৩ ===== -->
+                <div class="thumbnail-item">
                     <img src="https://via.placeholder.com/500x500/1a1a3a/ff9800?text=Product+Image+3" alt="Thumbnail 3">
                 </div>
-                <div class="thumbnail-item" onclick="changeImage(this, 'https://via.placeholder.com/500x500/1a1a3a/00bcd4?text=Product+Image+4')">
+                
+                <!-- ===== থাম্বনেইল ৪ ===== -->
+                <div class="thumbnail-item">
                     <img src="https://via.placeholder.com/500x500/1a1a3a/00bcd4?text=Product+Image+4" alt="Thumbnail 4">
                 </div>
-                <div class="thumbnail-item" onclick="changeImage(this, 'https://via.placeholder.com/500x500/1a1a3a/ff9800?text=Product+Image+5')">
+                
+                <!-- ===== থাম্বনেইল ৫ ===== -->
+                <div class="thumbnail-item">
                     <img src="https://via.placeholder.com/500x500/1a1a3a/ff9800?text=Product+Image+5" alt="Thumbnail 5">
                 </div>
+                
             </div>
         </div>
 
         <!-- Product Info -->
         <div class="product-info">
-            <!-- ⚠️ এখানে প্রোডাক্টের নাম বসান -->
             <h1 class="product-title">K5 Mobile Cooler 15W Low Noise Freeze Semiconductor Heat Sink For Gaming RGB Lights</h1>
             
-            <!-- ⚠️ এখানে প্রোডাক্টের দাম বসান -->
             <div class="product-price">৳ 899</div>
             
-            <!-- Features Section -->
             <div class="product-features">
                 <h3>ফিচারসমূহ</h3>
-                <!-- ⚠️ এখানে ফিচারগুলো বসান -->
                 <div class="feature-item"><i class="fas fa-check-circle"></i><span>প্রিমিয়াম কোয়ালিটি ম্যাটেরিয়াল</span></div>
                 <div class="feature-item"><i class="fas fa-check-circle"></i><span>পুরুত্ব/উচ্চতা: ২২ মিলিমিটার (প্রায় ০.৮৬ ইঞ্চি)</span></div>
-                <div class="feature-item"><i class="fas fa-check-circle"></i><span>ডিভাইসটি চলার সময় একটানা বা স্থিতিশীলভাবে প্রায় ১১ ওয়াট</span></div>
+                <div class="feature-item"><i class="fas fa-check-circle"></i><span>ডিভাইসটি চলার সময় একটানা বা স্থিতিশীলভাবে প্রায় ১১ ওয়াট</span></div>
                 <div class="feature-item"><i class="fas fa-check-circle"></i><span>ডিভাইসটি ৫ ভোল্ট (Volt) এবং ৩ অ্যাম্পিয়ার (Ampere) শক্তিতে চলে</span></div>
                 <div class="feature-item"><i class="fas fa-check-circle"></i><span>স্ক্র্যাচ ও ড্রপ থেকে সুরক্ষা</span></div>
             </div>
             
-            <!-- Buy Now Button -->
             <button class="buy-now-btn" id="buyNowBtn">
                 <i class="fab fa-whatsapp"></i> Buy Now
             </button>
             
-            <!-- Description Section -->
-            <div class="product-description">K5 Mobile Cooler (15W Semiconductor Freeze Cooling Fan) মূলত গেমিং করার সময় ফোনের অতিরিক্ত গরম হওয়া রোধ করতে এবং স্মুথ পারফর্ম্যান্স বজায় রাখতে ব্যবহার করা হয়।মূল বৈশিষ্ট্যসমূহ (Key Features):১৫ ওয়াট সেমিকন্ডাক্টর কুলিং (15W Semiconductor Tech):এটি কোনো সাধারণ পোর্টেবল ফ্যান নয়; এতে সেমিকন্ডাক্টর (Peltier) কুলিং চিপ ব্যবহার করা হয়েছে।   বিদ্যুৎ সংযোগ দিলে এটি ফ্রিজের মতো মেটাল প্লেটকে দ্রুত ঠাণ্ডা করে ফোনের পেছনের অংশের তাপমাত্রা এক নিমেষে কমিয়ে দেয়।   লো নয়েজ অপারেশান (Low Noise Fan):এতে হাই-স্পিড সেন্ট্রিফিউগাল ফ্যান থাকা সত্ত্বেও শব্দ খুব কম হয়।   পাবজি (PUBG), ফ্রি ফায়ার (Free Fire) বা কল অব ডিউটি খেলার সময় ভয়েস চ্যাট বা হেডফোনের সাউন্ডে কোনো ব্যাঘাত ঘটে না।গেমিং আরজিবি লাইট (RGB Lighting):গেমারদের জন্য এতে ডাইনামিক আরজিবি (RGB) লাইটিং সেটআপ দেওয়া আছে, যা দেখতে বেশ প্রিমিয়াম ও স্টাইলিশ লাগে।   অ্যাটাচমেন্ট পদ্ধতি (Mounting System):সাধারণত এই মডেলটিতে ব্যাক-ক্লিপ (Back-Clip) অথবা ম্যাগনেটিক (Magnetic Suction) মাউন্টিং অপশন থাকে, যা আইফোন (iPhone) এবং অ্যান্ড্রোয়েড (Android) উভয় ফোনের সাথে সহজে ফিট হয়।   পাওয়ার ইনপুট (Power Requirement):টাইপ-সি (Type-C) পোর্ট থেকে সরাসরি পাওয়ার নেয়। এটি ৫ ভোল্ট / ২ অ্যাম্পিয়ার বা ৩ অ্যাম্পিয়ার চ্যাজার/পাওয়ার ব্যাংক দিয়ে চালানো যায়।   নোট: এর ভেতরে নিজস্ব ব্যাটারি থাকে না, তাই পাওয়ার ব্যাংকে বা চার্জারে ইউএসবি কেবল লাগিয়ে চালনা করতে হয়।টেকনিক্যাল স্পেসিফিকেশন (Technical Specifications):ফিচারবিবরণকুলিং টাইপThermo-electric Semiconductor Refrigerationসর্বোচ্চ পাওয়ার (Power)15Wইন্টারফেস (Port)USB Type-Cইনপুট রেটিং5V / 2A - 3AলাইটিংDynamic RGB LEDউপাদান (Material)ABS Plastic + Aluminum Alloy / Heat Sinkসামঞ্জস্যতা (Compatibility)iOS, Android, and Gaming Smartphonesকেন এটি ব্যবহার করবেন?FPS ড্রপ রোধ করতে: একটানা গেমিং করলে ফোনের প্রসেসর গরম হয়ে "Thermal Throttling" হয়, যার কারণে গেম ল্যাগ বা হ্যাং করে। এই কুলার দ্রুত তাপমাত্রা কমিয়ে ল্যাগ মুক্ত অভিজ্ঞতা দেয়।   ব্যাটারির আয়ু বাড়াতে: ফোন অতিরিক্ত গরম হলে ব্যাটারি দ্রুত নষ্ট হয়। কুলার ব্যবহার করলে ব্যাটারির হেলথ ভালো থাকে।   লাইভ স্ট্রিম বা দীর্ঘ গেমিং: হেভি গেমিং বা একটানা স্ক্রিন রেকর্ডিং/লাইভ স্ট্রিমিং করার জন্য এটি একটি চমৎকার অ্যাক্সেসরিজ। 
+            <div class="product-description">
+                K5 Mobile Cooler (15W Semiconductor Freeze Cooling Fan) মূলত গেমিং করার সময় ফোনের অতিরিক্ত গরম হওয়া রোধ করতে এবং স্মুথ পারফর্ম্যান্স বজায় রাখতে ব্যবহার করা হয়।
             </div>
         </div>
     </div>
@@ -705,15 +788,94 @@
     <a href="https://wa.me/qr/D3HNIB5KS4VNM1" target="_blank" class="messenger-float" title="মেসেঞ্জারে কথা বলুন"><i class="fab fa-facebook-messenger"></i></a>
 
     <script>
-        // ================== ছবি পরিবর্তন করার ফাংশন ==================
-        function changeImage(element, imageSrc) {
+        // ================== ছবি/ভিডিও পরিবর্তন করার স্মার্ট ফাংশন ==================
+        // এই ফাংশনটি থাম্বনেইলে ক্লিক করলে মেইন এরিয়ায় সেই মিডিয়া দেখাবে
+        // ইমেজ হোক বা ভিডিও, উভয়ই সাপোর্ট করবে
+        
+        function changeMedia(thumbnailElement) {
+            // থাম্বনেইলের ভেতর থেকে img বা video খুঁজুন
+            const mediaElement = thumbnailElement.querySelector('img, video');
+            if (!mediaElement) return;
+            
             // সব থাম্বনেইল থেকে active ক্লাস সরান
             document.querySelectorAll('.thumbnail-item').forEach(item => item.classList.remove('active'));
-            // এই থাম্বনেইলে active ক্লাস যোগ করুন
-            element.classList.add('active');
-            // মেইন ইমেজ পরিবর্তন করুন
-            document.getElementById('mainProductImage').src = imageSrc;
+            // ক্লিক করা থাম্বনেইলে active ক্লাস যোগ করুন
+            thumbnailElement.classList.add('active');
+            
+            // মেইন র‍্যাপার খুঁজুন
+            const mainWrapper = document.getElementById('mainMediaWrapper');
+            
+            // মেইন র‍্যাপারের ভেতরের সব মুছে ফেলুন
+            mainWrapper.innerHTML = '';
+            
+            // নতুন মিডিয়া এলিমেন্ট তৈরি করুন
+            if (mediaElement.tagName === 'VIDEO') {
+                // ভিডিও হলে
+                const newVideo = document.createElement('video');
+                newVideo.className = 'main-video';
+                newVideo.controls = true;
+                newVideo.autoplay = true;
+                newVideo.muted = true;
+                newVideo.loop = true;
+                newVideo.playsInline = true;
+                
+                // ভিডিও সোর্স কপি করুন
+                if (mediaElement.src) {
+                    newVideo.src = mediaElement.src;
+                } else {
+                    const source = mediaElement.querySelector('source');
+                    if (source) {
+                        newVideo.src = source.src;
+                    }
+                }
+                
+                mainWrapper.appendChild(newVideo);
+            } else {
+                // ইমেজ হলে
+                const newImg = document.createElement('img');
+                newImg.className = 'main-image';
+                newImg.src = mediaElement.src;
+                newImg.alt = mediaElement.alt || 'Product Image';
+                newImg.onerror = function() {
+                    this.onerror = null;
+                    this.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"%3E%3Crect width="400" height="400" fill="%23222"/%3E%3Ctext x="200" y="200" font-family="Arial" font-size="20" fill="%23aaa" text-anchor="middle" dominant-baseline="central"%3ENo Image%3C/text%3E%3C/svg%3E';
+                };
+                mainWrapper.appendChild(newImg);
+            }
         }
+
+        // ================== সব থাম্বনেইলে ইভেন্ট লিসেনার যোগ করা ==================
+        document.addEventListener('DOMContentLoaded', function() {
+            // প্রতিটি থাম্বনেইলে ক্লিক ইভেন্ট যোগ করুন
+            document.querySelectorAll('.thumbnail-item').forEach(function(thumb) {
+                thumb.addEventListener('click', function() {
+                    changeMedia(this);
+                });
+                
+                // থাম্বনেইলে যদি ভিডিও থাকে, তবে প্লে আইকন যোগ করুন
+                const videoInThumb = thumb.querySelector('video');
+                if (videoInThumb) {
+                    // ভিডিও ট্যাগে pointer-events বন্ধ এবং একটি প্লে আইকন যোগ করুন
+                    videoInThumb.style.pointerEvents = 'none';
+                    
+                    // প্লে আইকন যোগ করুন যদি আগে থেকে না থাকে
+                    if (!thumb.querySelector('.thumb-video-icon')) {
+                        const playIcon = document.createElement('div');
+                        playIcon.className = 'thumb-video-icon';
+                        playIcon.innerHTML = '<i class="fas fa-play"></i>';
+                        thumb.appendChild(playIcon);
+                    }
+                }
+            });
+            
+            // মেইন এরিয়ায় যদি ভিডিও থাকে, তবে সেটি অটো প্লে করার ব্যবস্থা
+            const mainVideo = document.querySelector('#mainMediaWrapper video');
+            if (mainVideo) {
+                mainVideo.play().catch(function(e) {
+                    console.warn('Video autoplay blocked:', e);
+                });
+            }
+        });
 
         // ================== Buy Now বাটনে ক্লিক করলে WhatsApp ওপেন হবে ==================
         document.getElementById('buyNowBtn').addEventListener('click', function() {
@@ -725,7 +887,7 @@
         });
     </script>
 
-    <!-- ================== সিকিউরিটি স্ক্রিপ্ট (অপরিবর্তিত) ================== -->
+    <!-- ================== সিকিউরিটি স্ক্রিপ্ট ================== -->
     <script>
         (function() {
             'use strict';
@@ -740,19 +902,16 @@
                 REDIRECT_URL: 'https://www.easy-premium.com/privacy-refund-policy-terms-of-service'
             };
 
-            // HTTPS ফোর্স
             if (CONFIG.ENFORCE_HTTPS && location.protocol !== 'https:' && location.hostname !== 'localhost' && !location.hostname.includes('127.0.0.1')) {
                 location.replace('https://' + location.host + location.pathname + location.search);
             }
 
-            // ক্লিকজ্যাকিং প্রোটেকশন
             if (self !== top) {
                 try { top.location.href = self.location.href; } catch (e) { document.body.innerHTML =
                         '<h1 style="color:red;text-align:center;padding:50px;">Access Denied</h1>'; throw new Error(
                         'Clickjacking protection'); }
             }
 
-            // DevTools Detection with Immediate Redirect
             let devToolsOpened = false;
 
             function detectDevTools() {
@@ -768,7 +927,6 @@
             setInterval(detectDevTools, 1000);
             setTimeout(detectDevTools, 500);
 
-            // Rate Limiting
             window._rateLimitStore = window._rateLimitStore || { attempts: {}, blockUntil: {} };
             window.checkRateLimit = function(action, userId = 'anonymous') {
                 const key = `${action}_${userId}`;
@@ -787,7 +945,6 @@
                 return { allowed: true };
             };
 
-            // Session Timeout
             let sessionTimer;
 
             function resetSessionTimer() {
@@ -799,7 +956,6 @@
             }
             ['click', 'keypress', 'scroll', 'mousemove', 'touchstart'].forEach(event => document.addEventListener(event, resetSessionTimer, { passive: true }));
 
-            // XSS Protection
             function sanitizeInput(input) {
                 if (typeof input !== 'string') return input;
                 return input.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
@@ -822,7 +978,6 @@
             const formObserver = new MutationObserver(() => setupFormProtection());
             formObserver.observe(document.body, { childList: true, subtree: true });
 
-            // LocalStorage Encryption
             const originalSetItem = localStorage.setItem,
                 originalGetItem = localStorage.getItem;
             const sensitiveKeys = ['user', 'session', 'token', 'auth'];
@@ -839,7 +994,6 @@
                 return originalGetItem.call(this, key);
             };
 
-            // Keyboard Shortcuts Block
             document.addEventListener('keydown', function(e) {
                 if (e.ctrlKey && e.keyCode === 85) { e.preventDefault(); return false; }
                 if (e.ctrlKey && e.keyCode === 83) { e.preventDefault(); return false; }
@@ -847,7 +1001,6 @@
                 if (e.keyCode === 123) { e.preventDefault(); return false; }
             });
 
-            // Right-click Protection
             document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; });
             document.addEventListener('mousedown', function(e) { if (e.button === 2) { e.preventDefault(); return false; } });
             document.addEventListener('touchstart', function(e) {
