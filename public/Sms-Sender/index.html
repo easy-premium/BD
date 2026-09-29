@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMS Bot - Command Panel</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase App and Realtime Database SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+</head>
+<body class="bg-slate-100 min-h-screen py-8 px-4 font-sans">
+
+    <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6 border border-slate-200">
+        <!-- Header -->
+        <div class="border-b border-slate-200 pb-4 mb-6">
+            <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                <span>📱</span> SMS Bot Command Panel
+            </h1>
+            <p class="text-sm text-slate-500 mt-1">ফায়ারবেস রিয়েলটাইম ডেটাবেসের মাধ্যমে মোবাইল ফোনে অটোমেটিক এসএমএস পাঠান</p>
+        </div>
+
+        <!-- Configuration -->
+        <div class="mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
+            <h2 class="text-sm font-semibold text-slate-700 mb-2">ফায়ারবেস ডেটাবেস সেটিংস:</h2>
+            <div class="space-y-3 text-sm">
+                <div>
+                    <label class="block font-medium text-slate-600 mb-1">Database URL:</label>
+                    <input type="text" id="dbUrl" value="https://easy-premium-default-rtdb.asia-southeast1.firebasedatabase.app" 
+                           class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none text-slate-700 font-mono text-xs">
+                </div>
+                <div>
+                    <label class="block font-medium text-slate-600 mb-1">Device ID (অ্যাপের স্ক্রিনে দেখানো Device ID দিন):</label>
+                    <input type="text" id="deviceId" value="TECNO_TECNO_KI5k_9af5b1" placeholder="যেমন: TECNO_TECNO_KI5k_9af5b1" 
+                           class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none text-slate-700 font-mono text-xs">
+                </div>
+            </div>
+        </div>
+
+        <!-- SMS Form -->
+        <form id="smsForm" onsubmit="sendCommand(event)" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">প্রাপকের ফোন নম্বর (Receiver Phone Number):</label>
+                <input type="text" id="phoneNumber" required placeholder="017XXXXXXXX" 
+                       class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-slate-800">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">মেসেজ টেক্সট (Message Body):</label>
+                <textarea id="messageBody" required rows="3" placeholder="এখানে আপনার মেসেজ লিখুন..." 
+                          class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-slate-800"></textarea>
+            </div>
+
+            <button type="submit" id="sendBtn" 
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg shadow transition duration-200 flex items-center justify-center gap-2">
+                <span>🚀</span> কমান্ড পাঠান (Send Command)
+            </button>
+        </form>
+
+        <!-- Status Toast -->
+        <div id="statusToast" class="hidden mt-4 p-3 rounded-lg text-sm text-center font-medium"></div>
+
+        <!-- Real-time Pending Commands Status -->
+        <div class="mt-8 border-t border-slate-200 pt-6">
+            <h3 class="text-md font-bold text-slate-700 mb-3 flex items-center justify-between">
+                <span>পেন্ডিং কমান্ড সমুহ (Pending Commands):</span>
+                <span id="pendingCount" class="text-xs bg-slate-200 text-slate-700 px-2 py-1 rounded-full">0 Pending</span>
+            </h3>
+            <div id="commandList" class="space-y-2 text-sm text-slate-500">
+                <p class="text-center py-4 bg-slate-50 rounded-lg">কোনো পেন্ডিং কমান্ড নেই (ফোন মেসেজ পাঠালে তা ফায়ারবেস থেকে স্বয়ংক্রিয়ভাবে মুছে যাবে)।</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let db = null;
+
+        function initFirebase() {
+            const dbUrl = document.getElementById("dbUrl").value.trim();
+            if (!dbUrl) return;
+
+            try {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp({ databaseURL: dbUrl });
+                }
+                db = firebase.database();
+                listenPendingCommands();
+            } catch(e) {
+                console.error("Firebase Init Error:", e);
+            }
+        }
+
+        function listenPendingCommands() {
+            const deviceId = document.getElementById("deviceId").value.trim();
+            if (!deviceId || !db) return;
+
+            const ref = db.ref("outgoing_commands/" + deviceId);
+            ref.on("value", (snapshot) => {
+                const listDiv = document.getElementById("commandList");
+                const countSpan = document.getElementById("pendingCount");
+                listDiv.innerHTML = "";
+
+                if (!snapshot.exists()) {
+                    countSpan.innerText = "0 Pending";
+                    listDiv.innerHTML = `<p class="text-center py-4 bg-slate-50 rounded-lg text-emerald-600 font-medium">✨ কোনো পেন্ডিং কমান্ড নেই (ফোন থেকে সফলভাবে পাঠিয়ে কমান্ড মুছে গেছে)!</p>`;
+                    return;
+                }
+
+                const data = snapshot.val();
+                const keys = Object.keys(data);
+                countSpan.innerText = keys.length + " Pending";
+
+                keys.forEach(key => {
+                    const item = data[key];
+                    const phone = item.phoneNumber || item.phone_number || "Unknown";
+                    const body = item.messageBody || item.message || "";
+                    
+                    const card = document.createElement("div");
+                    card.className = "p-3 bg-amber-50 border border-amber-200 rounded-lg flex justify-between items-center";
+                    card.innerHTML = `
+                        <div>
+                            <div class="font-bold text-amber-900">${phone}</div>
+                            <div class="text-xs text-amber-800 mt-1">${body}</div>
+                        </div>
+                        <span class="text-xs font-semibold bg-amber-200 text-amber-900 px-2 py-1 rounded">প্রসেসিং হচ্ছে...</span>
+                    `;
+                    listDiv.appendChild(card);
+                });
+            });
+        }
+
+        document.getElementById("deviceId").addEventListener("change", () => {
+            initFirebase();
+        });
+
+        function sendCommand(event) {
+            event.preventDefault();
+            const deviceId = document.getElementById("deviceId").value.trim();
+            const phoneNumber = document.getElementById("phoneNumber").value.trim();
+            const messageBody = document.getElementById("messageBody").value.trim();
+
+            if (!deviceId) {
+                alert("দয়া করে আপনার ফোনের Device ID দিন (যেমন: TECNO_TECNO_KI5k_9af5b1)");
+                return;
+            }
+
+            initFirebase();
+
+            const btn = document.getElementById("sendBtn");
+            btn.disabled = true;
+            btn.innerText = "পাঠানো হচ্ছে...";
+
+            const commandRef = db.ref("outgoing_commands/" + deviceId).push();
+            commandRef.set({
+                phoneNumber: phoneNumber,
+                messageBody: messageBody,
+                timestamp: Date.now()
+            }).then(() => {
+                showToast("কমান্ড সফলভাবে ফায়ারবেসে পাঠানো হয়েছে! ফোন মেসেজ পাঠিয়ে এটি মুছে ফেলবে।", "success");
+                document.getElementById("messageBody").value = "";
+            }).catch((err) => {
+                showToast("ত্রুটি: " + err.message, "error");
+            }).finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = "<span>🚀</span> কমান্ড পাঠান (Send Command)";
+            });
+        }
+
+        function showToast(msg, type) {
+            const toast = document.getElementById("statusToast");
+            toast.innerText = msg;
+            toast.className = type === "success" 
+                ? "mt-4 p-3 rounded-lg text-sm text-center font-medium bg-emerald-100 text-emerald-800 border border-emerald-300"
+                : "mt-4 p-3 rounded-lg text-sm text-center font-medium bg-red-100 text-red-800 border border-red-300";
+            toast.classList.remove("hidden");
+            setTimeout(() => toast.classList.add("hidden"), 5000);
+        }
+
+        window.onload = () => {
+            initFirebase();
+        };
+    </script>
+</body>
+</html>
