@@ -157,6 +157,21 @@
                   "shippingDestination": {
                     "@type": "DefinedRegion",
                     "addressCountry": "BD"
+                  },
+                  "deliveryTime": {
+                    "@type": "ShippingDeliveryTime",
+                    "handlingTime": {
+                      "@type": "QuantitativeValue",
+                      "minValue": 0,
+                      "maxValue": 1,
+                      "unitCode": "DAY"
+                    },
+                    "transitTime": {
+                      "@type": "QuantitativeValue",
+                      "minValue": 1,
+                      "maxValue": 3,
+                      "unitCode": "DAY"
+                    }
                   }
                 },
                 "hasMerchantReturnPolicy": {
@@ -391,7 +406,6 @@
   ]
 }
 </script>
-
     <!-- ================== FAVICONS ================== -->
     <link rel="icon" type="image/x-icon" href="https://cdn-icons-png.flaticon.com/512/8701/8701941.png">
     <link rel="icon" type="image/png" sizes="32x32" href="https://cdn-icons-png.flaticon.com/512/8701/8701941.png">
