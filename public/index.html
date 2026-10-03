@@ -25,51 +25,347 @@
     <meta name="twitter:image" content="https://cdn-icons-png.flaticon.com/512/8701/8701941.png">
 
     <!-- ================== STRUCTURED DATA FOR GOOGLE ================== -->
-    <script type="application/ld+json">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://www.easy-premium.com/#organization",
+      "name": "Easy Premium",
+      "url": "https://www.easy-premium.com",
+      "logo": {
+        "@type": "ImageObject",
+        "@id": "https://www.easy-premium.com/#logo",
+        "url": "https://www.easy-premium.com/logo.png",
+        "contentUrl": "https://www.easy-premium.com/logo.png",
+        "caption": "Easy Premium"
+      },
+      "image": {
+        "@id": "https://www.easy-premium.com/#logo"
+      },
+      "description": "Easy Premium - গাইবান্ধা জেলার সমস্ত উপজেলা, পৌরসভা ও ইউনিয়নে পণ্য ও সেবা সরবরাহকারী প্রতিষ্ঠান।",
+      "areaServed": [
         {
-            "@context": "https://schema.org",
-            "@type": "Organization",
-            "url": "https://www.easy-premium.com",
-            "name": "Easy Premium",
-            "description": "Mobile Servicing and Accessories Shop",
-            "logo": "https://cdn-icons-png.flaticon.com/512/8701/8701941.png",
-            "image": "https://cdn-icons-png.flaticon.com/512/8701/8701941.png",
-            "address": {
-                "@type": "PostalAddress",
-                "addressCountry": "Bangladesh"
-            },
-            "contactPoint": {
-                "@type": "ContactPoint",
-                "telephone": "+8801321782961",
-                "contactType": "Customer Service",
-                "email": "support@easy-premium.com",
-                "availableLanguage": ["Bengali", "English"]
-            },
-            "sameAs": [
-                "https://m.me/1356437314214521",
-                "https://www.instagram.com/easypremiumbd",
-                "https://www.youtube.com/@Easy_Premium",
-                "https://t.me/Easy_Pemium",
-                "https://wa.me/+8801321782961",
-                "https://twitter.com/EasyPremium2026"
-            ]
+          "@type": "AdministrativeArea",
+          "name": "Gaibandha District",
+          "sameAs": "https://en.wikipedia.org/wiki/Gaibandha_District"
         }
-    </script>
-
-    <script type="application/ld+json">
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer service",
+        "areaServed": "BD",
+        "availableLanguage": ["Bengali", "English"]
+      },
+      "sameAs": [
+        "https://www.facebook.com/easypremium",
+        "https://www.youtube.com/@easypremium"
+      ]
+    },
+    {
+      "@type": "LocalBusiness",
+      "@id": "https://www.easy-premium.com/#localbusiness",
+      "name": "Easy Premium",
+      "url": "https://www.easy-premium.com",
+      "image": "https://www.easy-premium.com/logo.png",
+      "priceRange": "৳৳",
+      "description": "গাইবান্ধা জেলার ৭টি উপজেলা, ৩টি পৌরসভা এবং ৮২টি ইউনিয়নে পণ্য ও সেবা সরবরাহকারী বিশ্বস্ত প্রতিষ্ঠান।",
+      "parentOrganization": {
+        "@id": "https://www.easy-premium.com/#organization"
+      },
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Gaibandha",
+        "addressRegion": "Rangpur",
+        "addressCountry": "BD"
+      },
+      "areaServed": [
         {
-            "@context": "https://schema.org",
-            "@type": "WebSite",
-            "url": "https://www.easy-premium.com",
-            "name": "Easy Premium",
-            "description": "Mobile Servicing and Accessories Shop",
-            "publisher": {
-                "@type": "Organization",
-                "name": "Easy Premium",
-                "logo": "https://cdn-icons-png.flaticon.com/512/8701/8701941.png"
+          "@type": "AdministrativeArea",
+          "name": "Gaibandha Sadar Upazila",
+          "containedInPlace": {
+            "@type": "AdministrativeArea",
+            "name": "Gaibandha District"
+          }
+        },
+        {
+          "@type": "AdministrativeArea",
+          "name": "Gobindaganj Upazila",
+          "containedInPlace": {
+            "@type": "AdministrativeArea",
+            "name": "Gaibandha District"
+          }
+        },
+        {
+          "@type": "AdministrativeArea",
+          "name": "Sundarganj Upazila",
+          "containedInPlace": {
+            "@type": "AdministrativeArea",
+            "name": "Gaibandha District"
+          }
+        },
+        {
+          "@type": "AdministrativeArea",
+          "name": "Palashbari Upazila",
+          "containedInPlace": {
+            "@type": "AdministrativeArea",
+            "name": "Gaibandha District"
+          }
+        },
+        {
+          "@type": "AdministrativeArea",
+          "name": "Sadullapur Upazila",
+          "containedInPlace": {
+            "@type": "AdministrativeArea",
+            "name": "Gaibandha District"
+          }
+        },
+        {
+          "@type": "AdministrativeArea",
+          "name": "Saghata Upazila",
+          "containedInPlace": {
+            "@type": "AdministrativeArea",
+            "name": "Gaibandha District"
+          }
+        },
+        {
+          "@type": "AdministrativeArea",
+          "name": "Fulchhari Upazila",
+          "containedInPlace": {
+            "@type": "AdministrativeArea",
+            "name": "Gaibandha District"
+          }
+        }
+      ],
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Easy Premium পণ্য ও সেবা",
+        "itemListElement": [
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Product",
+              "name": "Easy Premium পণ্য",
+              "description": "গাইবান্ধা জেলার সমস্ত উপজেলা ও ইউনিয়নে সরবরাহকৃত পণ্য"
             }
-        }
-    </script>
+          }
+        ]
+      }
+    },
+    {
+      "@type": "AdministrativeArea",
+      "@id": "https://www.easy-premium.com/#gaibandha-district",
+      "name": "Gaibandha District",
+      "alternateName": "গাইবান্ধা জেলা",
+      "sameAs": "https://en.wikipedia.org/wiki/Gaibandha_District",
+      "containedInPlace": {
+        "@type": "AdministrativeArea",
+        "name": "Rangpur Division"
+      },
+      "containsPlace": [
+        { "@type": "AdministrativeArea", "name": "Gaibandha Sadar Upazila" },
+        { "@type": "AdministrativeArea", "name": "Gobindaganj Upazila" },
+        { "@type": "AdministrativeArea", "name": "Sundarganj Upazila" },
+        { "@type": "AdministrativeArea", "name": "Palashbari Upazila" },
+        { "@type": "AdministrativeArea", "name": "Sadullapur Upazila" },
+        { "@type": "AdministrativeArea", "name": "Saghata Upazila" },
+        { "@type": "AdministrativeArea", "name": "Fulchhari Upazila" }
+      ]
+    },
+    {
+      "@type": "AdministrativeArea",
+      "@id": "https://www.easy-premium.com/#gaibandha-sadar",
+      "name": "Gaibandha Sadar Upazila",
+      "alternateName": "গাইবান্ধা সদর উপজেলা",
+      "containedInPlace": {
+        "@id": "https://www.easy-premium.com/#gaibandha-district"
+      },
+      "containsPlace": [
+        { "@type": "City", "name": "Gaibandha Municipality" },
+        { "@type": "AdministrativeArea", "name": "Lakshmipur Union" },
+        { "@type": "AdministrativeArea", "name": "Mallikpur Union" },
+        { "@type": "AdministrativeArea", "name": "Ghagoa Union" },
+        { "@type": "AdministrativeArea", "name": "Gidari Union" },
+        { "@type": "AdministrativeArea", "name": "Boali Union" },
+        { "@type": "AdministrativeArea", "name": "Ramchandrapur Union" },
+        { "@type": "AdministrativeArea", "name": "Sahapara Union" },
+        { "@type": "AdministrativeArea", "name": "Ballamjhar Union" },
+        { "@type": "AdministrativeArea", "name": "Kholahati Union" },
+        { "@type": "AdministrativeArea", "name": "Kuptala Union" },
+        { "@type": "AdministrativeArea", "name": "Kamarjani Union" },
+        { "@type": "AdministrativeArea", "name": "Mollar Char Union" },
+        { "@type": "AdministrativeArea", "name": "Badiakhali Union" }
+      ]
+    },
+    {
+      "@type": "AdministrativeArea",
+      "@id": "https://www.easy-premium.com/#gobindaganj",
+      "name": "Gobindaganj Upazila",
+      "alternateName": "গোবিন্দগঞ্জ উপজেলা",
+      "containedInPlace": {
+        "@id": "https://www.easy-premium.com/#gaibandha-district"
+      },
+      "containsPlace": [
+        { "@type": "City", "name": "Gobindaganj Municipality" },
+        { "@type": "AdministrativeArea", "name": "Mohimaganj Union" },
+        { "@type": "AdministrativeArea", "name": "Kamaradaha Union" },
+        { "@type": "AdministrativeArea", "name": "Gopinathpur Union" },
+        { "@type": "AdministrativeArea", "name": "Taluk Kanupur Union" },
+        { "@type": "AdministrativeArea", "name": "Nakai Union" },
+        { "@type": "AdministrativeArea", "name": "Harirampur Union" },
+        { "@type": "AdministrativeArea", "name": "Rakhalburuj Union" },
+        { "@type": "AdministrativeArea", "name": "Fulbari Union" },
+        { "@type": "AdministrativeArea", "name": "Goabari Union" },
+        { "@type": "AdministrativeArea", "name": "Dorbost Union" },
+        { "@type": "AdministrativeArea", "name": "Shalmara Union" },
+        { "@type": "AdministrativeArea", "name": "Rajahar Union" },
+        { "@type": "AdministrativeArea", "name": "Shakhahar Union" },
+        { "@type": "AdministrativeArea", "name": "Shibpur Union" },
+        { "@type": "AdministrativeArea", "name": "Kochashahar Union" },
+        { "@type": "AdministrativeArea", "name": "Katabari Union" },
+        { "@type": "AdministrativeArea", "name": "Sapmara Union" }
+      ]
+    },
+    {
+      "@type": "AdministrativeArea",
+      "@id": "https://www.easy-premium.com/#sundarganj",
+      "name": "Sundarganj Upazila",
+      "alternateName": "সুন্দরগঞ্জ উপজেলা",
+      "containedInPlace": {
+        "@id": "https://www.easy-premium.com/#gaibandha-district"
+      },
+      "containsPlace": [
+        { "@type": "City", "name": "Sundarganj Municipality" },
+        { "@type": "AdministrativeArea", "name": "Bamandanga Union" },
+        { "@type": "AdministrativeArea", "name": "Sonaray Union" },
+        { "@type": "AdministrativeArea", "name": "Tarapur Union" },
+        { "@type": "AdministrativeArea", "name": "Belka Union" },
+        { "@type": "AdministrativeArea", "name": "Dahobond Union" },
+        { "@type": "AdministrativeArea", "name": "Sarbananda Union" },
+        { "@type": "AdministrativeArea", "name": "Ramjiban Union" },
+        { "@type": "AdministrativeArea", "name": "Dharmapur Union" },
+        { "@type": "AdministrativeArea", "name": "Panchgachi Union" },
+        { "@type": "AdministrativeArea", "name": "Shantiram Union" },
+        { "@type": "AdministrativeArea", "name": "Kanchipara Union" },
+        { "@type": "AdministrativeArea", "name": "Sreepur Union" },
+        { "@type": "AdministrativeArea", "name": "Kapasia Union" },
+        { "@type": "AdministrativeArea", "name": "Haripur Union" },
+        { "@type": "AdministrativeArea", "name": "Chhairdanga Union" }
+      ]
+    },
+    {
+      "@type": "AdministrativeArea",
+      "@id": "https://www.easy-premium.com/#palashbari",
+      "name": "Palashbari Upazila",
+      "alternateName": "পলাশবাড়ী উপজেলা",
+      "containedInPlace": {
+        "@id": "https://www.easy-premium.com/#gaibandha-district"
+      },
+      "containsPlace": [
+        { "@type": "City", "name": "Palashbari Municipality" },
+        { "@type": "AdministrativeArea", "name": "Kishoreganj Union" },
+        { "@type": "AdministrativeArea", "name": "Hossenpur Union" },
+        { "@type": "AdministrativeArea", "name": "Palashbari Union" },
+        { "@type": "AdministrativeArea", "name": "Barisal Union" },
+        { "@type": "AdministrativeArea", "name": "Mahdipur Union" },
+        { "@type": "AdministrativeArea", "name": "Betkapa Union" },
+        { "@type": "AdministrativeArea", "name": "Pabanapur Union" },
+        { "@type": "AdministrativeArea", "name": "Monohorpur Union" },
+        { "@type": "AdministrativeArea", "name": "Harinathpur Union" }
+      ]
+    },
+    {
+      "@type": "AdministrativeArea",
+      "@id": "https://www.easy-premium.com/#sadullapur",
+      "name": "Sadullapur Upazila",
+      "alternateName": "সাদুল্লাপুর উপজেলা",
+      "containedInPlace": {
+        "@id": "https://www.easy-premium.com/#gaibandha-district"
+      },
+      "containsPlace": [
+        { "@type": "AdministrativeArea", "name": "Rasulpur Union" },
+        { "@type": "AdministrativeArea", "name": "Naldanga Union" },
+        { "@type": "AdministrativeArea", "name": "Damodarpur Union" },
+        { "@type": "AdministrativeArea", "name": "Jamalpur Union" },
+        { "@type": "AdministrativeArea", "name": "Faridpur Union" },
+        { "@type": "AdministrativeArea", "name": "Dhaperhat Union" },
+        { "@type": "AdministrativeArea", "name": "Idilpur Union" },
+        { "@type": "AdministrativeArea", "name": "Bhatgram Union" },
+        { "@type": "AdministrativeArea", "name": "Bonagram Union" },
+        { "@type": "AdministrativeArea", "name": "Kamarpara Union" },
+        { "@type": "AdministrativeArea", "name": "Khorddakomar Union" }
+      ]
+    },
+    {
+      "@type": "AdministrativeArea",
+      "@id": "https://www.easy-premium.com/#saghata",
+      "name": "Saghata Upazila",
+      "alternateName": "সাঘাটা উপজেলা",
+      "containedInPlace": {
+        "@id": "https://www.easy-premium.com/#gaibandha-district"
+      },
+      "containsPlace": [
+        { "@type": "AdministrativeArea", "name": "Padumshahar Union" },
+        { "@type": "AdministrativeArea", "name": "Bharatkhali Union" },
+        { "@type": "AdministrativeArea", "name": "Saghata Union" },
+        { "@type": "AdministrativeArea", "name": "Muktinagar Union" },
+        { "@type": "AdministrativeArea", "name": "Kachua Union" },
+        { "@type": "AdministrativeArea", "name": "Ghuridah Union" },
+        { "@type": "AdministrativeArea", "name": "Holdia Union" },
+        { "@type": "AdministrativeArea", "name": "Jumar Bari Union" },
+        { "@type": "AdministrativeArea", "name": "Kamalerpara Union" },
+        { "@type": "AdministrativeArea", "name": "Bonarpara Union" }
+      ]
+    },
+    {
+      "@type": "AdministrativeArea",
+      "@id": "https://www.easy-premium.com/#fulchhari",
+      "name": "Fulchhari Upazila",
+      "alternateName": "ফুলছড়ি উপজেলা",
+      "containedInPlace": {
+        "@id": "https://www.easy-premium.com/#gaibandha-district"
+      },
+      "containsPlace": [
+        { "@type": "AdministrativeArea", "name": "Kanchipara Union" },
+        { "@type": "AdministrativeArea", "name": "Uria Union" },
+        { "@type": "AdministrativeArea", "name": "Udakhali Union" },
+        { "@type": "AdministrativeArea", "name": "Gazaria Union" },
+        { "@type": "AdministrativeArea", "name": "Fulchhari Union" },
+        { "@type": "AdministrativeArea", "name": "Erendabari Union" },
+        { "@type": "AdministrativeArea", "name": "Fazlupur Union" }
+      ]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://www.easy-premium.com/#website",
+      "url": "https://www.easy-premium.com",
+      "name": "Easy Premium",
+      "publisher": {
+        "@id": "https://www.easy-premium.com/#organization"
+      },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://www.easy-premium.com/search?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://www.easy-premium.com/#webpage",
+      "url": "https://www.easy-premium.com",
+      "name": "Easy Premium - গাইবান্ধা জেলার সমস্ত উপজেলা ও ইউনিয়নে পণ্য ও সেবা",
+      "isPartOf": {
+        "@id": "https://www.easy-premium.com/#website"
+      },
+      "about": {
+        "@id": "https://www.easy-premium.com/#organization"
+      },
+      "description": "গাইবান্ধা জেলার ৭টি উপজেলা, ৩টি পৌরসভা এবং ৮২টি ইউনিয়নে Easy Premium-এর পণ্য ও সেবা সরবরাহ করা হয়।"
+    }
+  ]
+}
+</script>
 
     <!-- ================== FAVICONS ================== -->
     <link rel="icon" type="image/x-icon" href="https://cdn-icons-png.flaticon.com/512/8701/8701941.png">
