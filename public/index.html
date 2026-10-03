@@ -135,12 +135,38 @@
               "@type": "Product",
               "name": "মোবাইল এক্সেসরিজ",
               "description": "চার্জার, হেডফোন, কাভার, গ্লাস, পাওয়ার ব্যাংক সহ সব ধরণের মোবাইল এক্সেসরিজ।",
+              "image": "https://www.easy-premium.com/logo.png",
+              "sku": "EP-ACC-001",
+              "brand": {
+                "@type": "Brand",
+                "name": "Easy Premium"
+              },
               "offers": {
                 "@type": "Offer",
                 "priceCurrency": "BDT",
                 "price": "100.00",
                 "availability": "https://schema.org/InStock",
-                "url": "https://www.easy-premium.com"
+                "url": "https://www.easy-premium.com",
+                "shippingDetails": {
+                  "@type": "OfferShippingDetails",
+                  "shippingRate": {
+                    "@type": "MonetaryAmount",
+                    "value": "0",
+                    "currency": "BDT"
+                  },
+                  "shippingDestination": {
+                    "@type": "DefinedRegion",
+                    "addressCountry": "BD"
+                  }
+                },
+                "hasMerchantReturnPolicy": {
+                  "@type": "MerchantReturnPolicy",
+                  "applicableCountry": "BD",
+                  "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+                  "merchantReturnDays": "7",
+                  "returnMethod": "https://schema.org/ReturnByMail",
+                  "returnFees": "https://schema.org/FreeReturn"
+                }
               }
             }
           }
