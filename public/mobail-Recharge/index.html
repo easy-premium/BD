@@ -10,25 +10,21 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-/* ============================================
-   🎨 Easy Premium — Design Tokens (হোমপেজের সাথে ম্যাচ)
-   ============================================ */
 :root{
   --bg1:#0a0a1a; --bg2:#121230; --bg3:#1a1a3a;
   --orange:#ff9800; --cyan:#00bcd4; --green:#4caf50; --red:#f44336;
   --card:rgba(20,20,40,.9); --muted:#b0bec5;
   --grad-btn:linear-gradient(45deg,#ff9800,#ff5722);
 }
-
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI','Noto Sans Bengali',sans-serif;-webkit-tap-highlight-color:transparent;color:#fff}
 
-/* ✅ সাদা অংশ রিমুভ করার মূল ফিক্স */
+/* ✅ স্ক্রলিং ফিক্স */
 html{
   scroll-behavior:smooth;
   overflow-x:hidden;
   width:100%;
   min-height:100%;
-  background-color:#0a0a1a;   /* ⭐ এটাই সাদা অংশ আটকায় */
+  background-color:#0a0a1a;
   scrollbar-width:none;
   -ms-overflow-style:none;
 }
@@ -37,16 +33,14 @@ html::-webkit-scrollbar{display:none}
 body{
   background:linear-gradient(135deg,var(--bg1) 0%,var(--bg2) 50%,var(--bg3) 100%);
   background-attachment:fixed;
-  background-color:#0a0a1a;   /* ⭐ ব্যাকআপ */
+  background-color:#0a0a1a;
   min-height:100vh;
   width:100%;
   overflow-x:hidden;
-  overscroll-behavior-y:none;  /* ⭐ overscroll এ সাদা flash আটকায় */
+  overscroll-behavior-y:none;
   position:relative;
-  padding-bottom:0;
 }
 
-/* Glow layer — হোমপেজের মতো */
 body::before{
   content:'';
   position:fixed;inset:0;
@@ -57,7 +51,6 @@ body::before{
   z-index:-1;pointer-events:none;
 }
 
-/* ---------- Header (হোমপেজের সাথে হুবহু) ---------- */
 .header{
   background:rgba(10,10,26,.95);padding:12px 16px;
   display:flex;justify-content:space-between;align-items:center;
@@ -83,15 +76,10 @@ body::before{
 }
 .back-btn:hover{background:rgba(255,152,0,.15);transform:translateY(-1px)}
 
-/* ---------- Layout ---------- */
 .container{max-width:560px;margin:0 auto;padding:24px 16px}
-.page-title{
-  text-align:center;font-size:1.7rem;font-weight:800;color:var(--orange);
-  margin-bottom:8px;line-height:1.3;
-}
+.page-title{text-align:center;font-size:1.7rem;font-weight:800;color:var(--orange);margin-bottom:8px;line-height:1.3}
 .page-sub{text-align:center;color:var(--muted);font-size:.9rem;margin-bottom:22px}
 
-/* ---------- Balance Strip ---------- */
 .balance-strip{
   background:linear-gradient(135deg,rgba(255,152,0,.15),rgba(0,188,212,.08));
   border:1px solid rgba(255,152,0,.35);border-radius:14px;
@@ -103,42 +91,29 @@ body::before{
 .balance-strip .value small{font-size:.75rem;color:var(--muted);font-weight:500;margin-left:4px}
 .refresh-btn{
   width:40px;height:40px;border-radius:50%;border:1px solid var(--orange);
-  background:transparent;color:var(--orange);cursor:pointer;font-size:1rem;
-  transition:.3s;
+  background:transparent;color:var(--orange);cursor:pointer;font-size:1rem;transition:.3s;
 }
 .refresh-btn:hover{background:rgba(255,152,0,.15);transform:rotate(180deg)}
 .refresh-btn.loading{animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* ---------- Card ---------- */
 .card{
   background:var(--card);border-radius:16px;padding:22px 20px;
   border:1px solid rgba(255,255,255,.06);margin-bottom:18px;
   box-shadow:0 8px 24px rgba(0,0,0,.35);
 }
-.form-label{
-  display:block;font-size:.85rem;color:var(--muted);font-weight:600;
-  margin-bottom:8px;letter-spacing:.3px;
-}
+.form-label{display:block;font-size:.85rem;color:var(--muted);font-weight:600;margin-bottom:8px;letter-spacing:.3px}
 .input-wrap{position:relative;margin-bottom:16px}
 .input{
   width:100%;padding:15px 15px 15px 48px;border-radius:12px;
   border:2px solid rgba(255,152,0,.4);background:rgba(0,0,0,.45);
-  color:#fff;font-size:1.05rem;font-weight:600;outline:none;transition:.25s;
-  letter-spacing:.5px;
+  color:#fff;font-size:1.05rem;font-weight:600;outline:none;transition:.25s;letter-spacing:.5px;
 }
-.input:focus{
-  border-color:var(--orange);background:rgba(0,0,0,.65);
-  box-shadow:0 0 0 4px rgba(255,152,0,.15);
-}
+.input:focus{border-color:var(--orange);background:rgba(0,0,0,.65);box-shadow:0 0 0 4px rgba(255,152,0,.15)}
 .input::placeholder{color:rgba(255,255,255,.35);font-weight:400;letter-spacing:0}
-.input-icon{
-  position:absolute;left:16px;top:50%;transform:translateY(-50%);
-  color:var(--orange);font-size:1.05rem;pointer-events:none;
-}
+.input-icon{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--orange);font-size:1.05rem;pointer-events:none}
 .input-wrap.amount .input{padding-left:48px;font-size:1.2rem}
 
-/* ---------- Operator Badge ---------- */
 .operator-badge{
   display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:20px;
   background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
@@ -155,7 +130,6 @@ body::before{
 .op-TT{background:rgba(76,175,80,.15);border-color:#4caf50;color:#4caf50}
 .op-BT{background:rgba(156,39,176,.15);border-color:#9c27b0;color:#9c27b0}
 
-/* ---------- Quick Amounts ---------- */
 .quick-amounts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
 .amt-chip{
   padding:12px 6px;border-radius:10px;border:2px solid rgba(255,152,0,.35);
@@ -163,12 +137,8 @@ body::before{
   cursor:pointer;transition:.2s;font-family:inherit;
 }
 .amt-chip:hover{border-color:var(--orange);background:rgba(255,152,0,.12)}
-.amt-chip.active{
-  background:var(--grad-btn);border-color:transparent;
-  box-shadow:0 4px 15px rgba(255,152,0,.4);
-}
+.amt-chip.active{background:var(--grad-btn);border-color:transparent;box-shadow:0 4px 15px rgba(255,152,0,.4)}
 
-/* ---------- Recharge Button ---------- */
 .recharge-btn{
   width:100%;padding:16px;border:none;border-radius:12px;
   background:var(--grad-btn);color:#fff;font-size:1.05rem;font-weight:800;
@@ -183,7 +153,6 @@ body::before{
   vertical-align:middle;margin-right:8px;
 }
 
-/* ---------- Result Box ---------- */
 .result-box{display:none;padding:16px;border-radius:12px;margin-top:16px;font-size:.9rem;line-height:1.55}
 .result-box.show{display:block;animation:fadeIn .3s}
 @keyframes fadeIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
@@ -199,11 +168,7 @@ body::before{
 .result-box .rb-row span:first-child{color:var(--muted);font-size:.83rem}
 .result-box .rb-row span:last-child{font-weight:700}
 
-/* ---------- History ---------- */
-.section-title{
-  font-size:1.05rem;font-weight:700;color:#fff;margin-bottom:12px;
-  display:flex;align-items:center;gap:8px;
-}
+.section-title{font-size:1.05rem;font-weight:700;color:#fff;margin-bottom:12px;display:flex;align-items:center;gap:8px}
 .section-title i{color:var(--orange)}
 .history-list{display:flex;flex-direction:column;gap:10px}
 .history-item{
@@ -217,35 +182,13 @@ body::before{
 .history-item .hi-num{font-weight:700;font-size:.95rem}
 .history-item .hi-meta{font-size:.75rem;color:var(--muted);margin-top:2px;display:flex;gap:10px;flex-wrap:wrap}
 .history-item .hi-amt{font-weight:800;color:var(--orange);font-size:1rem;white-space:nowrap}
-.empty-history{
-  text-align:center;color:var(--muted);padding:24px 12px;font-size:.9rem;
-  background:var(--card);border-radius:12px;
-}
+.empty-history{text-align:center;color:var(--muted);padding:24px 12px;font-size:.9rem;background:var(--card);border-radius:12px}
 
-/* ---------- Footer (হোমপেজের সাথে হুবহু) ---------- */
-.footer{
-  background:rgba(10,10,26,.95);
-  padding:40px 20px 30px;
-  text-align:center;
-  width:100%;
-  margin-top:40px;
-  position:relative;
-  z-index:1;
-}
-.footer-policy-links{
-  display:flex;flex-wrap:wrap;justify-content:center;gap:20px;margin-bottom:30px;
-}
-.footer-policy-links a{
-  color:#fff;text-decoration:none;font-size:.95rem;font-weight:500;
-  padding:5px 10px;border-radius:5px;transition:.3s;border:1px solid transparent;
-}
-.footer-policy-links a:hover{
-  color:var(--orange);background:rgba(255,152,0,.1);border-color:var(--orange);
-}
-.social-links{
-  display:flex;justify-content:center;gap:15px;margin:0 auto 30px;
-  flex-wrap:wrap;max-width:500px;
-}
+.footer{background:rgba(10,10,26,.95);padding:40px 20px 30px;text-align:center;width:100%;margin-top:40px;position:relative;z-index:1}
+.footer-policy-links{display:flex;flex-wrap:wrap;justify-content:center;gap:20px;margin-bottom:30px}
+.footer-policy-links a{color:#fff;text-decoration:none;font-size:.95rem;font-weight:500;padding:5px 10px;border-radius:5px;transition:.3s;border:1px solid transparent}
+.footer-policy-links a:hover{color:var(--orange);background:rgba(255,152,0,.1);border-color:var(--orange)}
+.social-links{display:flex;justify-content:center;gap:15px;margin:0 auto 30px;flex-wrap:wrap;max-width:500px}
 .social-link{
   color:#fff;font-size:1.5rem;transition:.3s;width:50px;height:50px;
   display:flex;align-items:center;justify-content:center;border-radius:50%;
@@ -255,14 +198,11 @@ body::before{
 .social-link:nth-child(1) i{color:#1877F2}
 .social-link:nth-child(2) i{color:#E4405F}
 .social-link:nth-child(3) i{color:#FF0000}
-.social-link:nth-child(4) i{color:#1DA1F2}   /* ⭐ Twitter — আগে কালো ছিল, এখন নীল */
+.social-link:nth-child(4) i{color:#1DA1F2}
 .social-link:nth-child(5) i{color:#25D366}
 .social-link:nth-child(6) i{color:#0088cc}
-.copyright{
-  color:var(--muted);font-size:.85rem;line-height:1.6;max-width:800px;margin:0 auto;
-}
+.copyright{color:var(--muted);font-size:.85rem;line-height:1.6;max-width:800px;margin:0 auto}
 
-/* ---------- Messenger Float (হোমপেজের মতো) ---------- */
 .messenger-float{
   position:fixed;bottom:30px;right:30px;z-index:999;
   display:flex;align-items:center;justify-content:center;width:60px;height:60px;
@@ -278,7 +218,6 @@ body::before{
   100%{box-shadow:0 0 0 0 rgba(0,132,255,0)}
 }
 
-/* ---------- Toast ---------- */
 .toast{
   position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(150%);
   background:rgba(20,20,40,.98);border:1px solid var(--orange);color:#fff;
@@ -291,7 +230,6 @@ body::before{
 .toast.ok{border-color:var(--green)}
 .toast.err{border-color:var(--red)}
 
-/* ---------- Responsive ---------- */
 @media(max-width:480px){
   .logo-image-container{width:40px;height:40px;min-width:40px}
   .logo-main{font-size:1.1rem}
@@ -313,7 +251,6 @@ body::before{
 </head>
 <body>
 
-<!-- Header -->
 <header class="header">
   <a href="../index.html" class="logo">
     <div class="logo-image-container">
@@ -328,11 +265,9 @@ body::before{
 </header>
 
 <div class="container">
-
   <h1 class="page-title">মোবাইল রিচার্জ</h1>
   <p class="page-sub">GP · Robi · Banglalink · Airtel · Teletalk — সব সিমে রিচার্জ</p>
 
-  <!-- Balance -->
   <div class="balance-strip">
     <div>
       <div class="label"><i class="fas fa-wallet"></i> আপনার ব্যালেন্স</div>
@@ -341,7 +276,6 @@ body::before{
     <button class="refresh-btn" id="refreshBalance" title="রিফ্রেশ"><i class="fas fa-sync-alt"></i></button>
   </div>
 
-  <!-- Recharge Form -->
   <div class="card">
     <label class="form-label">মোবাইল নম্বর <span style="color:var(--red)">*</span></label>
     <div class="input-wrap">
@@ -375,15 +309,12 @@ body::before{
     <div class="result-box" id="resultBox"></div>
   </div>
 
-  <!-- History -->
   <h3 class="section-title"><i class="fas fa-history"></i> সাম্প্রতিক রিচার্জ</h3>
   <div class="history-list" id="historyList">
     <div class="empty-history">এখনো কোনো রিচার্জ করা হয়নি</div>
   </div>
-
 </div>
 
-<!-- Footer (হোমপেজের সাথে হুবহু) -->
 <footer class="footer">
   <div class="footer-policy-links">
     <a href="https://easy-premium.com/privacy-refund-policy-terms-of-service?data=PrivacyPolicy">Privacy Policy</a>
@@ -405,7 +336,6 @@ body::before{
   </div>
 </footer>
 
-<!-- Floating Messenger -->
 <a href="https://wa.me/+8801321782961" target="_blank" class="messenger-float" title="মেসেঞ্জারে কথা বলুন" aria-label="Chat on WhatsApp">
   <i class="fab fa-facebook-messenger"></i>
 </a>
@@ -413,14 +343,8 @@ body::before{
 <div class="toast" id="toast"></div>
 
 <script>
-/* ============================================================
-   ⚙️ কনফিগারেশন — Vercel Serverless Proxy
-   ============================================================ */
 const API_BASE = '/api/proxy';
 
-/* ============================================================
-   🎯 অপারেটর ডিটেকশন (BD প্রিফিক্স ম্যাপ)
-   ============================================================ */
 const OPERATORS = {
   GP: { name: 'Grameenphone', prefixes: ['013','017'] },
   RB: { name: 'Robi',         prefixes: ['016','018'] },
@@ -440,16 +364,10 @@ function detectOperator(number) {
   return null;
 }
 
-/* ============================================================
-   🔢 ইনপুট হেল্পার
-   ============================================================ */
 function cleanNumber(v){ return (v||'').replace(/\D/g,'').slice(0,11); }
 function cleanAmount(v){ return (v||'').replace(/\D/g,'').slice(0,5); }
 function isValidNumber(n){ return /^01[3-9]\d{8}$/.test(n); }
 
-/* ============================================================
-   🔔 Toast
-   ============================================================ */
 let toastTimer;
 function showToast(msg, type='', ms=3000){
   const t = document.getElementById('toast');
@@ -459,14 +377,10 @@ function showToast(msg, type='', ms=3000){
   toastTimer = setTimeout(()=> t.classList.remove('show'), ms);
 }
 
-/* ============================================================
-   🌐 API কল — proxy এর মাধ্যমে
-   ============================================================ */
 async function apiCall(endpoint, params = {}) {
   const url = new URL(API_BASE, window.location.origin);
   url.searchParams.set('endpoint', endpoint);
   for (const k in params) url.searchParams.set(k, params[k]);
-
   const res = await fetch(url.toString(), { method: 'GET' });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return await res.json();
@@ -476,9 +390,6 @@ function makeRefid() {
   return 'EP' + Date.now() + Math.random().toString(36).slice(2,7).toUpperCase();
 }
 
-/* ============================================================
-   💰 ব্যালেন্স
-   ============================================================ */
 async function fetchBalance(silent=false) {
   const btn = document.getElementById('refreshBalance');
   const val = document.getElementById('balanceValue');
@@ -500,9 +411,6 @@ async function fetchBalance(silent=false) {
   }
 }
 
-/* ============================================================
-   🧾 রেন্ডার রেজাল্ট
-   ============================================================ */
 function showResult(type, title, rows=[]) {
   const box = document.getElementById('resultBox');
   box.className = 'result-box show ' + type;
@@ -513,9 +421,6 @@ function showResult(type, title, rows=[]) {
   `;
 }
 
-/* ============================================================
-   📜 হিস্ট্রি
-   ============================================================ */
 const HISTORY_KEY = 'ep_recharge_history_v1';
 function loadHistory(){
   try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; }
@@ -551,9 +456,6 @@ function renderHistory(){
   `).join('');
 }
 
-/* ============================================================
-   🚀 রিচার্জ সাবমিট
-   ============================================================ */
 async function doRecharge(){
   const number = cleanNumber(document.getElementById('numberInput').value);
   const amount = cleanAmount(document.getElementById('amountInput').value);
@@ -609,9 +511,6 @@ async function doRecharge(){
   }
 }
 
-/* ============================================================
-   🎛️ UI ইভেন্ট
-   ============================================================ */
 const numInput = document.getElementById('numberInput');
 const amtInput = document.getElementById('amountInput');
 const badge = document.getElementById('operatorBadge');
@@ -665,14 +564,36 @@ document.querySelectorAll('.amt-chip').forEach(chip => {
 btn.addEventListener('click', doRecharge);
 document.getElementById('refreshBalance').addEventListener('click', ()=>fetchBalance(false));
 
-/* ============================================================
-   🏁 ইনিশিয়ালাইজ
-   ============================================================ */
 document.addEventListener('DOMContentLoaded', () => {
   updateOperatorBadge();
   renderHistory();
   fetchBalance(true);
 });
+
+/* ============================================================
+   🔒 সিকিউরিটি (স্ক্রল-সেফ)
+   ============================================================ */
+(function() {
+  'use strict';
+
+  // কীবোর্ড শর্টকাট ব্লক
+  document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.keyCode === 85) { e.preventDefault(); return false; }
+    if (e.ctrlKey && e.keyCode === 83) { e.preventDefault(); return false; }
+    if (e.ctrlKey && e.shiftKey && e.keyCode === 73) { e.preventDefault(); return false; }
+    if (e.keyCode === 123) { e.preventDefault(); return false; }
+  });
+
+  // শুধু ডান-ক্লিক ব্লক
+  document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    return false;
+  });
+
+  // ✅ touchstart preventDefault সম্পূর্ণ রিমুভ — স্ক্রলিং কাজ করবে
+
+  console.log('%c🔒 Easy Premium Recharge - স্ক্রল-সেফ', 'color: #4caf50; font-weight: bold;');
+})();
 </script>
 </body>
 </html>
