@@ -1,29 +1,54 @@
-// Node 18+ / Express
-import express from 'express';
-const app = express();
+// api/proxy.js — Vercel Serverless Function (Express নয়!)
+export default async function handler(req, res) {
+  // CORS হেডার
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
 
-const API_KEY  = process.env.EFLEXI_KEY  || 'easy@pre';
-const API_PASS = process.env.EFLEXI_PASS || '8497036d-e88f-43c3-8a60-40685ce92e9a';
-const BASE     = 'https://eflexi.net/api/v2';
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
 
-const ALLOWED = ['balance','recharge','status','sms'];
+  // 🔐 শুধু env variable থেকে — কোনো fallback নেই
+  const API_KEY  = process.env.EFLEXI_KEY;
+  const API_PASS = process.env.EFLEXI_PASS;
 
-app.get('/api/recharge/:endpoint', async (req, res) => {
-  const ep = req.params.endpoint;
-  if (!ALLOWED.includes(ep)) return res.status(400).json({status:false,message:'Invalid endpoint'});
+  if (!API_KEY || !API_PASS) {
+    return res.status(500).json({ 
+      status: false, 
+      message: 'Server credentials missing' 
+    });
+  }
 
-  const url = new URL(`${BASE}/${ep}`);
+  // 🔍 URL থেকে endpoint বের করুন
+  // যেমন: /api/proxy?endpoint=balance  → endpoint = 'balance'
+  const { endpoint, ...query } = req.query;
+
+  const ALLOWED = ['balance', 'recharge', 'status', 'sms'];
+  if (!endpoint || !ALLOWED.includes(endpoint)) {
+    return res.status(400).json({ 
+      status: false, 
+      message: 'Invalid endpoint' 
+    });
+  }
+
+  // 🌐 eflexi API তে কল
+  const url = new URL(`https://eflexi.net/api/v2/${endpoint}`);
   url.searchParams.set('api_key', API_KEY);
   url.searchParams.set('api_pass', API_PASS);
-  for (const k in req.query) url.searchParams.set(k, req.query[k]);
+
+  for (const k in query) {
+    url.searchParams.set(k, query[k]);
+  }
 
   try {
-    const r = await fetch(url);
-    const data = await r.json();
-    res.json(data);
-  } catch (e) {
-    res.status(502).json({status:false, message:'Upstream error'});
+    const upstream = await fetch(url.toString(), { method: 'GET' });
+    const data = await upstream.json();
+    return res.status(200).json(data);
+  } catch (err) {
+    console.error('Upstream error:', err);
+    return res.status(502).json({
+      status: false,
+      message: 'Upstream API unreachable'
+    });
   }
-});
-
-app.listen(3000, ()=>console.log('Proxy → http://localhost:3000'));
+}
