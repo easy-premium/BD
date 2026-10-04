@@ -227,14 +227,14 @@ body{
 
 <!-- Header -->
 <header class="header">
-  <a href="index.html" class="logo">
+  <a href="../index.html" class="logo">
     <div class="logo-image-container"><img src="https://cdn-icons-png.flaticon.com/512/8701/8701941.png" alt="Easy Premium" class="logo-image"></div>
     <div>
       <div class="logo-main">EASY PREMIUM</div>
       <div class="logo-sub">Mobile Recharge</div>
     </div>
   </a>
-  <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> হোম</a>
+  <a href="../index.html" class="back-btn"><i class="fas fa-arrow-left"></i> হোম</a>
 </header>
 
 <div class="container">
@@ -297,15 +297,13 @@ body{
 
 <script>
 /* ============================================================
-   ⚙️ কনফিগারেশন
+   ⚙️ কনফিগারেশন — Vercel Serverless Proxy
+   ============================================================
+   ✅ api_key / api_pass আর এখানে নেই।
+   ✅ সব credential Vercel Environment Variables এ।
+   ✅ ব্রাউজার শুধু /api/proxy হিট করে।
    ============================================================ */
-const API_BASE  = 'https://eflexi.net/api/v2';
-const API_KEY   = 'easy@pre';
-const API_PASS  = '8497036d-e88f-43c3-8a60-40685ce92e9a';
-
-/* ✅ লাইভে যাওয়ার সময় উপরের দুটো লাইন মুছে নিচের proxy ব্যবহার করুন:
-   const API_BASE = '/api/recharge';   ← আপনার Vercel/Cloud Function URL
-*/
+const API_BASE = '/api/proxy';
 
 /* ============================================================
    🎯 অপারেটর ডিটেকশন (BD প্রিফিক্স ম্যাপ)
@@ -349,13 +347,19 @@ function showToast(msg, type='', ms=3000){
 }
 
 /* ============================================================
-   🌐 API কল
+   🌐 API কল — proxy এর মাধ্যমে
+   ============================================================
+   এখানে endpoint কে query parameter হিসেবে পাঠানো হয়।
+   যেমন: /api/proxy?endpoint=balance
+        /api/proxy?endpoint=recharge&number=...&amount=...
    ============================================================ */
 async function apiCall(endpoint, params = {}) {
-  const url = new URL(`${API_BASE}/${endpoint}`);
-  url.searchParams.set('api_key', API_KEY);
-  url.searchParams.set('api_pass', API_PASS);
-  for (const k in params) url.searchParams.set(k, params[k]);
+  const url = new URL(API_BASE, window.location.origin);
+  url.searchParams.set('endpoint', endpoint);   // ⭐ endpoint query তে
+
+  for (const k in params) {
+    url.searchParams.set(k, params[k]);
+  }
 
   const res = await fetch(url.toString(), { method: 'GET' });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
