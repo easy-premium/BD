@@ -19,7 +19,34 @@
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI','Noto Sans Bengali',sans-serif;-webkit-tap-highlight-color:transparent;color:#fff}
 
 /* ============================================
-   ✅ স্ক্রলিং ফিক্স — কোনো blocking CSS নেই
+   🚫 Vercel Toolbar + Feedback Widget সম্পূর্ণ ব্লক
+   ============================================ */
+vercel-live-feedback,
+vercel-toolbar,
+[data-vercel-toolbar],
+#vercel-live-feedback,
+[class*="vercel-toolbar"],
+[class*="vercel-live-feedback"],
+[class*="VercelToolbar"],
+[class*="vercel-feedback"],
+iframe[src*="vercel.com/live-feedback"],
+iframe[src*="vercel.live"],
+div[style*="vercel"],
+#__vercel_toolbar,
+.vercel-toolbar-root {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  position: absolute !important;
+  left: -9999px !important;
+  z-index: -9999 !important;
+}
+
+/* ============================================
+   ✅ স্ক্রলিং ফিক্স
    ============================================ */
 html{
   scroll-behavior:smooth;
@@ -38,7 +65,6 @@ body{
   color:#fff;
 }
 
-/* ব্যাকগ্রাউন্ড gradient layer — fixed, scroll দ্রুত করে */
 body::before{
   content:'';
   position:fixed;
@@ -48,7 +74,6 @@ body::before{
   pointer-events:none;
 }
 
-/* Glow layer */
 body::after{
   content:'';
   position:fixed;
@@ -106,7 +131,6 @@ body::after{
 .page-title{text-align:center;font-size:1.7rem;font-weight:800;color:var(--orange);margin-bottom:8px;line-height:1.3}
 .page-sub{text-align:center;color:var(--muted);font-size:.9rem;margin-bottom:22px}
 
-/* Balance Strip */
 .balance-strip{
   background:linear-gradient(135deg,rgba(255,152,0,.15),rgba(0,188,212,.08));
   border:1px solid rgba(255,152,0,.35);
@@ -127,7 +151,6 @@ body::after{
 .refresh-btn.loading{animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* Card */
 .card{
   background:var(--card);border-radius:16px;padding:22px 20px;
   border:1px solid rgba(255,255,255,.06);margin-bottom:18px;
@@ -146,7 +169,6 @@ body::after{
 .input-icon{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--orange);font-size:1.05rem;pointer-events:none}
 .input-wrap.amount .input{padding-left:48px;font-size:1.2rem}
 
-/* Operator Badge */
 .operator-badge{
   display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:20px;
   background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
@@ -163,7 +185,6 @@ body::after{
 .op-TT{background:rgba(76,175,80,.15);border-color:#4caf50;color:#4caf50}
 .op-BT{background:rgba(156,39,176,.15);border-color:#9c27b0;color:#9c27b0}
 
-/* Quick Amounts */
 .quick-amounts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
 .amt-chip{
   padding:12px 6px;border-radius:10px;
@@ -174,7 +195,6 @@ body::after{
 .amt-chip:hover{border-color:var(--orange);background:rgba(255,152,0,.12)}
 .amt-chip.active{background:var(--grad-btn);border-color:transparent;box-shadow:0 4px 15px rgba(255,152,0,.4)}
 
-/* Recharge Button */
 .recharge-btn{
   width:100%;padding:16px;border:none;border-radius:12px;
   background:var(--grad-btn);color:#fff;font-size:1.05rem;font-weight:800;
@@ -190,7 +210,6 @@ body::after{
   vertical-align:middle;margin-right:8px;
 }
 
-/* Result Box */
 .result-box{display:none;padding:16px;border-radius:12px;margin-top:16px;font-size:.9rem;line-height:1.55}
 .result-box.show{display:block;animation:fadeIn .3s}
 @keyframes fadeIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
@@ -206,7 +225,6 @@ body::after{
 .result-box .rb-row span:first-child{color:var(--muted);font-size:.83rem}
 .result-box .rb-row span:last-child{font-weight:700}
 
-/* History */
 .section-title{font-size:1.05rem;font-weight:700;color:#fff;margin-bottom:12px;display:flex;align-items:center;gap:8px}
 .section-title i{color:var(--orange)}
 .history-list{display:flex;flex-direction:column;gap:10px}
@@ -223,7 +241,6 @@ body::after{
 .history-item .hi-amt{font-weight:800;color:var(--orange);font-size:1rem;white-space:nowrap}
 .empty-history{text-align:center;color:var(--muted);padding:24px 12px;font-size:.9rem;background:var(--card);border-radius:12px}
 
-/* Footer */
 .footer{background:rgba(10,10,26,.95);padding:40px 20px 30px;text-align:center;width:100%;margin-top:40px;position:relative;z-index:1}
 .footer-policy-links{display:flex;flex-wrap:wrap;justify-content:center;gap:20px;margin-bottom:30px}
 .footer-policy-links a{color:#fff;text-decoration:none;font-size:.95rem;font-weight:500;padding:5px 10px;border-radius:5px;transition:.3s;border:1px solid transparent}
@@ -243,7 +260,6 @@ body::after{
 .social-link:nth-child(6) i{color:#0088cc}
 .copyright{color:var(--muted);font-size:.85rem;line-height:1.6;max-width:800px;margin:0 auto}
 
-/* Messenger Float */
 .messenger-float{
   position:fixed;bottom:30px;right:30px;z-index:999;
   display:flex;align-items:center;justify-content:center;width:60px;height:60px;
@@ -259,7 +275,6 @@ body::after{
   100%{box-shadow:0 0 0 0 rgba(0,132,255,0)}
 }
 
-/* Toast */
 .toast{
   position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(150%);
   background:rgba(20,20,40,.98);border:1px solid var(--orange);color:#fff;
@@ -272,7 +287,6 @@ body::after{
 .toast.ok{border-color:var(--green)}
 .toast.err{border-color:var(--red)}
 
-/* Responsive */
 @media(max-width:480px){
   .logo-image-container{width:40px;height:40px;min-width:40px}
   .logo-main{font-size:1.1rem}
@@ -294,7 +308,6 @@ body::after{
 </head>
 <body>
 
-<!-- Header -->
 <header class="header">
   <a href="../index.html" class="logo">
     <div class="logo-image-container">
@@ -313,7 +326,6 @@ body::after{
   <h1 class="page-title">মোবাইল রিচার্জ</h1>
   <p class="page-sub">GP · Robi · Banglalink · Airtel · Teletalk — সব সিমে রিচার্জ</p>
 
-  <!-- Balance -->
   <div class="balance-strip">
     <div>
       <div class="label"><i class="fas fa-wallet"></i> আপনার ব্যালেন্স</div>
@@ -322,7 +334,6 @@ body::after{
     <button class="refresh-btn" id="refreshBalance" title="রিফ্রেশ"><i class="fas fa-sync-alt"></i></button>
   </div>
 
-  <!-- Recharge Form -->
   <div class="card">
     <label class="form-label">মোবাইল নম্বর <span style="color:var(--red)">*</span></label>
     <div class="input-wrap">
@@ -356,7 +367,6 @@ body::after{
     <div class="result-box" id="resultBox"></div>
   </div>
 
-  <!-- History -->
   <h3 class="section-title"><i class="fas fa-history"></i> সাম্প্রতিক রিচার্জ</h3>
   <div class="history-list" id="historyList">
     <div class="empty-history">এখনো কোনো রিচার্জ করা হয়নি</div>
@@ -364,7 +374,6 @@ body::after{
 
 </div>
 
-<!-- Footer -->
 <footer class="footer">
   <div class="footer-policy-links">
     <a href="https://easy-premium.com/privacy-refund-policy-terms-of-service?data=PrivacyPolicy">Privacy Policy</a>
@@ -386,7 +395,6 @@ body::after{
   </div>
 </footer>
 
-<!-- Messenger Float -->
 <a href="https://wa.me/+8801321782961" target="_blank" class="messenger-float" title="মেসেঞ্জারে কথা বলুন" aria-label="Chat on WhatsApp">
   <i class="fab fa-facebook-messenger"></i>
 </a>
@@ -394,9 +402,6 @@ body::after{
 <div class="toast" id="toast"></div>
 
 <script>
-/* ============================================================
-   ⚙️ কনফিগারেশন
-   ============================================================ */
 const API_BASE = '/api/proxy';
 
 const OPERATORS = {
@@ -422,7 +427,6 @@ function cleanNumber(v){ return (v||'').replace(/\D/g,'').slice(0,11); }
 function cleanAmount(v){ return (v||'').replace(/\D/g,'').slice(0,5); }
 function isValidNumber(n){ return /^01[3-9]\d{8}$/.test(n); }
 
-/* Toast */
 let toastTimer;
 function showToast(msg, type='', ms=3000){
   const t = document.getElementById('toast');
@@ -432,7 +436,6 @@ function showToast(msg, type='', ms=3000){
   toastTimer = setTimeout(()=> t.classList.remove('show'), ms);
 }
 
-/* API */
 async function apiCall(endpoint, params = {}) {
   const url = new URL(API_BASE, window.location.origin);
   url.searchParams.set('endpoint', endpoint);
@@ -446,7 +449,6 @@ function makeRefid() {
   return 'EP' + Date.now() + Math.random().toString(36).slice(2,7).toUpperCase();
 }
 
-/* Balance */
 async function fetchBalance(silent=false) {
   const btn = document.getElementById('refreshBalance');
   const val = document.getElementById('balanceValue');
@@ -468,7 +470,6 @@ async function fetchBalance(silent=false) {
   }
 }
 
-/* Result Box */
 function showResult(type, title, rows=[]) {
   const box = document.getElementById('resultBox');
   box.className = 'result-box show ' + type;
@@ -479,7 +480,6 @@ function showResult(type, title, rows=[]) {
   `;
 }
 
-/* History */
 const HISTORY_KEY = 'ep_recharge_history_v1';
 function loadHistory(){
   try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; }
@@ -515,7 +515,6 @@ function renderHistory(){
   `).join('');
 }
 
-/* Recharge */
 async function doRecharge(){
   const number = cleanNumber(document.getElementById('numberInput').value);
   const amount = cleanAmount(document.getElementById('amountInput').value);
@@ -571,7 +570,6 @@ async function doRecharge(){
   }
 }
 
-/* UI Events */
 const numInput = document.getElementById('numberInput');
 const amtInput = document.getElementById('amountInput');
 const badge = document.getElementById('operatorBadge');
@@ -625,12 +623,48 @@ document.querySelectorAll('.amt-chip').forEach(chip => {
 btn.addEventListener('click', doRecharge);
 document.getElementById('refreshBalance').addEventListener('click', ()=>fetchBalance(false));
 
-/* Init */
 document.addEventListener('DOMContentLoaded', () => {
   updateOperatorBadge();
   renderHistory();
   fetchBalance(true);
 });
+
+/* ============================================================
+   🚫 Vercel Toolbar সম্পূর্ণ রিমুভ (JS লেভেলে)
+   ============================================================ */
+(function() {
+  'use strict';
+
+  function removeVercelToolbar() {
+    const selectors = [
+      'vercel-live-feedback',
+      'vercel-toolbar',
+      '[data-vercel-toolbar]',
+      '#vercel-live-feedback',
+      '[class*="vercel-toolbar"]',
+      '[class*="vercel-live-feedback"]',
+      'iframe[src*="vercel.com/live-feedback"]',
+      'iframe[src*="vercel.live"]',
+      '#__vercel_toolbar'
+    ];
+    selectors.forEach(sel => {
+      document.querySelectorAll(sel).forEach(el => el.remove());
+    });
+  }
+
+  // পেজ লোডে
+  document.addEventListener('DOMContentLoaded', removeVercelToolbar);
+  window.addEventListener('load', removeVercelToolbar);
+
+  // Vercel পরে ইনজেক্ট করলে সেটাও ধরবে
+  const observer = new MutationObserver(removeVercelToolbar);
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+
+  // প্রতি সেকেন্ডে একবার চেক (এক্সট্রা সেফটি)
+  setInterval(removeVercelToolbar, 1000);
+
+  console.log('%c🚫 Vercel Toolbar blocked', 'color: #f44336; font-weight: bold;');
+})();
 
 /* ============================================================
    🔒 সিকিউরিটি (স্ক্রল-সেফ)
@@ -650,7 +684,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return false;
   });
 
-  console.log('%c🔒 Easy Premium Recharge - স্ক্রল-সেফ', 'color: #4caf50; font-weight: bold;');
+  console.log('%c🔒 Easy Premium Recharge - সুরক্ষিত', 'color: #4caf50; font-weight: bold;');
 })();
 </script>
 </body>
