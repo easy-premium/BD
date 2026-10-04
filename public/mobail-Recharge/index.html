@@ -45,14 +45,22 @@ iframe[src*="vercel.live"],
 }
 
 /* ============================================
-   ✅ স্ক্রলিং ফিক্স
+   ✅ Scrollbar সম্পূর্ণ রিমুভ + স্ক্রলিং সচল
    ============================================ */
 html{
   scroll-behavior:smooth;
   overflow-x:hidden;
   width:100%;
-  min-height:100%;
+  height:100%;
   background-color:#0a0a1a;
+  /* ✅ হোমপেজের মতো scrollbar লুকানো */
+  -ms-overflow-style: none;   /* IE & Edge */
+  scrollbar-width: none;       /* Firefox */
+}
+html::-webkit-scrollbar{
+  display: none;               /* Chrome, Safari, Opera */
+  width: 0;
+  height: 0;
 }
 
 body{
@@ -274,8 +282,6 @@ body::after{
   100%{box-shadow:0 0 0 0 rgba(0,132,255,0)}
 }
 
-/* ✅ .toast CSS সম্পূর্ণ সরানো হয়েছে */
-
 @media(max-width:480px){
   .logo-image-container{width:40px;height:40px;min-width:40px}
   .logo-main{font-size:1.1rem}
@@ -388,8 +394,6 @@ body::after{
   <i class="fab fa-facebook-messenger"></i>
 </a>
 
-<!-- ✅ toast div সম্পূর্ণ সরানো হয়েছে -->
-
 <script>
 const API_BASE = '/api/proxy';
 
@@ -415,8 +419,6 @@ function detectOperator(number) {
 function cleanNumber(v){ return (v||'').replace(/\D/g,'').slice(0,11); }
 function cleanAmount(v){ return (v||'').replace(/\D/g,'').slice(0,5); }
 function isValidNumber(n){ return /^01[3-9]\d{8}$/.test(n); }
-
-/* ✅ showToast() ফাংশন সম্পূর্ণ সরানো হয়েছে */
 
 async function apiCall(endpoint, params = {}) {
   const url = new URL(API_BASE, window.location.origin);
@@ -499,7 +501,6 @@ async function doRecharge(){
   const amount = cleanAmount(document.getElementById('amountInput').value);
   const operator = detectOperator(number);
 
-  /* ভ্যালিডেশন — এখন result-box এ দেখাবে */
   if (!isValidNumber(number)) {
     showResult('error', 'ভুল নম্বর', [
       { k: 'কারণ', v: 'সঠিক ১১ ডিজিটের নম্বর দিন' },
