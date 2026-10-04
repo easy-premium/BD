@@ -19,7 +19,7 @@
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI','Noto Sans Bengali',sans-serif;-webkit-tap-highlight-color:transparent;color:#fff}
 
 /* ============================================
-   🚫 Vercel Toolbar + Feedback Widget সম্পূর্ণ ব্লক
+   🚫 Vercel Toolbar সম্পূর্ণ ব্লক
    ============================================ */
 vercel-live-feedback,
 vercel-toolbar,
@@ -31,7 +31,6 @@ vercel-toolbar,
 [class*="vercel-feedback"],
 iframe[src*="vercel.com/live-feedback"],
 iframe[src*="vercel.live"],
-div[style*="vercel"],
 #__vercel_toolbar,
 .vercel-toolbar-root {
   display: none !important;
@@ -275,17 +274,7 @@ body::after{
   100%{box-shadow:0 0 0 0 rgba(0,132,255,0)}
 }
 
-.toast{
-  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(150%);
-  background:rgba(20,20,40,.98);border:1px solid var(--orange);color:#fff;
-  padding:14px 22px;border-radius:30px;font-size:.9rem;font-weight:600;
-  box-shadow:0 10px 30px rgba(0,0,0,.5);z-index:9999;
-  transition:transform .35s cubic-bezier(.4,1.4,.5,1);max-width:90vw;
-  display:flex;align-items:center;gap:10px;
-}
-.toast.show{transform:translateX(-50%) translateY(0)}
-.toast.ok{border-color:var(--green)}
-.toast.err{border-color:var(--red)}
+/* ✅ .toast CSS সম্পূর্ণ সরানো হয়েছে */
 
 @media(max-width:480px){
   .logo-image-container{width:40px;height:40px;min-width:40px}
@@ -399,7 +388,7 @@ body::after{
   <i class="fab fa-facebook-messenger"></i>
 </a>
 
-<div class="toast" id="toast"></div>
+<!-- ✅ toast div সম্পূর্ণ সরানো হয়েছে -->
 
 <script>
 const API_BASE = '/api/proxy';
@@ -427,14 +416,7 @@ function cleanNumber(v){ return (v||'').replace(/\D/g,'').slice(0,11); }
 function cleanAmount(v){ return (v||'').replace(/\D/g,'').slice(0,5); }
 function isValidNumber(n){ return /^01[3-9]\d{8}$/.test(n); }
 
-let toastTimer;
-function showToast(msg, type='', ms=3000){
-  const t = document.getElementById('toast');
-  t.className = 'toast ' + type + ' show';
-  t.innerHTML = `<i class="fas ${type==='ok'?'fa-check-circle':type==='err'?'fa-times-circle':'fa-info-circle'}"></i><span>${msg}</span>`;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(()=> t.classList.remove('show'), ms);
-}
+/* ✅ showToast() ফাংশন সম্পূর্ণ সরানো হয়েছে */
 
 async function apiCall(endpoint, params = {}) {
   const url = new URL(API_BASE, window.location.origin);
@@ -457,14 +439,11 @@ async function fetchBalance(silent=false) {
     const data = await apiCall('balance');
     if (data && data.status) {
       val.innerHTML = `${Number(data.balance).toFixed(2)} <small>৳</small>`;
-      if (!silent) showToast('ব্যালেন্স আপডেট হয়েছে', 'ok');
     } else {
       val.innerHTML = '— <small>৳</small>';
-      if (!silent) showToast(data?.message || 'ব্যালেন্স পাওয়া যায়নি', 'err');
     }
   } catch (e) {
     val.innerHTML = '— <small>৳</small>';
-    if (!silent) showToast('সার্ভারের সাথে সংযোগ ব্যর্থ', 'err');
   } finally {
     btn.classList.remove('loading');
   }
@@ -520,11 +499,36 @@ async function doRecharge(){
   const amount = cleanAmount(document.getElementById('amountInput').value);
   const operator = detectOperator(number);
 
-  if (!isValidNumber(number)) { showToast('সঠিক ১১ ডিজিটের নম্বর দিন', 'err'); return; }
-  if (!operator) { showToast('এই নম্বরের অপারেটর শনাক্ত করা যায়নি', 'err'); return; }
+  /* ভ্যালিডেশন — এখন result-box এ দেখাবে */
+  if (!isValidNumber(number)) {
+    showResult('error', 'ভুল নম্বর', [
+      { k: 'কারণ', v: 'সঠিক ১১ ডিজিটের নম্বর দিন' },
+      { k: 'উদাহরণ', v: '01XXXXXXXXX' }
+    ]);
+    return;
+  }
+  if (!operator) {
+    showResult('error', 'অপারেটর শনাক্ত হয়নি', [
+      { k: 'কারণ', v: 'এই নম্বরের অপারেটর সাপোর্টেড নয়' },
+      { k: 'নম্বর', v: number }
+    ]);
+    return;
+  }
   const amt = parseInt(amount, 10);
-  if (!amt || amt < 10) { showToast('সর্বনিম্ন ৳১০ রিচার্জ করা যাবে', 'err'); return; }
-  if (amt > 5000) { showToast('সর্বোচ্চ ৳৫০০০ রিচার্জ করা যাবে', 'err'); return; }
+  if (!amt || amt < 10) {
+    showResult('error', 'ভুল পরিমাণ', [
+      { k: 'কারণ', v: 'সর্বনিম্ন ৳১০ রিচার্জ করা যাবে' },
+      { k: 'আপনি দিয়েছেন', v: '৳' + (amount || 0) }
+    ]);
+    return;
+  }
+  if (amt > 5000) {
+    showResult('error', 'সীমা ছাড়িয়ে গেছে', [
+      { k: 'কারণ', v: 'সর্বোচ্চ ৳৫০০০ রিচার্জ করা যাবে' },
+      { k: 'আপনি দিয়েছেন', v: '৳' + amt }
+    ]);
+    return;
+  }
 
   const btn = document.getElementById('rechargeBtn');
   const btnText = document.getElementById('btnText');
@@ -548,7 +552,6 @@ async function doRecharge(){
       addHistory({ number, amount: amt, operator, ok: true, time: new Date().toLocaleString('bn-BD'), refid });
       document.getElementById('amountInput').value = '';
       document.querySelectorAll('.amt-chip').forEach(c=>c.classList.remove('active'));
-      showToast('রিচার্জ সফল!', 'ok');
       fetchBalance(true);
     } else {
       showResult('error', 'রিচার্জ ব্যর্থ', [
@@ -556,14 +559,12 @@ async function doRecharge(){
         { k: 'নম্বর', v: number }
       ]);
       addHistory({ number, amount: amt, operator, ok: false, time: new Date().toLocaleString('bn-BD'), refid });
-      showToast(data?.message || 'রিচার্জ ব্যর্থ', 'err');
     }
   } catch (e) {
     showResult('error', 'সংযোগ ব্যর্থ', [
       { k: 'কারণ', v: e.message || 'নেটওয়ার্ক সমস্যা' },
       { k: 'পরামর্শ', v: 'কিছুক্ষণ পরে আবার চেষ্টা করুন' }
     ]);
-    showToast('সার্ভারে সংযোগ ব্যর্থ', 'err');
   } finally {
     btn.disabled = false;
     btnText.textContent = 'রিচার্জ করুন';
@@ -630,7 +631,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ============================================================
-   🚫 Vercel Toolbar সম্পূর্ণ রিমুভ (JS লেভেলে)
+   🚫 Vercel Toolbar সম্পূর্ণ রিমুভ
    ============================================================ */
 (function() {
   'use strict';
@@ -652,18 +653,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // পেজ লোডে
   document.addEventListener('DOMContentLoaded', removeVercelToolbar);
   window.addEventListener('load', removeVercelToolbar);
 
-  // Vercel পরে ইনজেক্ট করলে সেটাও ধরবে
   const observer = new MutationObserver(removeVercelToolbar);
   observer.observe(document.documentElement, { childList: true, subtree: true });
 
-  // প্রতি সেকেন্ডে একবার চেক (এক্সট্রা সেফটি)
   setInterval(removeVercelToolbar, 1000);
-
-  console.log('%c🚫 Vercel Toolbar blocked', 'color: #f44336; font-weight: bold;');
 })();
 
 /* ============================================================
