@@ -91,7 +91,7 @@ export default async function handler(req, res) {
       case 'verify':         return await handleVerify(res, body, query);
       case 'user-recharge':  return await handleUserRecharge(res, body, query);
       case 'history':        return await handleHistory(res, body, query);
-      case 'check-status':   return await handleCheckStatus(res, body, query);   // ⭐ নতুন
+      case 'check-status':   return await handleCheckStatus(res, body, query);
       // পুরনো eflexi proxy (compat)
       case 'recharge':
       case 'status':
@@ -155,7 +155,8 @@ async function handleVerify(res, body, query) {
 }
 
 /* ============================================================
-   💰 ইউজার রিচার্জ (atomic)
+   💰 ইউজার রিচার্জ — যেকোনো অবস্থাতেই history সেভ হবে
+   ✅ ব্যর্থ রিচার্জও ডেটাবেসে entry পাবে (status: false)
    ============================================================ */
 async function handleUserRecharge(res, body, query) {
   const password = body.password || query.password;
@@ -163,6 +164,7 @@ async function handleUserRecharge(res, body, query) {
   const operator = String(body.operator || query.operator || '').trim().toUpperCase();
   const amount   = parseInt(body.amount  || query.amount, 10);
 
+  /* --- ১. ইনপুট ভ্যালিডেশন (DB তে যাবে না) --- */
   if (!password)              return res.status(400).json({ status: false, message: 'পাসওয়ার্ড দিন' });
   if (!/^01[3-9]\d{8}$/.test(number))
                               return res.status(400).json({ status: false, message: 'সঠিক ১১ ডিজিটের নম্বর দিন' });
@@ -171,25 +173,29 @@ async function handleUserRecharge(res, body, query) {
   if (!amount || amount < 10 || amount > 5000)
                               return res.status(400).json({ status: false, message: 'পরিমাণ ৳১০ থেকে ৳৫০০০' });
 
+  /* --- ২. পাসওয়ার্ড যাচাই --- */
   const userKey = findUserKey(password);
   if (!userKey) return res.status(200).json({ status: false, message: 'ভুল পাসওয়ার্ড' });
 
+  /* --- ৩. ইউজার ডেটা পড়া --- */
   let userData;
   try { userData = await fbGet(userKey); }
   catch (e) { return res.status(500).json({ status: false, message: 'Firebase সংযোগ ব্যর্থ' }); }
   if (!userData || typeof userData !== 'object')
     return res.status(200).json({ status: false, message: 'ইউজার ডেটা পাওয়া যায়নি' });
 
+  /* --- ৪. taka চেক (রিচার্জ চেষ্টাই হবে না, তাই DB তে entry যাবে না) --- */
   const currentTaka = Number(userData.taka) || 0;
   if (currentTaka < amount) {
     return res.status(200).json({
       status: false,
       message: `পর্যাপ্ত ব্যালেন্স নেই। আপনার আছে ৳${currentTaka}`,
-      taka: currentTaka
+      taka: currentTaka,
+      saved: false
     });
   }
 
-  /* --- eflexi এ রিচার্জ পাঠানো --- */
+  /* --- ৫. eflexi এ রিচার্জ পাঠানো (সব error ধরা হবে) --- */
   const API_KEY  = process.env.EFLEXI_KEY;
   const API_PASS = process.env.EFLEXI_PASS;
   const refid = 'EP' + Date.now() + Math.random().toString(36).slice(2, 7).toUpperCase();
@@ -203,18 +209,24 @@ async function handleUserRecharge(res, body, query) {
   eflexiUrl.searchParams.set('operator', operator);
   eflexiUrl.searchParams.set('refid',    refid);
 
-  let eflexiData;
+  let eflexiData  = null;
+  let eflexiError = null;
+
   try {
     const up = await fetch(eflexiUrl.toString());
-    eflexiData = await up.json();
+    eflexiData = await up.json().catch(() => null);
+    if (!eflexiData) eflexiError = 'eflexi ফাঁকা রেসপন্স দিয়েছে';
   } catch (err) {
-    return res.status(502).json({ status: false, message: 'eflexi সার্ভার unreachable' });
+    eflexiError = 'eflexi সার্ভার unreachable: ' + err.message;
   }
 
-  const success = eflexiData && eflexiData.status === true;
-  const trxid   = eflexiData?.trxid || refid;
+  /* --- ৬. সফল হয়েছে কিনা নির্ণয় --- */
+  const success = !eflexiError && eflexiData && eflexiData.status === true;
+  const trxid   = (eflexiData && eflexiData.trxid) || refid;
+  const errMsg  = eflexiError || (eflexiData && eflexiData.message) || 'রিচার্জ ব্যর্থ';
   const timeKeys = getTimeKeys();
 
+  /* --- ৭. হিস্ট্রি এন্ট্রি তৈরি (সব ক্ষেত্রেই সেভ হবে) --- */
   const rechargeEntry = {
     amount:   amount,
     number:   number,
@@ -224,7 +236,7 @@ async function handleUserRecharge(res, body, query) {
     trxid:    trxid,
     type:     'prepaid',
     time:     new Date().toISOString(),
-    rawMessage: eflexiData?.message || ''
+    rawMessage: errMsg
   };
 
   const updates = {};
@@ -242,7 +254,7 @@ async function handleUserRecharge(res, body, query) {
       Number(prevTotal[timeKeys.day]   || 0) + amount;
   }
 
-  // ✅ সব ক্ষেত্রেই রেকর্ড সেভ
+  // ✅ ব্যর্থ হলেও — history entry সবসময় সেভ হবে
   updates[`${userKey}/mobail-Recharge/${timeKeys.full}`] = rechargeEntry;
 
   try {
@@ -252,22 +264,26 @@ async function handleUserRecharge(res, body, query) {
     return res.status(500).json({
       status: false,
       message: 'রিচার্জ হয়েছে কিন্তু ডেটাবেসে সেভ ব্যর্থ। সাপোর্টে জানান।',
-      trxid: trxid
+      trxid: trxid,
+      saved: false
     });
   }
 
+  /* --- ৮. রেসপন্স --- */
   if (success) {
     return res.status(200).json({
       status: true,
-      message: eflexiData.message || 'রিচার্জ সফল',
+      message: (eflexiData && eflexiData.message) || 'রিচার্জ সফল',
       trxid, amount, number, operator,
-      newTaka: currentTaka - amount
+      newTaka: currentTaka - amount,
+      saved: true
     });
   } else {
     return res.status(200).json({
       status: false,
-      message: eflexiData?.message || 'রিচার্জ ব্যর্থ',
-      trxid
+      message: errMsg,
+      trxid,
+      saved: true     // ⭐ history সেভ হয়েছে, শুধু রিচার্জ ব্যর্থ
     });
   }
 }
@@ -380,9 +396,7 @@ async function handleCheckStatus(res, body, query) {
   const nowSuccess = upstreamData?.status === true &&
                      String(upstreamData?.recharge_status || '').toLowerCase().includes('success');
 
-  // ⚠️ eflexi স্ট্যাটাস API থেকে exact "success" keyword কী হবে সেটা না জেনে
-  //    আমরা শুধু "আগে fail ছিল, এখন status true" হলে success ধরে নিচ্ছি
-  const statusChangedToSuccess = !wasSuccess && upstreamData?.status === true && nowSuccess;
+  const statusChangedToSuccess = !wasSuccess && nowSuccess;
 
   if (statusChangedToSuccess) {
     const timeKeys = getTimeKeys(new Date(matchedEntry.time || Date.now()));
@@ -404,7 +418,6 @@ async function handleCheckStatus(res, body, query) {
       await fbPatchRoot(updates);
     } catch (err) {
       console.error('Status sync failed:', err);
-      // তবুও eflexi থেকে পাওয়া ডেটা ফেরত দেব
     }
   }
 
@@ -419,7 +432,7 @@ async function handleCheckStatus(res, body, query) {
       savedStatus: matchedEntry.status === true,
       time:     matchedTime
     },
-    upstream: upstreamData,     // eflexi থেকে কাঁচা ডেটা
+    upstream: upstreamData,
     synced: statusChangedToSuccess
   });
 }
