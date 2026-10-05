@@ -211,17 +211,7 @@ body::after{
 .section-title{font-size:1.05rem;font-weight:700;color:#fff;margin-bottom:12px;display:flex;align-items:center;gap:8px}
 .section-title i{color:var(--orange)}
 
-/* ============================================
-   ⭐ ২৪ ঘন্টার info banner
-   ============================================ */
-.last24-badge{
-  display:inline-flex;align-items:center;gap:5px;
-  background:rgba(0,188,212,.15);color:var(--cyan);
-  padding:3px 10px;border-radius:20px;
-  font-size:.7rem;font-weight:700;
-  margin-left:6px;
-  border:1px solid rgba(0,188,212,.3);
-}
+/* ❌ .last24-badge CSS মুছে ফেলা হয়েছে */
 
 .history-list{display:flex;flex-direction:column;gap:10px}
 .history-item{
@@ -522,12 +512,9 @@ body::after{
       <div class="result-box" id="resultBox"></div>
     </div>
 
-    <!-- History (only last 24h) -->
+    <!-- History (only last 24h, no badge) -->
     <div class="section-title" style="justify-content:space-between">
-      <span>
-        <i class="fas fa-history"></i> আমার লেনদেন
-        <span class="last24-badge"><i class="fas fa-clock"></i> শেষ ২৪ ঘন্টা</span>
-      </span>
+      <span><i class="fas fa-history"></i> আমার লেনদেন</span>
       <button class="hi-btn" id="reloadHistoryBtn" style="border:1px solid var(--orange);color:var(--orange);background:transparent;padding:6px 12px;border-radius:8px;font-size:.75rem;font-weight:700;cursor:pointer">
         <i class="fas fa-sync-alt"></i> রিফ্রেশ
       </button>
@@ -617,7 +604,7 @@ body::after{
     <a href="https://www.youtube.com/@Easy_Premium" class="social-link"><i class="fab fa-youtube"></i></a>
     <a href="https://twitter.com/EasyPremium2026" class="social-link"><i class="fab fa-twitter"></i></a>
     <a href="https://wa.me/+8801321782961" class="social-link"><i class="fab fa-whatsapp"></i></a>
-    <a href="https://t.me/Easy_Pemium" class="social-link"><i class="fas fa-telegram"></i></a>
+    <a href="https://t.me/Easy_Pemium" class="social-link"><i class="fab fa-telegram"></i></a>
   </div>
   <div class="copyright">
     © 2026 Easy Premium. TIN : 478475635566<br>
@@ -630,7 +617,6 @@ body::after{
 </a>
 
 <script>
-/* Configuration */
 const API_BASE = '/api/proxy';
 
 const OPERATORS = {
@@ -645,13 +631,12 @@ const OPERATORS = {
 const BN_MONTHS = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন',
                     'জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
 
-const H24_MS = 24 * 60 * 60 * 1000;   // ⭐ ২৪ ঘন্টা milliseconds এ
+const H24_MS = 24 * 60 * 60 * 1000;
 
 let SESSION = { password: null, name: null, taka: 0 };
 let TOTAL_RECHARGE = {};
 let currentSummaryView = 'day';
 
-/* Helpers */
 function detectOperator(number){
   const n = (number||'').replace(/\D/g,'');
   if (n.length < 3) return null;
@@ -673,27 +658,15 @@ function getTodayKeys(){
   const yyyy = bd.getUTCFullYear();
   const mm = String(bd.getUTCMonth() + 1).padStart(2, '0');
   const dd = String(bd.getUTCDate()).padStart(2, '0');
-  return {
-    year: String(yyyy),
-    month: `${yyyy}-${mm}`,
-    day: `${yyyy}-${mm}-${dd}`
-  };
+  return { year: String(yyyy), month: `${yyyy}-${mm}`, day: `${yyyy}-${mm}-${dd}` };
 }
 
-/* ============================================================
-   ⭐ ২৪ ঘন্টা ফিল্টার
-   Firebase time key format: "yyyy-MM-dd_HH-mm-ss" (BD time)
-   ============================================================ */
 function timeKeyToUTC(timeKey){
-  // "2026-10-05_14-32-15" → UTC timestamp
   const m = String(timeKey||'').match(/^(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})-(\d{2})$/);
   if (!m) return null;
   const [_, y, mo, d, hh, mi, ss] = m;
-  // BD time = UTC + 6 ঘন্টা → UTC = BD - 6
-  const utcFromBD = Date.UTC(+y, +mo - 1, +d, +hh, +mi, +ss);
-  return utcFromBD - 6 * 60 * 60 * 1000;
+  return Date.UTC(+y, +mo - 1, +d, +hh, +mi, +ss) - 6 * 60 * 60 * 1000;
 }
-
 function isWithinLast24h(timeKey){
   const ts = timeKeyToUTC(timeKey);
   if (ts === null) return false;
@@ -701,7 +674,6 @@ function isWithinLast24h(timeKey){
   return (now - ts) <= H24_MS && (now - ts) >= 0;
 }
 
-/* API */
 async function apiGet(endpoint, params = {}){
   const url = new URL(API_BASE, window.location.origin);
   url.searchParams.set('endpoint', endpoint);
@@ -763,7 +735,6 @@ function showVerifiedUI(){
   document.getElementById('userInfo').classList.add('show');
   document.getElementById('rechargeSection').style.display = 'block';
   document.getElementById('summarySection').classList.add('show');
-
   document.getElementById('uiName').textContent = SESSION.name || '—';
   document.getElementById('uiTaka').textContent = '৳ ' + formatBDT(SESSION.taka);
   validateForm();
@@ -840,16 +811,12 @@ async function loadHistory(){
     document.getElementById('uiTaka').textContent = '৳ ' + formatBDT(SESSION.taka);
     document.getElementById('uiName').textContent = SESSION.name;
 
-    /* Total-Recharge data */
     TOTAL_RECHARGE = data.totalRecharge || {};
 
-    /* Quick stats */
     renderQuickStats();
-
-    /* Summary টেবিল */
     renderSummary(currentSummaryView);
 
-    /* ⭐ History list — শুধু শেষ ২৪ ঘন্টার */
+    /* ⭐ ২৪ ঘন্টার ফিল্টার */
     const allList = data.history || [];
     const list = allList.filter(item => isWithinLast24h(item.time));
 
@@ -867,7 +834,6 @@ async function loadHistory(){
   }
 }
 
-/* Quick stats */
 function renderQuickStats(){
   const t = getTodayKeys();
   const tr = TOTAL_RECHARGE || {};
@@ -876,7 +842,6 @@ function renderQuickStats(){
   document.getElementById('qsYear').textContent  = '৳ ' + formatBDT(tr[t.year]  || 0);
 }
 
-/* Summary */
 function renderSummary(view){
   const tbody = document.getElementById('summaryTableBody');
   const tfoot = document.getElementById('summaryTableFoot');
@@ -1024,7 +989,6 @@ function bindHistoryButtons(){
   });
 }
 
-/* Recharge form */
 const numInput = document.getElementById('numberInput');
 const amtInput = document.getElementById('amountInput');
 const badge    = document.getElementById('operatorBadge');
@@ -1178,7 +1142,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
   fetchSiteBalance(true);
 });
 
-/* Vercel Toolbar ব্লক */
 (function(){
   'use strict';
   function rm(){
@@ -1197,7 +1160,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
   setInterval(rm, 1000);
 })();
 
-/* Security */
 (function(){
   'use strict';
   document.addEventListener('keydown', e=>{
