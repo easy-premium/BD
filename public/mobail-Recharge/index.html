@@ -178,30 +178,36 @@ body::after{
 .result-box .rb-row span:first-child{color:var(--muted);font-size:.83rem}
 .result-box .rb-row span:last-child{font-weight:700}
 
-/* User Info (after verify) */
+/* ============================================
+   User Info (avatar/sub ছাড়া — শুধু নাম)
+   ============================================ */
 .user-info{
-  display:none;padding:16px 18px;border-radius:14px;
+  display:none;padding:18px 20px;border-radius:14px;
   background:linear-gradient(135deg,rgba(76,175,80,.15),rgba(0,188,212,.08));
   border:1px solid rgba(76,175,80,.4);margin-bottom:18px;
 }
 .user-info.show{display:block;animation:fadeIn .3s}
-.user-info .ui-top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
-.user-info .ui-avatar{
-  width:44px;height:44px;border-radius:50%;background:var(--grad-btn);
-  display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:800;
+.user-info .ui-name{
+  font-size:1.15rem;font-weight:800;color:#fff;
+  display:flex;align-items:center;gap:8px;
 }
-.user-info .ui-name{font-size:1rem;font-weight:800;color:#fff}
-.user-info .ui-sub{font-size:.8rem;color:var(--muted);margin-top:2px}
+.user-info .ui-name::before{
+  content:'\f007';
+  font-family:'Font Awesome 6 Free';
+  font-weight:900;
+  color:var(--green);
+  font-size:1rem;
+}
 .user-info .ui-wallet{
   display:flex;justify-content:space-between;align-items:center;
-  padding:10px 14px;background:rgba(0,0,0,.35);border-radius:10px;
+  padding:12px 16px;background:rgba(0,0,0,.35);border-radius:10px;margin-top:12px;
 }
-.user-info .ui-wallet .ui-label{font-size:.8rem;color:var(--muted);font-weight:600}
-.user-info .ui-wallet .ui-value{font-size:1.3rem;font-weight:800;color:var(--orange)}
+.user-info .ui-wallet .ui-label{font-size:.85rem;color:var(--muted);font-weight:600}
+.user-info .ui-wallet .ui-value{font-size:1.35rem;font-weight:800;color:var(--orange)}
 .user-info .logout-btn{
-  margin-top:12px;padding:8px 14px;border-radius:8px;border:1px solid var(--red);
+  margin-top:12px;padding:9px 16px;border-radius:8px;border:1px solid var(--red);
   background:transparent;color:var(--red);cursor:pointer;font-size:.85rem;font-weight:700;
-  display:inline-flex;align-items:center;gap:6px;font-family:inherit;
+  display:inline-flex;align-items:center;gap:6px;font-family:inherit;transition:.2s;
 }
 .user-info .logout-btn:hover{background:rgba(244,67,54,.15)}
 
@@ -370,15 +376,9 @@ body::after{
     <div class="result-box" id="verifyResult"></div>
   </div>
 
-  <!-- ========== ইউজার ইনফো (verify হলে দেখাবে) ========== -->
+  <!-- ========== ইউজার ইনফো (verify হলে দেখাবে — avatar/sub ছাড়া) ========== -->
   <div class="user-info" id="userInfo">
-    <div class="ui-top">
-      <div class="ui-avatar" id="uiAvatar">?</div>
-      <div style="flex:1;min-width:0">
-        <div class="ui-name" id="uiName">—</div>
-        <div class="ui-sub" id="uiSub">—</div>
-      </div>
-    </div>
+    <div class="ui-name" id="uiName">—</div>
     <div class="ui-wallet">
       <span class="ui-label"><i class="fas fa-wallet"></i> আমার ব্যালেন্স</span>
       <span class="ui-value" id="uiTaka">৳ 0</span>
@@ -388,7 +388,7 @@ body::after{
     </button>
   </div>
 
-  <!-- ========== রিচার্জ সেকশন (verify হলে দেখাবে) ========== -->
+  <!-- ========== রিচার্জ সেকশন ========== -->
   <div id="rechargeSection" style="display:none">
 
     <div class="card">
@@ -508,18 +508,10 @@ const OPERATORS = {
   BT: { name:'BT',           prefixes:[] }
 };
 
-/* ============================================================
-   State
-   ============================================================ */
-let SESSION = {
-  password: null,
-  name: null,
-  taka: 0
-};
+/* State */
+let SESSION = { password: null, name: null, taka: 0 };
 
-/* ============================================================
-   Helpers
-   ============================================================ */
+/* Helpers */
 function detectOperator(number){
   const n = (number||'').replace(/\D/g,'');
   if (n.length < 3) return null;
@@ -533,14 +525,8 @@ function cleanNumber(v){ return (v||'').replace(/\D/g,'').slice(0,11); }
 function cleanAmount(v){ return (v||'').replace(/\D/g,'').slice(0,5); }
 function isValidNumber(n){ return /^01[3-9]\d{8}$/.test(n); }
 function cleanPassword(v){ return (v||'').toString().trim().slice(0,30); }
-function initialsOf(name){
-  if (!name) return '?';
-  return name.trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
-}
 
-/* ============================================================
-   API call helper (GET + POST)
-   ============================================================ */
+/* API helpers */
 async function apiGet(endpoint, params = {}){
   const url = new URL(API_BASE, window.location.origin);
   url.searchParams.set('endpoint', endpoint);
@@ -549,7 +535,6 @@ async function apiGet(endpoint, params = {}){
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return await res.json();
 }
-
 async function apiPost(endpoint, body = {}){
   const url = new URL(API_BASE, window.location.origin);
   url.searchParams.set('endpoint', endpoint);
@@ -562,9 +547,7 @@ async function apiPost(endpoint, body = {}){
   return await res.json();
 }
 
-/* ============================================================
-   Result box renderer
-   ============================================================ */
+/* Result box */
 function showResult(boxId, type, title, rows=[]){
   const box = document.getElementById(boxId);
   box.className = 'result-box show ' + type;
@@ -582,9 +565,7 @@ function hideResult(boxId){
   box.innerHTML = '';
 }
 
-/* ============================================================
-   Site Balance (public)
-   ============================================================ */
+/* Site balance */
 async function fetchSiteBalance(silent=false){
   const btn = document.getElementById('refreshBalance');
   const val = document.getElementById('balanceValue');
@@ -603,9 +584,7 @@ async function fetchSiteBalance(silent=false){
   }
 }
 
-/* ============================================================
-   UI: Show / hide sections based on verification
-   ============================================================ */
+/* Show/hide UI based on verification */
 function showVerifiedUI(){
   document.getElementById('passwordSection').style.display = 'none';
   document.getElementById('lockNotice').style.display = 'none';
@@ -614,8 +593,6 @@ function showVerifiedUI(){
   document.getElementById('statsGrid').classList.add('show');
 
   document.getElementById('uiName').textContent = SESSION.name || '—';
-  document.getElementById('uiSub').textContent = 'ব্যালেন্স আপডেট হয়েছে';
-  document.getElementById('uiAvatar').textContent = initialsOf(SESSION.name);
   document.getElementById('uiTaka').textContent = '৳ ' + Number(SESSION.taka || 0);
   validateForm();
 }
@@ -632,9 +609,7 @@ function showUnverifiedUI(){
   SESSION = { password:null, name:null, taka:0 };
 }
 
-/* ============================================================
-   Verify password
-   ============================================================ */
+/* Verify password */
 async function doVerify(){
   const password = cleanPassword(document.getElementById('passwordInput').value);
   if (!password) return;
@@ -672,13 +647,10 @@ async function doVerify(){
 
 function validateVerifyForm(){
   const pwd = cleanPassword(document.getElementById('passwordInput').value);
-  const btn = document.getElementById('verifyBtn');
-  btn.disabled = pwd.length < 1;
+  document.getElementById('verifyBtn').disabled = pwd.length < 1;
 }
 
-/* ============================================================
-   Load history (per user)
-   ============================================================ */
+/* Load history */
 async function loadHistory(){
   if (!SESSION.password) return;
   const wrap = document.getElementById('historyList');
@@ -691,20 +663,17 @@ async function loadHistory(){
       return;
     }
 
-    // Update user info
     SESSION.taka = Number(data.taka || 0);
     SESSION.name = data.name || SESSION.name;
     document.getElementById('uiTaka').textContent = '৳ ' + SESSION.taka;
     document.getElementById('uiName').textContent = SESSION.name;
 
-    // Stats
     const stats = data.stats || {};
     document.getElementById('stTotal').textContent = stats.total || 0;
     document.getElementById('stSuccess').textContent = stats.success || 0;
     document.getElementById('stFailed').textContent = stats.failed || 0;
     document.getElementById('stAmount').textContent = '৳ ' + (stats.successAmount || 0);
 
-    // History list
     const list = data.history || [];
     if (!list.length) {
       wrap.innerHTML = '<div class="empty-history">এখনো কোনো লেনদেন হয়নি</div>';
@@ -724,7 +693,7 @@ function renderHistoryItem(h){
   const statusIcon = ok ? 'fa-check-circle' : 'fa-times-circle';
   const statusText = ok ? 'সফল' : 'ব্যর্থ';
   const operatorName = OPERATORS[h.operator]?.name || h.operator || '—';
-  const timeFmt = String(h.time || '').replace('_',' ').replace(/-/g, m => m).slice(0,19) || '—';
+  const timeFmt = String(h.time || '').replace('_',' ').slice(0,19) || '—';
 
   return `
     <div class="history-item ${statusClass}">
@@ -774,10 +743,7 @@ function bindHistoryButtons(){
             { k:'trxid', v: up.recharge_trxid || data.local?.refid || '—' },
             { k:'Sync', v: data.synced ? 'নতুন করে সফল হয়েছে' : 'কোনো পরিবর্তন নেই' }
           ]);
-          if (data.synced) {
-            // reload history because taka may have changed
-            await loadHistory();
-          }
+          if (data.synced) await loadHistory();
         } else {
           showResult('resultBox','error','স্ট্যাটাস চেক ব্যর্থ',[
             { k:'কারণ', v: data?.message || 'অজানা ত্রুটি' }
@@ -795,9 +761,7 @@ function bindHistoryButtons(){
   });
 }
 
-/* ============================================================
-   Recharge form
-   ============================================================ */
+/* Recharge form */
 const numInput = document.getElementById('numberInput');
 const amtInput = document.getElementById('amountInput');
 const badge    = document.getElementById('operatorBadge');
@@ -914,9 +878,9 @@ async function doRecharge(){
     } else {
       showResult('resultBox','error','রিচার্জ ব্যর্থ',[
         { k:'কারণ', v: data?.message || 'অজানা ত্রুটি' },
-        { k:'নম্বর', v: number }
+        { k:'নম্বর', v: number },
+        { k:'সেভ হয়েছে', v: data?.saved ? 'হ্যাঁ (হিস্ট্রিতে আছে)' : 'না' }
       ]);
-      // reload history in case entry was saved
       await loadHistory();
     }
   } catch (e) {
@@ -933,9 +897,7 @@ async function doRecharge(){
 
 btn.addEventListener('click', doRecharge);
 
-/* ============================================================
-   Buttons
-   ============================================================ */
+/* Buttons */
 document.getElementById('verifyBtn').addEventListener('click', doVerify);
 document.getElementById('passwordInput').addEventListener('input', validateVerifyForm);
 document.getElementById('passwordInput').addEventListener('keypress', e=>{
@@ -947,18 +909,14 @@ document.getElementById('logoutBtn').addEventListener('click', ()=>{
 document.getElementById('reloadHistoryBtn').addEventListener('click', loadHistory);
 document.getElementById('refreshBalance').addEventListener('click', ()=>fetchSiteBalance(false));
 
-/* ============================================================
-   Init
-   ============================================================ */
+/* Init */
 document.addEventListener('DOMContentLoaded', ()=>{
   validateVerifyForm();
   updateOperatorBadge();
   fetchSiteBalance(true);
 });
 
-/* ============================================================
-   Vercel Toolbar ব্লক
-   ============================================================ */
+/* Vercel Toolbar ব্লক */
 (function(){
   'use strict';
   function rm(){
@@ -977,9 +935,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   setInterval(rm, 1000);
 })();
 
-/* ============================================================
-   Security (scroll-safe)
-   ============================================================ */
+/* Security (scroll-safe) */
 (function(){
   'use strict';
   document.addEventListener('keydown', e=>{
