@@ -211,8 +211,6 @@ body::after{
 .section-title{font-size:1.05rem;font-weight:700;color:#fff;margin-bottom:12px;display:flex;align-items:center;gap:8px}
 .section-title i{color:var(--orange)}
 
-/* ❌ .last24-badge CSS মুছে ফেলা হয়েছে */
-
 .history-list{display:flex;flex-direction:column;gap:10px}
 .history-item{
   background:var(--card);border-radius:12px;padding:14px 16px;
@@ -512,7 +510,7 @@ body::after{
       <div class="result-box" id="resultBox"></div>
     </div>
 
-    <!-- History (only last 24h, no badge) -->
+    <!-- History (only last 24h) -->
     <div class="section-title" style="justify-content:space-between">
       <span><i class="fas fa-history"></i> আমার লেনদেন</span>
       <button class="hi-btn" id="reloadHistoryBtn" style="border:1px solid var(--orange);color:var(--orange);background:transparent;padding:6px 12px;border-radius:8px;font-size:.75rem;font-weight:700;cursor:pointer">
@@ -604,7 +602,7 @@ body::after{
     <a href="https://www.youtube.com/@Easy_Premium" class="social-link"><i class="fab fa-youtube"></i></a>
     <a href="https://twitter.com/EasyPremium2026" class="social-link"><i class="fab fa-twitter"></i></a>
     <a href="https://wa.me/+8801321782961" class="social-link"><i class="fab fa-whatsapp"></i></a>
-    <a href="https://t.me/Easy_Pemium" class="social-link"><i class="fab fa-telegram"></i></a>
+    <a href="https://t.me/Easy_Pemium" class="social-link"><i class="fas fa-telegram"></i></a>
   </div>
   <div class="copyright">
     © 2026 Easy Premium. TIN : 478475635566<br>
@@ -672,6 +670,14 @@ function isWithinLast24h(timeKey){
   if (ts === null) return false;
   const now = Date.now();
   return (now - ts) <= H24_MS && (now - ts) >= 0;
+}
+
+/* ⭐ নতুন: সুন্দর সময় ফরম্যাট — 05/10/2026  14:32:15 */
+function formatFirebaseTime(timeKey){
+  const m = String(timeKey||'').match(/^(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})-(\d{2})$/);
+  if (!m) return timeKey || '—';
+  const [_, y, mo, d, hh, mi, ss] = m;
+  return `${d}/${mo}/${y}  ${hh}:${mi}:${ss}`;
 }
 
 async function apiGet(endpoint, params = {}){
@@ -921,7 +927,9 @@ function renderHistoryItem(h){
   const statusIcon = ok ? 'fa-check-circle' : 'fa-times-circle';
   const statusText = ok ? 'সফল' : 'ব্যর্থ';
   const operatorName = OPERATORS[h.operator]?.name || h.operator || '—';
-  const timeFmt = String(h.time || '').replace('_',' ').slice(0,19) || '—';
+
+  /* ⭐ নতুন: সুন্দর সময় ফরম্যাট */
+  const timeFmt = formatFirebaseTime(h.time);
 
   return `
     <div class="history-item ${statusClass}">
