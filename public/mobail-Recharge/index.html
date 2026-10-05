@@ -210,10 +210,6 @@ body::after{
 .user-info .ui-wallet .ui-label{font-size:.85rem;color:var(--muted);font-weight:600}
 .user-info .ui-wallet .ui-value{font-size:1.35rem;font-weight:800;color:var(--orange)}
 
-/* ============================================
-   ❌ stats-grid CSS সম্পূর্ণ মুছে ফেলা হয়েছে
-   ============================================ */
-
 /* Section Title */
 .section-title{font-size:1.05rem;font-weight:700;color:#fff;margin-bottom:12px;display:flex;align-items:center;gap:8px}
 .section-title i{color:var(--orange)}
@@ -250,11 +246,49 @@ body::after{
   background:var(--card);border-radius:12px;
 }
 
-/* Summary Section (দিন/মাস/বছর) */
+/* ============================================
+   Summary Section (দিন/মাস/বছর)
+   ============================================ */
 .summary-section{
   display:none;margin-top:22px;
 }
 .summary-section.show{display:block;animation:fadeIn .3s}
+
+/* ⭐ নতুন: ৩টা কুইক স্ট্যাট কার্ড */
+.summary-quick-stats{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;
+}
+.summary-qcard{
+  background:var(--card);border-radius:12px;padding:12px 10px;
+  border:1px solid rgba(255,255,255,.06);
+  text-align:center;
+  position:relative;overflow:hidden;
+}
+.summary-qcard::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--grad-btn);
+}
+.summary-qcard.today::before{background:linear-gradient(90deg,#4caf50,#00bcd4)}
+.summary-qcard.month::before{background:linear-gradient(90deg,#ff9800,#ff5722)}
+.summary-qcard.year::before{background:linear-gradient(90deg,#00bcd4,#9c27b0)}
+.summary-qcard .sq-icon{
+  font-size:.85rem;color:var(--muted);margin-bottom:4px;
+}
+.summary-qcard.today .sq-icon{color:var(--green)}
+.summary-qcard.month .sq-icon{color:var(--orange)}
+.summary-qcard.year .sq-icon{color:var(--cyan)}
+.summary-qcard .sq-label{
+  font-size:.68rem;color:var(--muted);font-weight:700;
+  text-transform:uppercase;letter-spacing:.3px;
+  margin-bottom:5px;
+}
+.summary-qcard .sq-value{
+  font-size:1.05rem;font-weight:800;
+  word-break:break-all;line-height:1.2;
+}
+.summary-qcard.today .sq-value{color:var(--green)}
+.summary-qcard.month .sq-value{color:var(--orange)}
+.summary-qcard.year .sq-value{color:var(--cyan)}
 
 .summary-tabs{
   display:flex;gap:6px;margin-bottom:12px;
@@ -312,6 +346,28 @@ body::after{
   width:22px;height:22px;border-radius:50%;
   background:rgba(255,152,0,.15);color:var(--orange);
   font-size:.7rem;font-weight:800;margin-right:8px;
+}
+
+/* ⭐ নতুন: টেবিলের নিচে সর্বমোট রো */
+.summary-table tfoot td{
+  background:rgba(255,152,0,.12);
+  color:#fff;
+  font-weight:800;
+  padding:14px 16px;
+  font-size:.95rem;
+  border-top:2px solid rgba(255,152,0,.4);
+}
+.summary-table tfoot td:first-child{
+  color:var(--orange);
+  letter-spacing:.5px;
+  font-size:.85rem;
+  text-transform:uppercase;
+}
+.summary-table tfoot td:last-child{
+  text-align:right;
+  color:var(--orange);
+  font-size:1.15rem;
+  font-weight:800;
 }
 
 /* Lock Notice */
@@ -377,8 +433,15 @@ body::after{
   .user-info .ui-name{font-size:1rem}
   .user-info .logout-btn{padding:6px 10px;font-size:.72rem}
   .summary-tab{font-size:.78rem;padding:9px 6px}
+  .summary-tab i{font-size:.78rem}
+  .summary-quick-stats{gap:6px}
+  .summary-qcard{padding:10px 6px}
+  .summary-qcard .sq-label{font-size:.62rem}
+  .summary-qcard .sq-value{font-size:.95rem}
   .summary-table thead th{padding:10px 12px;font-size:.7rem}
   .summary-table tbody td{padding:10px 12px;font-size:.82rem}
+  .summary-table tfoot td{padding:12px;font-size:.85rem}
+  .summary-table tfoot td:last-child{font-size:1.05rem}
 }
 </style>
 </head>
@@ -493,10 +556,29 @@ body::after{
       <div class="empty-history">লেনদেন লোড হচ্ছে...</div>
     </div>
 
-    <!-- Summary Section (দিন / মাস / বছর) -->
+    <!-- Summary Section -->
     <div class="summary-section" id="summarySection">
       <div class="section-title">
         <i class="fas fa-chart-bar"></i> রিচার্জ সামারি
+      </div>
+
+      <!-- ⭐ নতুন: ৩টা কুইক স্ট্যাট কার্ড -->
+      <div class="summary-quick-stats">
+        <div class="summary-qcard today">
+          <div class="sq-icon"><i class="fas fa-calendar-day"></i></div>
+          <div class="sq-label">আজকের মোট</div>
+          <div class="sq-value" id="qsToday">৳ 0</div>
+        </div>
+        <div class="summary-qcard month">
+          <div class="sq-icon"><i class="fas fa-calendar-alt"></i></div>
+          <div class="sq-label">এই মাসের মোট</div>
+          <div class="sq-value" id="qsMonth">৳ 0</div>
+        </div>
+        <div class="summary-qcard year">
+          <div class="sq-icon"><i class="fas fa-calendar"></i></div>
+          <div class="sq-label">এই বছরের মোট</div>
+          <div class="sq-value" id="qsYear">৳ 0</div>
+        </div>
       </div>
 
       <div class="summary-tabs" id="summaryTabs">
@@ -522,6 +604,13 @@ body::after{
           <tbody id="summaryTableBody">
             <tr><td colspan="2" class="empty-row">লোড হচ্ছে...</td></tr>
           </tbody>
+          <!-- ⭐ নতুন: সর্বমোট রো -->
+          <tfoot id="summaryTableFoot" style="display:none">
+            <tr>
+              <td>সর্বমোট</td>
+              <td id="summaryGrandTotal">৳ 0</td>
+            </tr>
+          </tfoot>
         </table>
       </div>
     </div>
@@ -598,6 +687,21 @@ function isValidNumber(n){ return /^01[3-9]\d{8}$/.test(n); }
 function cleanPassword(v){ return (v||'').toString().trim().slice(0,30); }
 function formatBDT(n){ return Number(n||0).toLocaleString('en-IN'); }
 
+/* ⭐ আজকের বাংলাদেশ সময় অনুযায়ী date keys */
+function getTodayKeys(){
+  const now = new Date();
+  const bd = new Date(now.getTime() + 6 * 60 * 60 * 1000);
+  const yyyy = bd.getUTCFullYear();
+  const mm = String(bd.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(bd.getUTCDate()).padStart(2, '0');
+  return {
+    year: String(yyyy),
+    month: `${yyyy}-${mm}`,
+    day: `${yyyy}-${mm}-${dd}`
+  };
+}
+
+/* API */
 async function apiGet(endpoint, params = {}){
   const url = new URL(API_BASE, window.location.origin);
   url.searchParams.set('endpoint', endpoint);
@@ -736,8 +840,13 @@ async function loadHistory(){
     document.getElementById('uiTaka').textContent = '৳ ' + formatBDT(SESSION.taka);
     document.getElementById('uiName').textContent = SESSION.name;
 
-    /* Total-Recharge data → summary টেবিলে */
+    /* Total-Recharge data */
     TOTAL_RECHARGE = data.totalRecharge || {};
+
+    /* Quick stats - আজ/এই মাস/এই বছর */
+    renderQuickStats();
+
+    /* Summary টেবিল */
     renderSummary(currentSummaryView);
 
     /* History list */
@@ -753,9 +862,25 @@ async function loadHistory(){
   }
 }
 
-/* Summary Table renderer */
+/* ⭐ নতুন: উপরে ৩টা কুইক স্ট্যাট কার্ড render */
+function renderQuickStats(){
+  const t = getTodayKeys();
+  const tr = TOTAL_RECHARGE || {};
+
+  const todayAmt = Number(tr[t.day]   || 0);
+  const monthAmt = Number(tr[t.month] || 0);
+  const yearAmt  = Number(tr[t.year]  || 0);
+
+  document.getElementById('qsToday').textContent = '৳ ' + formatBDT(todayAmt);
+  document.getElementById('qsMonth').textContent = '৳ ' + formatBDT(monthAmt);
+  document.getElementById('qsYear').textContent  = '৳ ' + formatBDT(yearAmt);
+}
+
+/* Summary টেবিল render + সর্বমোট row */
 function renderSummary(view){
   const tbody = document.getElementById('summaryTableBody');
+  const tfoot = document.getElementById('summaryTableFoot');
+  const grandTotalEl = document.getElementById('summaryGrandTotal');
   const headLeft = document.getElementById('summaryHeadLeft');
   const keys = Object.keys(TOTAL_RECHARGE || {});
 
@@ -781,9 +906,11 @@ function renderSummary(view){
       <i class="fas fa-inbox" style="font-size:1.5rem;color:#555;display:block;margin-bottom:8px"></i>
       এই বিভাগে এখনো কোনো লেনদেন হয়নি
     </td></tr>`;
+    tfoot.style.display = 'none';
     return;
   }
 
+  /* প্রতিটা সারি render */
   tbody.innerHTML = filtered.map((key, idx) => {
     const amount = Number(TOTAL_RECHARGE[key] || 0);
     return `
@@ -793,6 +920,14 @@ function renderSummary(view){
       </tr>
     `;
   }).join('');
+
+  /* ⭐ সর্বমোট হিসাব */
+  const grandTotal = filtered.reduce(
+    (sum, key) => sum + Number(TOTAL_RECHARGE[key] || 0),
+    0
+  );
+  grandTotalEl.textContent = '৳ ' + formatBDT(grandTotal);
+  tfoot.style.display = '';
 }
 
 function formatPeriod(key, view){
