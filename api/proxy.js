@@ -1,12 +1,12 @@
 // ============================================================
 // api/proxy.js — Vercel Serverless Function
-// Easy Premium — Recharge with race-safe Firebase updates
+// Easy Premium — Recharge with race-safe Firebase updates (FIXED)
 // ============================================================
 
 const FIREBASE_URL = 'https://easy-recharge-bd-default-rtdb.asia-southeast1.firebasedatabase.app';
 const EFLEXI_BASE  = 'https://eflexi.net/api/v2';
 const MAX_PASSWORDS = 20;
-const MAX_PATCH_RETRIES = 5;
+const MAX_PATCH_RETRIES = 3;   // ⭐ 5 → 3 (Vercel timeout এড়াতে)
 
 /* ============================================================
    🔐 পাসওয়ার্ড যাচাই
@@ -24,7 +24,7 @@ function findUserKey(password) {
 }
 
 /* ============================================================
-   🔥 Firebase REST helpers (with ETag support)
+   🔥 Firebase REST helpers (with correct ETag handling)
    ============================================================ */
 function fbUrl(path = '') {
   const secret = process.env.DATABASE_SECRETS;
@@ -32,10 +32,6 @@ function fbUrl(path = '') {
   return `${FIREBASE_URL}${p}.json?auth=${encodeURIComponent(secret)}`;
 }
 
-/**
- * Firebase GET — returns { data, etag }
- * ETag এর মাধ্যমে version track করা হয় — conflict detect করতে
- */
 async function fbGet(path) {
   const res = await fetch(fbUrl(path));
   if (!res.ok) throw new Error(`FB GET ${res.status}`);
@@ -44,18 +40,12 @@ async function fbGet(path) {
   return { data, etag };
 }
 
-/**
- * Firebase PATCH with If-Match (ETag)
- * Returns:
- *   { ok: true, data }       — সফল
- *   { conflict: true }       — কেউ মাঝপথে বদলেছে (412)
- *   throws                   — অন্য error
- */
-async function fbPatchRoot(updates, etag = null) {
+/* ⭐ FIX: user path এ PATCH — ETag মিলবে */
+async function fbPatchUser(userKey, updates, etag = null) {
   const headers = { 'Content-Type': 'application/json' };
   if (etag) headers['If-Match'] = etag;
 
-  const res = await fetch(fbUrl(''), {
+  const res = await fetch(fbUrl(userKey), {
     method: 'PATCH',
     headers,
     body: JSON.stringify(updates)
@@ -70,7 +60,7 @@ async function fbPatchRoot(updates, etag = null) {
 }
 
 /* ============================================================
-   🕒 বাংলাদেশ সময় (UTC+6)
+   🕒 বাংলাদেশ সময়
    ============================================================ */
 function getTimeKeys(date = new Date()) {
   const bd = new Date(date.getTime() + 6 * 60 * 60 * 1000);
@@ -89,26 +79,16 @@ function getTimeKeys(date = new Date()) {
 }
 
 /* ============================================================
-   🔍 eflexi success detection (flexible)
-   ============================================================
-   eflexi এর recharge_status কী আসে সেটা না জেনে আমরা multiple
-   keyword চেক করছি। যদি ভিন্ন ফরম্যাট হয়, নিচের লিস্টে যোগ করবেন।
+   🔍 eflexi success detection
    ============================================================ */
 function isEflexiRechargeSuccess(upstream) {
   if (!upstream) return false;
   const rs = String(upstream.recharge_status || upstream.rechargeStatus || '').toLowerCase().trim();
-
-  // failure indicators
   const failWords = ['fail', 'error', 'cancel', 'reject', 'pending', 'process', 'refund'];
   if (failWords.some(w => rs.includes(w))) return false;
-
-  // success indicators
   const successWords = ['success', 'complete', 'completed', 'done', 'paid', 'approved'];
   if (successWords.some(w => rs.includes(w))) return true;
-
-  // recharge_status ফাঁকা কিন্তু status true → সম্ভবত success
   if (!rs && (upstream.status === true || upstream.status === 'true')) return true;
-
   return false;
 }
 
@@ -151,7 +131,7 @@ export default async function handler(req, res) {
 }
 
 /* ============================================================
-   🌐 সাইট ব্যালেন্স (পাবলিক)
+   🌐 সাইট ব্যালেন্স
    ============================================================ */
 async function handleSiteBalance(res) {
   const API_KEY  = process.env.EFLEXI_KEY;
@@ -199,14 +179,7 @@ async function handleVerify(res, body, query) {
 }
 
 /* ============================================================
-   💰 ইউজার রিচার্জ — Race-safe (ETag + Retry)
-   ============================================================
-   ধাপ:
-   ১. ইনপুট ভ্যালিডেশন
-   ২. পাসওয়ার্ড যাচাই
-   ৩. ইউজার পড়া — taka চেক
-   ৪. eflexi তে রিচার্জ (একবারই)
-   ৫. Firebase এ PATCH — conflict হলে retry, fresh data পড়ে
+   💰 ইউজার রিচার্জ — Race-safe (FIXED: user-path PATCH)
    ============================================================ */
 async function handleUserRecharge(res, body, query) {
   const password = body.password || query.password;
@@ -214,7 +187,6 @@ async function handleUserRecharge(res, body, query) {
   const operator = String(body.operator || query.operator || '').trim().toUpperCase();
   const amount   = parseInt(body.amount  || query.amount, 10);
 
-  /* --- ১. ভ্যালিডেশন --- */
   if (!password)              return res.status(400).json({ status: false, message: 'পাসওয়ার্ড দিন' });
   if (!/^01[3-9]\d{8}$/.test(number))
                               return res.status(400).json({ status: false, message: 'সঠিক ১১ ডিজিটের নম্বর দিন' });
@@ -223,11 +195,10 @@ async function handleUserRecharge(res, body, query) {
   if (!amount || amount < 10 || amount > 5000)
                               return res.status(400).json({ status: false, message: 'পরিমাণ ৳১০ থেকে ৳৫০০০' });
 
-  /* --- ২. পাসওয়ার্ড যাচাই --- */
   const userKey = findUserKey(password);
   if (!userKey) return res.status(200).json({ status: false, message: 'ভুল পাসওয়ার্ড' });
 
-  /* --- ৩. ইউজার পড়া + taka চেক --- */
+  /* --- ইউজার পড়া + taka চেক --- */
   let initial;
   try { initial = await fbGet(userKey); }
   catch (e) { return res.status(500).json({ status: false, message: 'Firebase সংযোগ ব্যর্থ' }); }
@@ -246,7 +217,7 @@ async function handleUserRecharge(res, body, query) {
     });
   }
 
-  /* --- ৪. eflexi এ রিচার্জ (একবারই) --- */
+  /* --- eflexi এ রিচার্জ --- */
   const API_KEY  = process.env.EFLEXI_KEY;
   const API_PASS = process.env.EFLEXI_PASS;
   const refid = 'EP' + Date.now() + Math.random().toString(36).slice(2, 7).toUpperCase();
@@ -271,7 +242,6 @@ async function handleUserRecharge(res, body, query) {
     eflexiError = 'eflexi সার্ভার unreachable: ' + err.message;
   }
 
-  /* --- ৫. সফল নির্ণয় --- */
   const success = !eflexiError && eflexiData && eflexiData.status === true;
   const trxid   = (eflexiData && eflexiData.trxid) || refid;
   const errMsg  = eflexiError || (eflexiData && eflexiData.message) || 'রিচার্জ ব্যর্থ';
@@ -289,10 +259,7 @@ async function handleUserRecharge(res, body, query) {
     rawMessage: errMsg
   };
 
-  /* --- ৬. Firebase এ atomic PATCH (ETag + Retry) ---
-     eflexi এর রেসপন্স ইতিমধ্যে পাওয়া গেছে।
-     শুধু Firebase update এ conflict হলে retry।
-  --- */
+  /* --- Firebase এ atomic PATCH (user-path + ETag + Retry) --- */
   let saved = false;
   let lastError = null;
   let finalNewTaka = currentTaka;
@@ -302,7 +269,7 @@ async function handleUserRecharge(res, body, query) {
     try { fresh = await fbGet(userKey); }
     catch (e) {
       lastError = e;
-      await new Promise(r => setTimeout(r, 100));
+      await new Promise(r => setTimeout(r, 80));
       continue;
     }
 
@@ -310,45 +277,45 @@ async function handleUserRecharge(res, body, query) {
     const freshTaka = Number(freshData.taka) || 0;
     const prevTotal = freshData['Total-Recharge'] || {};
 
+    /* ⭐ FIX: relative paths — user path এ PATCH হবে */
     const updates = {
-      [`${userKey}/mobail-Recharge/${timeKeys.full}`]: rechargeEntry
+      [`mobail-Recharge/${timeKeys.full}`]: rechargeEntry
     };
 
     if (success) {
       const newTaka = Math.max(0, freshTaka - amount);
       finalNewTaka = newTaka;
 
-      updates[`${userKey}/taka`] = newTaka;
-      updates[`${userKey}/Total-Recharge/${timeKeys.year}`]  =
+      updates[`taka`] = newTaka;
+      updates[`Total-Recharge/${timeKeys.year}`]  =
         Number(prevTotal[timeKeys.year]  || 0) + amount;
-      updates[`${userKey}/Total-Recharge/${timeKeys.month}`] =
+      updates[`Total-Recharge/${timeKeys.month}`] =
         Number(prevTotal[timeKeys.month] || 0) + amount;
-      updates[`${userKey}/Total-Recharge/${timeKeys.day}`]   =
+      updates[`Total-Recharge/${timeKeys.day}`]   =
         Number(prevTotal[timeKeys.day]   || 0) + amount;
     } else {
       finalNewTaka = freshTaka;
     }
 
     try {
-      const result = await fbPatchRoot(updates, fresh.etag);
+      const result = await fbPatchUser(userKey, updates, fresh.etag);
       if (result.conflict) {
-        // কেউ মাঝপথে বদলেছে — আবার চেষ্টা
-        await new Promise(r => setTimeout(r, 100));
+        await new Promise(r => setTimeout(r, 80));
         continue;
       }
       saved = true;
       break;
     } catch (e) {
       lastError = e;
-      await new Promise(r => setTimeout(r, 100));
+      await new Promise(r => setTimeout(r, 80));
     }
   }
 
-  /* --- ৭. Firebase update ব্যর্থ হলে --- */
+  /* --- Firebase update ব্যর্থ হলে --- */
   if (!saved) {
     console.error('Firebase update failed after retries:', lastError);
     return res.status(500).json({
-      status: success,           // eflexi সফল কিনা সেটা জানাতে হবে
+      status: success,
       message: success
         ? `রিচার্জ সফল হয়েছে কিন্তু হিসাব সেভ ব্যর্থ। refid: ${refid} — সাপোর্টে জানান।`
         : `রিচার্জ ব্যর্থ এবং লগ সেভ হয়নি: ${errMsg}`,
@@ -358,7 +325,6 @@ async function handleUserRecharge(res, body, query) {
     });
   }
 
-  /* --- ৮. রেসপন্স --- */
   if (success) {
     return res.status(200).json({
       status: true,
@@ -378,7 +344,7 @@ async function handleUserRecharge(res, body, query) {
 }
 
 /* ============================================================
-   📜 ইউজার হিস্ট্রি — শুধু নিজের
+   📜 ইউজার হিস্ট্রি
    ============================================================ */
 async function handleHistory(res, body, query) {
   const password = body.password || query.password;
@@ -428,7 +394,7 @@ async function handleHistory(res, body, query) {
 }
 
 /* ============================================================
-   🔍 refid দিয়ে eflexi স্ট্যাটাস চেক — শুধু নিজের লেনদেন
+   🔍 refid দিয়ে স্ট্যাটাস চেক (FIXED: user-path PATCH)
    ============================================================ */
 async function handleCheckStatus(res, body, query) {
   const password = body.password || query.password;
@@ -464,7 +430,6 @@ async function handleCheckStatus(res, body, query) {
     });
   }
 
-  /* --- eflexi স্ট্যাটাস API --- */
   const API_KEY  = process.env.EFLEXI_KEY;
   const API_PASS = process.env.EFLEXI_PASS;
 
@@ -481,13 +446,11 @@ async function handleCheckStatus(res, body, query) {
     return res.status(502).json({ status: false, message: 'eflexi সার্ভার unreachable' });
   }
 
-  /* --- স্ট্যাটাস পরিবর্তন check --- */
   const wasSuccess = matchedEntry.status === true;
   const nowSuccess = isEflexiRechargeSuccess(upstreamData);
   const statusChangedToSuccess = !wasSuccess && nowSuccess;
 
   if (statusChangedToSuccess) {
-    /* Retry loop দিয়ে safe update */
     const timeKeys = getTimeKeys(new Date(matchedEntry.time || Date.now()));
     const amt = Number(matchedEntry.amount || 0);
 
@@ -495,7 +458,7 @@ async function handleCheckStatus(res, body, query) {
       let fresh;
       try { fresh = await fbGet(userKey); }
       catch (e) {
-        await new Promise(r => setTimeout(r, 100));
+        await new Promise(r => setTimeout(r, 80));
         continue;
       }
 
@@ -503,26 +466,27 @@ async function handleCheckStatus(res, body, query) {
       const freshTaka = Number(freshData.taka) || 0;
       const prevTotal = freshData['Total-Recharge'] || {};
 
+      /* ⭐ FIX: relative paths */
       const updates = {
-        [`${userKey}/taka`]: Math.max(0, freshTaka - amt),
-        [`${userKey}/Total-Recharge/${timeKeys.year}`]:  Number(prevTotal[timeKeys.year]  || 0) + amt,
-        [`${userKey}/Total-Recharge/${timeKeys.month}`]: Number(prevTotal[timeKeys.month] || 0) + amt,
-        [`${userKey}/Total-Recharge/${timeKeys.day}`]:   Number(prevTotal[timeKeys.day]   || 0) + amt,
-        [`${userKey}/mobail-Recharge/${matchedTime}/status`]: true,
-        [`${userKey}/mobail-Recharge/${matchedTime}/rawMessage`]:
+        [`taka`]: Math.max(0, freshTaka - amt),
+        [`Total-Recharge/${timeKeys.year}`]:  Number(prevTotal[timeKeys.year]  || 0) + amt,
+        [`Total-Recharge/${timeKeys.month}`]: Number(prevTotal[timeKeys.month] || 0) + amt,
+        [`Total-Recharge/${timeKeys.day}`]:   Number(prevTotal[timeKeys.day]   || 0) + amt,
+        [`mobail-Recharge/${matchedTime}/status`]: true,
+        [`mobail-Recharge/${matchedTime}/rawMessage`]:
           upstreamData?.message || 'স্ট্যাটাস চেক থেকে সফল হয়েছে'
       };
 
       try {
-        const result = await fbPatchRoot(updates, fresh.etag);
+        const result = await fbPatchUser(userKey, updates, fresh.etag);
         if (result.conflict) {
-          await new Promise(r => setTimeout(r, 100));
+          await new Promise(r => setTimeout(r, 80));
           continue;
         }
         break;
       } catch (e) {
         console.error('Status sync failed:', e);
-        await new Promise(r => setTimeout(r, 100));
+        await new Promise(r => setTimeout(r, 80));
       }
     }
   }
