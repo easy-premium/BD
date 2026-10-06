@@ -845,14 +845,14 @@ async function doVerify(){
       loadHistory();
     } else {
       showResult('verifyResult','error','ভুল পাসওয়ার্ড',[
-        { k:'কারণ', v: data?.message || 'পাসওয়ার্ড মেলেনি' },
-        { k:'পরামর্শ', v:'আপনার সঠিক পাসওয়ার্ড দিন' }
+        { k:'কারণ ', v: data?.message || 'পাসওয়ার্ড মেলেনি' },
+        { k:'পরামর্শ ', v:'আপনার সঠিক পাসওয়ার্ড দিন' }
       ]);
     }
   } catch (e) {
     showResult('verifyResult','error','সংযোগ ব্যর্থ',[
-      { k:'কারণ', v: e.message || 'নেটওয়ার্ক সমস্যা' },
-      { k:'পরামর্শ', v:'কিছুক্ষণ পরে চেষ্টা করুন' }
+      { k:'কারণ ', v: e.message || 'নেটওয়ার্ক সমস্যা' },
+      { k:'পরামর্শ ', v:'কিছুক্ষণ পরে চেষ্টা করুন' }
     ]);
   } finally {
     btnText.textContent = 'যাচাই করুন';
