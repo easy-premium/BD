@@ -218,7 +218,6 @@ body::after{
 }
 .history-item.ok{border-left-color:var(--green)}
 .history-item.fail{border-left-color:var(--red)}
-.history-item.checking{opacity:.7}
 .history-item .hi-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
 .history-item .hi-left{flex:1;min-width:0}
 .history-item .hi-num{font-weight:700;font-size:.95rem}
@@ -230,10 +229,7 @@ body::after{
 }
 .history-item .hi-status.ok{background:rgba(76,175,80,.2);color:var(--green)}
 .history-item .hi-status.fail{background:rgba(244,67,54,.2);color:var(--red)}
-.history-item .hi-status.checking{background:rgba(0,188,212,.2);color:var(--cyan)}
 .history-item .hi-refid{font-size:.7rem;color:#666;margin-top:6px;word-break:break-all}
-
-/* ⭐ Auto-check indicator */
 .auto-check-indicator{
   display:inline-flex;align-items:center;gap:4px;
   font-size:.65rem;color:var(--cyan);margin-top:4px;
@@ -348,9 +344,6 @@ body::after{
 .lock-notice .ln-title{font-weight:700;margin-bottom:6px}
 .lock-notice .ln-sub{font-size:.85rem;color:var(--muted)}
 
-/* ============================================
-   ⭐ পাসওয়ার্ড নিশ্চিতকরণ মডাল
-   ============================================ */
 .pwd-modal{
   display:none;position:fixed;inset:0;
   background:rgba(0,0,0,.85);backdrop-filter:blur(10px);
@@ -635,7 +628,7 @@ body::after{
 
 </div>
 
-<!-- ⭐ পাসওয়ার্ড নিশ্চিতকরণ মডাল -->
+<!-- Password confirmation modal -->
 <div class="pwd-modal" id="pwdModal">
   <div class="pwd-modal-box">
     <div class="pwd-modal-title">
@@ -681,12 +674,12 @@ body::after{
 <script>
 const API_BASE = '/api/proxy';
 
-/* ⭐ অপারেটর প্রিফিক্স — সঠিক (016 = Airtel) */
+/* অপারেটর প্রিফিক্স — সঠিক (016 = Airtel) */
 const OPERATORS = {
   GP: { name:'Grameenphone', prefixes:['013','017'] },
-  RB: { name:'Robi',         prefixes:['018'] },              /* শুধু 018 */
+  RB: { name:'Robi',         prefixes:['018'] },
   BL: { name:'Banglalink',   prefixes:['014','019'] },
-  AT: { name:'Airtel',       prefixes:['016'] },              /* ⭐ 016 = Airtel */
+  AT: { name:'Airtel',       prefixes:['016'] },
   TT: { name:'Teletalk',     prefixes:['015'] },
   BT: { name:'BT',           prefixes:[] }
 };
@@ -694,15 +687,18 @@ const OPERATORS = {
 const BN_MONTHS = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন',
                     'জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
 
+/* ⭐ ন্যূনতম রিচার্জ ২০ টাকা */
+const MIN_RECHARGE = 20;
+const MAX_RECHARGE = 5000;
+
 const H24_MS = 24 * 60 * 60 * 1000;
-const AUTO_CHECK_INTERVAL = 5000;   /* ⭐ প্রতি ৫ সেকেন্ড */
+const AUTO_CHECK_INTERVAL = 5000;
 
 let SESSION = { password: null, name: null, taka: 0 };
 let TOTAL_RECHARGE = {};
 let currentSummaryView = 'day';
-let autoCheckTimer = null;          /* ⭐ auto-check timer */
+let autoCheckTimer = null;
 
-/* Helpers */
 function detectOperator(number){
   const n = (number||'').replace(/\D/g,'');
   if (n.length < 3) return null;
@@ -811,7 +807,7 @@ function showVerifiedUI(){
   document.getElementById('uiName').textContent = SESSION.name || '—';
   document.getElementById('uiTaka').textContent = '৳ ' + formatBDT(SESSION.taka);
   validateForm();
-  startAutoCheck();    /* ⭐ auto-check চালু */
+  startAutoCheck();
 }
 
 function showUnverifiedUI(){
@@ -825,7 +821,7 @@ function showUnverifiedUI(){
   hideResult('verifyResult');
   SESSION = { password:null, name:null, taka:0 };
   TOTAL_RECHARGE = {};
-  stopAutoCheck();     /* ⭐ auto-check বন্ধ */
+  stopAutoCheck();
 }
 
 async function doVerify(){
@@ -869,9 +865,7 @@ function validateVerifyForm(){
   document.getElementById('verifyBtn').disabled = pwd.length < 1;
 }
 
-/* ============================================
-   ⭐ অটো স্ট্যাটাস চেক
-   ============================================ */
+/* Auto status check */
 function startAutoCheck(){
   stopAutoCheck();
   autoCheckTimer = setInterval(autoCheckStatuses, AUTO_CHECK_INTERVAL);
@@ -884,7 +878,6 @@ function stopAutoCheck(){
 }
 async function autoCheckStatuses(){
   if (!SESSION.password) return;
-  /* শুধু ব্যর্থ লেনদেন চেক হবে */
   const failedItems = document.querySelectorAll('.history-item.fail');
   if (!failedItems.length) return;
 
@@ -899,20 +892,14 @@ async function autoCheckStatuses(){
       });
       if (data && data.status && data.synced) {
         anySynced = true;
-        break;   /* একটাই sync হলেই reload */
+        break;
       }
-    } catch (e) {
-      /* silently ignore */
-    }
+    } catch (e) { /* silent */ }
   }
-  if (anySynced) {
-    await loadHistory();
-  }
+  if (anySynced) await loadHistory();
 }
 
-/* ============================================
-   ⭐ পাসওয়ার্ড মডাল
-   ============================================ */
+/* Password confirmation modal */
 function askPassword(){
   return new Promise((resolve) => {
     const modal = document.getElementById('pwdModal');
@@ -949,9 +936,7 @@ function askPassword(){
   });
 }
 
-/* ============================================
-   History / Summary / Render
-   ============================================ */
+/* History */
 async function loadHistory(){
   if (!SESSION.password) return;
   const wrap = document.getElementById('historyList');
@@ -1070,7 +1055,6 @@ function initSummaryTabs(){
   });
 }
 
-/* ⭐ History item — কোনো manual button নেই */
 function renderHistoryItem(h){
   const ok = h.status === true;
   const statusClass = ok ? 'ok' : 'fail';
@@ -1106,9 +1090,7 @@ function renderHistoryItem(h){
   `;
 }
 
-/* ============================================
-   Recharge form
-   ============================================ */
+/* Recharge form */
 const numInput = document.getElementById('numberInput');
 const amtInput = document.getElementById('amountInput');
 const badge    = document.getElementById('operatorBadge');
@@ -1130,12 +1112,13 @@ function updateOperatorBadge(){
   validateForm();
 }
 
+/* ⭐ ন্যূনতম ২০৳ — নিচে হলে বাটন নিষ্ক্রিয় (কোনো মেসেজ নেই) */
 function validateForm(){
   if (!SESSION.password) { btn.disabled = true; return; }
   const num = cleanNumber(numInput.value);
   const amt = parseInt(cleanAmount(amtInput.value),10);
   const op  = detectOperator(num);
-  btn.disabled = !(isValidNumber(num) && op && amt>=10 && amt<=5000);
+  btn.disabled = !(isValidNumber(num) && op && amt >= MIN_RECHARGE && amt <= MAX_RECHARGE);
 }
 
 numInput.addEventListener('input', e=>{
@@ -1158,7 +1141,6 @@ document.querySelectorAll('.amt-chip').forEach(chip=>{
   });
 });
 
-/* ⭐ Recharge with password confirmation modal */
 async function doRecharge(){
   if (!SESSION.password) {
     showResult('resultBox','error','পাসওয়ার্ড নেই',[
@@ -1184,28 +1166,15 @@ async function doRecharge(){
     return;
   }
   const amt = parseInt(amount,10);
-  if (!amt || amt < 10) {
-    showResult('resultBox','error','ভুল পরিমাণ',[
-      { k:'কারণ', v:'সর্বনিম্ন ৳১০ রিচার্জ করা যাবে' }
-    ]);
-    return;
-  }
-  if (amt > 5000) {
-    showResult('resultBox','error','সীমা ছাড়িয়ে গেছে',[
-      { k:'কারণ', v:'সর্বোচ্চ ৳৫০০০ রিচার্জ করা যাবে' }
-    ]);
-    return;
-  }
 
-  /* ⭐ পাসওয়ার্ড নিশ্চিতকরণ */
+  /* ⭐ ন্যূনতম ২০৳ — নিচে হলে চুপচাপ বন্ধ (কোনো মেসেজ নেই) */
+  if (!amt || amt < MIN_RECHARGE) return;
+  if (amt > MAX_RECHARGE) return;
+
+  /* পাসওয়ার্ড নিশ্চিতকরণ */
   const confirmPwd = await askPassword();
-  if (confirmPwd === null) return;   /* বাতিল */
-  if (!confirmPwd) {
-    showResult('resultBox','error','পাসওয়ার্ড দিন',[
-      { k:'কারণ', v:'রিচার্জ করতে পাসওয়ার্ড দিতে হবে' }
-    ]);
-    return;
-  }
+  if (confirmPwd === null) return;
+  if (!confirmPwd) return;
   if (confirmPwd !== SESSION.password) {
     showResult('resultBox','error','ভুল পাসওয়ার্ড',[
       { k:'কারণ', v:'আপনার দেওয়া পাসওয়ার্ড মেলেনি' },
@@ -1214,7 +1183,6 @@ async function doRecharge(){
     return;
   }
 
-  /* ⭐ এবার রিচার্জ চালাও */
   btn.disabled = true;
   const btnText = document.getElementById('btnText');
   btnText.innerHTML = '<span class="spinner"></span> প্রসেস হচ্ছে...';
@@ -1263,7 +1231,6 @@ async function doRecharge(){
 
 btn.addEventListener('click', doRecharge);
 
-/* Events */
 document.getElementById('verifyBtn').addEventListener('click', doVerify);
 document.getElementById('passwordInput').addEventListener('input', validateVerifyForm);
 document.getElementById('passwordInput').addEventListener('keypress', e=>{
@@ -1281,7 +1248,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   fetchSiteBalance(true);
 });
 
-/* Vercel Toolbar ব্লক */
+/* Vercel Toolbar block */
 (function(){
   'use strict';
   function rm(){
