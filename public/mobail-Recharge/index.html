@@ -1177,8 +1177,8 @@ async function doRecharge(){
   if (!confirmPwd) return;
   if (confirmPwd !== SESSION.password) {
     showResult('resultBox','error','ভুল পাসওয়ার্ড',[
-      { k:'কারণ', v:'আপনার দেওয়া পাসওয়ার্ড মেলেনি' },
-      { k:'পরামর্শ', v:'লগআউট করে আবার যাচাই করুন' }
+      { k:'কারণ ', v:'আপনার দেওয়া পাসওয়ার্ড মেলেনি' },
+      { k:'পরামর্শ ', v:'লগআউট করে আবার যাচাই করুন' }
     ]);
     return;
   }
