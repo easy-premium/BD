@@ -317,8 +317,8 @@ async function handleUserRecharge(res, body, query) {
     return res.status(500).json({
       status: success,
       message: success
-        ? `রিচার্জ সফল হয়েছে কিন্তু হিসাব সেভ ব্যর্থ। refid: ${refid} — সাপোর্টে জানান।`
-        : `রিচার্জ ব্যর্থ এবং লগ সেভ হয়নি: ${errMsg}`,
+        ? ` রিচার্জ সফল হয়েছে কিন্তু হিসাব সেভ ব্যর্থ। refid: ${refid} — সাপোর্টে জানান।`
+        : ` রিচার্জ ব্যর্থ এবং লগ সেভ হয়নি: ${errMsg}`,
       trxid: trxid,
       refid: refid,
       saved: false
