@@ -1,12 +1,61 @@
 // ============================================================
 // api/proxy.js — Vercel Serverless Function
 // Easy Premium — Recharge with race-safe Firebase updates (FIXED)
+// + Telegram Bot Logging
 // ============================================================
 
 const FIREBASE_URL = 'https://easy-recharge-bd-default-rtdb.asia-southeast1.firebasedatabase.app';
 const EFLEXI_BASE  = 'https://eflexi.net/api/v2';
 const MAX_PASSWORDS = 20;
-const MAX_PATCH_RETRIES = 3;   // ⭐ 5 → 3 (Vercel timeout এড়াতে)
+const MAX_PATCH_RETRIES = 3;
+
+/* ============================================================
+   📢 টেলিগ্রাম লগ — সব ইভেন্ট এখান থেকে যায়
+   ============================================================ */
+async function sendTelegramLog(message) {
+  const token  = process.env.TELEGRAM_BOT_TOKENa;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+  if (!token || !chatId) return;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+  try {
+    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: message,
+        parse_mode: 'HTML',
+        disable_web_page_preview: true
+      }),
+      signal: controller.signal
+    });
+  } catch (e) {
+    console.error('Telegram log failed:', e.message);
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+/* বাংলাদেশ সময় (লগে দেখানোর জন্য) */
+function formatBDTime(date = new Date()) {
+  const bd = new Date(date.getTime() + 6 * 60 * 60 * 1000);
+  const pad = n => String(n).padStart(2, '0');
+  return `${pad(bd.getUTCDate())}/${pad(bd.getUTCMonth() + 1)}/${bd.getUTCFullYear()} ${pad(bd.getUTCHours())}:${pad(bd.getUTCMinutes())}:${pad(bd.getUTCSeconds())}`;
+}
+
+function escapeHtml(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function fmtBDT(n) {
+  return Number(n || 0).toLocaleString('en-IN');
+}
 
 /* ============================================================
    🔐 পাসওয়ার্ড যাচাই
@@ -24,7 +73,7 @@ function findUserKey(password) {
 }
 
 /* ============================================================
-   🔥 Firebase REST helpers (with correct ETag handling)
+   🔥 Firebase REST helpers
    ============================================================ */
 function fbUrl(path = '') {
   const secret = process.env.DATABASE_SECRETS;
@@ -40,7 +89,6 @@ async function fbGet(path) {
   return { data, etag };
 }
 
-/* ⭐ FIX: user path এ PATCH — ETag মিলবে */
 async function fbPatchUser(userKey, updates, etag = null) {
   const headers = { 'Content-Type': 'application/json' };
   if (etag) headers['If-Match'] = etag;
@@ -155,6 +203,15 @@ async function handleVerify(res, body, query) {
   const userKey  = findUserKey(password);
 
   if (!userKey) {
+    /* 🚨 ভুল পাসওয়ার্ড চেষ্টা → টেলিগ্রামে সতর্কতা */
+    sendTelegramLog(
+`🚨 <b>ভুল পাসওয়ার্ড চেষ্টা</b>
+
+🔑 পাসওয়ার্ড: <code>${escapeHtml(password || '—')}</code>
+🕐 সময়: ${formatBDTime()}
+📍 Endpoint: verify
+⚠️ কেউ ভুল পাসওয়ার্ড দিয়ে ঢোকার চেষ্টা করছে`
+    );
     return res.status(200).json({ status: false, matched: false, message: 'ভুল পাসওয়ার্ড' });
   }
 
@@ -179,7 +236,7 @@ async function handleVerify(res, body, query) {
 }
 
 /* ============================================================
-   💰 ইউজার রিচার্জ — Race-safe (FIXED: user-path PATCH)
+   💰 ইউজার রিচার্জ — Race-safe + Telegram Log
    ============================================================ */
 async function handleUserRecharge(res, body, query) {
   const password = body.password || query.password;
@@ -196,7 +253,20 @@ async function handleUserRecharge(res, body, query) {
                               return res.status(400).json({ status: false, message: 'পরিমাণ ৳১০ থেকে ৳৫০০০' });
 
   const userKey = findUserKey(password);
-  if (!userKey) return res.status(200).json({ status: false, message: 'ভুল পাসওয়ার্ড' });
+  if (!userKey) {
+    /* 🚨 ভুল পাসওয়ার্ডে রিচার্জ চেষ্টা */
+    sendTelegramLog(
+`🚨 <b>ভুল পাসওয়ার্ডে রিচার্জ চেষ্টা</b>
+
+🔑 পাসওয়ার্ড: <code>${escapeHtml(password)}</code>
+📱 নম্বর: <code>${escapeHtml(number)}</code>
+📶 অপারেটর: ${escapeHtml(operator)}
+💰 পরিমাণ: ৳${amount}
+🕐 সময়: ${formatBDTime()}
+⚠️ কেউ ভুল পাসওয়ার্ড দিয়ে রিচার্জের চেষ্টা করেছে`
+    );
+    return res.status(200).json({ status: false, message: 'ভুল পাসওয়ার্ড' });
+  }
 
   /* --- ইউজার পড়া + taka চেক --- */
   let initial;
@@ -207,8 +277,20 @@ async function handleUserRecharge(res, body, query) {
   if (!userData || typeof userData !== 'object')
     return res.status(200).json({ status: false, message: 'ইউজার ডেটা পাওয়া যায়নি' });
 
+  const userName   = userData.name || userKey;
   const currentTaka = Number(userData.taka) || 0;
+
   if (currentTaka < amount) {
+    sendTelegramLog(
+`⚠️ <b>পর্যাপ্ত ব্যালেন্স নেই</b>
+
+👤 ইউজার: ${escapeHtml(userName)} (${escapeHtml(userKey)})
+📱 নম্বর: <code>${escapeHtml(number)}</code>
+📶 অপারেটর: ${escapeHtml(operator)}
+💰 অনুরোধ: ৳${amount}
+💵 আছে: ৳${fmtBDT(currentTaka)}
+🕐 সময়: ${formatBDTime()}`
+    );
     return res.status(200).json({
       status: false,
       message: `পর্যাপ্ত ব্যালেন্স নেই। আপনার আছে ৳${currentTaka}`,
@@ -259,10 +341,11 @@ async function handleUserRecharge(res, body, query) {
     rawMessage: errMsg
   };
 
-  /* --- Firebase এ atomic PATCH (user-path + ETag + Retry) --- */
+  /* --- Firebase এ atomic PATCH --- */
   let saved = false;
   let lastError = null;
   let finalNewTaka = currentTaka;
+  let finalTotalYear = 0, finalTotalMonth = 0, finalTotalDay = 0;
 
   for (let attempt = 0; attempt < MAX_PATCH_RETRIES; attempt++) {
     let fresh;
@@ -277,7 +360,6 @@ async function handleUserRecharge(res, body, query) {
     const freshTaka = Number(freshData.taka) || 0;
     const prevTotal = freshData['Total-Recharge'] || {};
 
-    /* ⭐ FIX: relative paths — user path এ PATCH হবে */
     const updates = {
       [`mobail-Recharge/${timeKeys.full}`]: rechargeEntry
     };
@@ -286,13 +368,14 @@ async function handleUserRecharge(res, body, query) {
       const newTaka = Math.max(0, freshTaka - amount);
       finalNewTaka = newTaka;
 
+      finalTotalYear  = Number(prevTotal[timeKeys.year]  || 0) + amount;
+      finalTotalMonth = Number(prevTotal[timeKeys.month] || 0) + amount;
+      finalTotalDay   = Number(prevTotal[timeKeys.day]   || 0) + amount;
+
       updates[`taka`] = newTaka;
-      updates[`Total-Recharge/${timeKeys.year}`]  =
-        Number(prevTotal[timeKeys.year]  || 0) + amount;
-      updates[`Total-Recharge/${timeKeys.month}`] =
-        Number(prevTotal[timeKeys.month] || 0) + amount;
-      updates[`Total-Recharge/${timeKeys.day}`]   =
-        Number(prevTotal[timeKeys.day]   || 0) + amount;
+      updates[`Total-Recharge/${timeKeys.year}`]  = finalTotalYear;
+      updates[`Total-Recharge/${timeKeys.month}`] = finalTotalMonth;
+      updates[`Total-Recharge/${timeKeys.day}`]   = finalTotalDay;
     } else {
       finalNewTaka = freshTaka;
     }
@@ -311,20 +394,77 @@ async function handleUserRecharge(res, body, query) {
     }
   }
 
-  /* --- Firebase update ব্যর্থ হলে --- */
+  /* ============================================================
+     📢 Telegram লগ — সফল বা ব্যর্থ
+     ============================================================ */
+
   if (!saved) {
+    /* Firebase save fail — এটাও লগ করি */
+    sendTelegramLog(
+`🔥 <b>সিস্টেম ইরর — ডেটাবেস সেভ ব্যর্থ</b>
+
+👤 ইউজার: ${escapeHtml(userName)} (${escapeHtml(userKey)})
+📱 নম্বর: <code>${escapeHtml(number)}</code>
+💰 পরিমাণ: ৳${amount}
+📊 eflexi: ${success ? '✅ সফল' : '❌ ব্যর্থ'}
+🔖 Ref: <code>${refid}</code>
+🕐 সময়: ${formatBDTime()}
+⚠️ ${success ? 'টাকা কেটে গেছে কিন্তু হিসাব সেভ হয়নি' : 'লগ সেভ হয়নি'}
+🚨 সাথে সাথে Firebase চেক করুন!`
+    );
+
     console.error('Firebase update failed after retries:', lastError);
     return res.status(500).json({
       status: success,
       message: success
-        ? ` রিচার্জ সফল হয়েছে কিন্তু হিসাব সেভ ব্যর্থ। refid: ${refid} — সাপোর্টে জানান।`
-        : ` রিচার্জ ব্যর্থ এবং লগ সেভ হয়নি: ${errMsg}`,
+        ? `রিচার্জ সফল হয়েছে কিন্তু হিসাব সেভ ব্যর্থ। refid: ${refid} — সাপোর্টে জানান।`
+        : `রিচার্জ ব্যর্থ এবং লগ সেভ হয়নি: ${errMsg}`,
       trxid: trxid,
       refid: refid,
       saved: false
     });
   }
 
+  /* ✅ সব সেভ হয়ে গেছে — এখন সুন্দর লগ */
+
+  if (success) {
+    sendTelegramLog(
+`✅ <b>রিচার্জ সফল</b>
+
+👤 ইউজার: <b>${escapeHtml(userName)}</b> (${escapeHtml(userKey)})
+📱 নম্বর: <code>${escapeHtml(number)}</code>
+📶 অপারেটর: ${escapeHtml(operator)}
+💰 পরিমাণ: <b>৳${amount}</b>
+🎫 TRX ID: <code>${escapeHtml(trxid)}</code>
+🔖 Ref ID: <code>${escapeHtml(refid)}</code>
+
+💵 আগের ব্যালেন্স: ৳${fmtBDT(currentTaka)}
+💵 নতুন ব্যালেন্স: ৳${fmtBDT(finalNewTaka)}
+
+📊 <b>মোট রিচার্জ (${escapeHtml(userName)})</b>
+  • এই বছর (${timeKeys.year}): ৳${fmtBDT(finalTotalYear)}
+  • এই মাস (${timeKeys.month}): ৳${fmtBDT(finalTotalMonth)}
+  • আজ (${timeKeys.day}): ৳${fmtBDT(finalTotalDay)}
+
+🕐 সময়: ${formatBDTime()}`
+    );
+  } else {
+    sendTelegramLog(
+`❌ <b>রিচার্জ ব্যর্থ</b>
+
+👤 ইউজার: <b>${escapeHtml(userName)}</b> (${escapeHtml(userKey)})
+📱 নম্বর: <code>${escapeHtml(number)}</code>
+📶 অপারেটর: ${escapeHtml(operator)}
+💰 পরিমাণ: ৳${amount}
+🎫 TRX ID: <code>${escapeHtml(trxid)}</code>
+🔖 Ref ID: <code>${escapeHtml(refid)}</code>
+📝 কারণ: ${escapeHtml(errMsg)}
+💵 ব্যালেন্স অপরিবর্তিত: ৳${fmtBDT(currentTaka)}
+🕐 সময়: ${formatBDTime()}`
+    );
+  }
+
+  /* --- রেসপন্স --- */
   if (success) {
     return res.status(200).json({
       status: true,
@@ -394,7 +534,7 @@ async function handleHistory(res, body, query) {
 }
 
 /* ============================================================
-   🔍 refid দিয়ে স্ট্যাটাস চেক (FIXED: user-path PATCH)
+   🔍 refid দিয়ে স্ট্যাটাস চেক — Auto-sync + Telegram log
    ============================================================ */
 async function handleCheckStatus(res, body, query) {
   const password = body.password || query.password;
@@ -453,6 +593,7 @@ async function handleCheckStatus(res, body, query) {
   if (statusChangedToSuccess) {
     const timeKeys = getTimeKeys(new Date(matchedEntry.time || Date.now()));
     const amt = Number(matchedEntry.amount || 0);
+    let finalNewTaka = 0;
 
     for (let attempt = 0; attempt < MAX_PATCH_RETRIES; attempt++) {
       let fresh;
@@ -466,9 +607,10 @@ async function handleCheckStatus(res, body, query) {
       const freshTaka = Number(freshData.taka) || 0;
       const prevTotal = freshData['Total-Recharge'] || {};
 
-      /* ⭐ FIX: relative paths */
+      finalNewTaka = Math.max(0, freshTaka - amt);
+
       const updates = {
-        [`taka`]: Math.max(0, freshTaka - amt),
+        [`taka`]: finalNewTaka,
         [`Total-Recharge/${timeKeys.year}`]:  Number(prevTotal[timeKeys.year]  || 0) + amt,
         [`Total-Recharge/${timeKeys.month}`]: Number(prevTotal[timeKeys.month] || 0) + amt,
         [`Total-Recharge/${timeKeys.day}`]:   Number(prevTotal[timeKeys.day]   || 0) + amt,
@@ -489,6 +631,22 @@ async function handleCheckStatus(res, body, query) {
         await new Promise(r => setTimeout(r, 80));
       }
     }
+
+    /* 📢 Auto-sync লগ */
+    sendTelegramLog(
+`🔄 <b>অটো সিঙ্ক — ব্যর্থ লেনদেন সফল হয়েছে</b>
+
+👤 ইউজার: <b>${escapeHtml(userData.name || userKey)}</b> (${escapeHtml(userKey)})
+📱 নম্বর: <code>${escapeHtml(matchedEntry.number || '—')}</code>
+📶 অপারেটর: ${escapeHtml(matchedEntry.operator || '—')}
+💰 পরিমাণ: ৳${amt}
+🎫 TRX ID: <code>${escapeHtml(upstreamData?.recharge_trxid || '—')}</code>
+🔖 Ref ID: <code>${escapeHtml(refid)}</code>
+💵 নতুন ব্যালেন্স: ৳${fmtBDT(finalNewTaka)}
+📝 eflexi: ${escapeHtml(upstreamData?.recharge_status || upstreamData?.message || '—')}
+🕐 সময়: ${formatBDTime()}
+ℹ️ অটো-চেক থেকে হিসাব আপডেট হয়েছে`
+    );
   }
 
   return res.status(200).json({
