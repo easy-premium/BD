@@ -214,10 +214,11 @@ body::after{
 .history-list{display:flex;flex-direction:column;gap:10px}
 .history-item{
   background:var(--card);border-radius:12px;padding:14px 16px;
-  border-left:4px solid var(--orange);
+  border-left:4px solid var(--orange);position:relative;
 }
 .history-item.ok{border-left-color:var(--green)}
 .history-item.fail{border-left-color:var(--red)}
+.history-item.checking{opacity:.7}
 .history-item .hi-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
 .history-item .hi-left{flex:1;min-width:0}
 .history-item .hi-num{font-weight:700;font-size:.95rem}
@@ -229,14 +230,16 @@ body::after{
 }
 .history-item .hi-status.ok{background:rgba(76,175,80,.2);color:var(--green)}
 .history-item .hi-status.fail{background:rgba(244,67,54,.2);color:var(--red)}
-.history-item .hi-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
-.history-item .hi-btn{
-  padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.2);
-  background:rgba(0,0,0,.3);color:#fff;cursor:pointer;font-size:.75rem;font-weight:600;
-  display:inline-flex;align-items:center;gap:5px;transition:.2s;font-family:inherit;
-}
-.history-item .hi-btn:hover{border-color:var(--orange);background:rgba(255,152,0,.15);color:var(--orange)}
+.history-item .hi-status.checking{background:rgba(0,188,212,.2);color:var(--cyan)}
 .history-item .hi-refid{font-size:.7rem;color:#666;margin-top:6px;word-break:break-all}
+
+/* ⭐ Auto-check indicator */
+.auto-check-indicator{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:.65rem;color:var(--cyan);margin-top:4px;
+}
+.auto-check-indicator i{animation:spin 2s linear infinite}
+
 .empty-history{
   text-align:center;color:var(--muted);padding:24px 12px;font-size:.9rem;
   background:var(--card);border-radius:12px;
@@ -344,6 +347,52 @@ body::after{
 .lock-notice i{font-size:2rem;color:var(--orange);margin-bottom:10px;display:block}
 .lock-notice .ln-title{font-weight:700;margin-bottom:6px}
 .lock-notice .ln-sub{font-size:.85rem;color:var(--muted)}
+
+/* ============================================
+   ⭐ পাসওয়ার্ড নিশ্চিতকরণ মডাল
+   ============================================ */
+.pwd-modal{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.85);backdrop-filter:blur(10px);
+  z-index:99999;justify-content:center;align-items:center;padding:20px;
+}
+.pwd-modal.show{display:flex;animation:fadeIn .25s}
+.pwd-modal-box{
+  max-width:400px;width:100%;background:var(--card);
+  border:2px solid rgba(255,152,0,.4);border-radius:16px;
+  padding:26px 22px;box-shadow:0 20px 50px rgba(0,0,0,.6);
+}
+.pwd-modal-title{
+  font-size:1.15rem;font-weight:800;color:var(--orange);
+  display:flex;align-items:center;gap:8px;margin-bottom:8px;
+}
+.pwd-modal-sub{
+  font-size:.85rem;color:var(--muted);margin-bottom:16px;line-height:1.5;
+}
+.pwd-modal-input{
+  width:100%;padding:14px 16px;border-radius:12px;
+  border:2px solid rgba(255,152,0,.4);background:rgba(0,0,0,.45);
+  color:#fff;font-size:1.05rem;font-weight:600;outline:none;
+  letter-spacing:.5px;transition:.25s;margin-bottom:16px;
+  font-family:inherit;
+}
+.pwd-modal-input:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(255,152,0,.15)}
+.pwd-modal-actions{display:flex;gap:10px}
+.pwd-cancel-btn, .pwd-confirm-btn{
+  flex:1;padding:12px;border-radius:10px;
+  font-size:.9rem;font-weight:700;cursor:pointer;
+  font-family:inherit;transition:.2s;
+}
+.pwd-cancel-btn{
+  border:1px solid rgba(255,255,255,.2);
+  background:transparent;color:#fff;
+}
+.pwd-cancel-btn:hover{background:rgba(255,255,255,.08)}
+.pwd-confirm-btn{
+  border:none;background:var(--grad-btn);color:#fff;
+  box-shadow:0 4px 15px rgba(255,87,34,.35);
+}
+.pwd-confirm-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(255,87,34,.5)}
 
 .footer{background:rgba(10,10,26,.95);padding:40px 20px 30px;text-align:center;width:100%;margin-top:40px;position:relative;z-index:1}
 .footer-policy-links{display:flex;flex-wrap:wrap;justify-content:center;gap:20px;margin-bottom:30px}
@@ -510,12 +559,9 @@ body::after{
       <div class="result-box" id="resultBox"></div>
     </div>
 
-    <!-- History (only last 24h) -->
-    <div class="section-title" style="justify-content:space-between">
+    <!-- History -->
+    <div class="section-title">
       <span><i class="fas fa-history"></i> আমার লেনদেন</span>
-      <button class="hi-btn" id="reloadHistoryBtn" style="border:1px solid var(--orange);color:var(--orange);background:transparent;padding:6px 12px;border-radius:8px;font-size:.75rem;font-weight:700;cursor:pointer">
-        <i class="fas fa-sync-alt"></i> রিফ্রেশ
-      </button>
     </div>
     <div class="history-list" id="historyList">
       <div class="empty-history">লেনদেন লোড হচ্ছে...</div>
@@ -589,6 +635,24 @@ body::after{
 
 </div>
 
+<!-- ⭐ পাসওয়ার্ড নিশ্চিতকরণ মডাল -->
+<div class="pwd-modal" id="pwdModal">
+  <div class="pwd-modal-box">
+    <div class="pwd-modal-title">
+      <i class="fas fa-lock"></i> পাসওয়ার্ড নিশ্চিত করুন
+    </div>
+    <div class="pwd-modal-sub">
+      নিরাপত্তার জন্য রিচার্জ নিশ্চিত করতে আপনার পাসওয়ার্ড আবার দিন।
+    </div>
+    <input type="password" id="pwdConfirmInput" class="pwd-modal-input"
+           placeholder="পাসওয়ার্ড" maxlength="30" inputmode="numeric" autocomplete="off">
+    <div class="pwd-modal-actions">
+      <button class="pwd-cancel-btn" id="pwdCancelBtn">বাতিল</button>
+      <button class="pwd-confirm-btn" id="pwdConfirmBtn">নিশ্চিত করুন</button>
+    </div>
+  </div>
+</div>
+
 <footer class="footer">
   <div class="footer-policy-links">
     <a href="https://easy-premium.com/privacy-refund-policy-terms-of-service?data=PrivacyPolicy">Privacy Policy</a>
@@ -617,11 +681,12 @@ body::after{
 <script>
 const API_BASE = '/api/proxy';
 
+/* ⭐ অপারেটর প্রিফিক্স — সঠিক (016 = Airtel) */
 const OPERATORS = {
   GP: { name:'Grameenphone', prefixes:['013','017'] },
-  RB: { name:'Robi',         prefixes:['016','018'] },
+  RB: { name:'Robi',         prefixes:['018'] },              /* শুধু 018 */
   BL: { name:'Banglalink',   prefixes:['014','019'] },
-  AT: { name:'Airtel',       prefixes:[] },
+  AT: { name:'Airtel',       prefixes:['016'] },              /* ⭐ 016 = Airtel */
   TT: { name:'Teletalk',     prefixes:['015'] },
   BT: { name:'BT',           prefixes:[] }
 };
@@ -630,11 +695,14 @@ const BN_MONTHS = ['জানুয়ারি','ফেব্রুয়ার
                     'জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
 
 const H24_MS = 24 * 60 * 60 * 1000;
+const AUTO_CHECK_INTERVAL = 5000;   /* ⭐ প্রতি ৫ সেকেন্ড */
 
 let SESSION = { password: null, name: null, taka: 0 };
 let TOTAL_RECHARGE = {};
 let currentSummaryView = 'day';
+let autoCheckTimer = null;          /* ⭐ auto-check timer */
 
+/* Helpers */
 function detectOperator(number){
   const n = (number||'').replace(/\D/g,'');
   if (n.length < 3) return null;
@@ -672,7 +740,6 @@ function isWithinLast24h(timeKey){
   return (now - ts) <= H24_MS && (now - ts) >= 0;
 }
 
-/* ⭐ নতুন: সুন্দর সময় ফরম্যাট — 05/10/2026  14:32:15 */
 function formatFirebaseTime(timeKey){
   const m = String(timeKey||'').match(/^(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})-(\d{2})$/);
   if (!m) return timeKey || '—';
@@ -744,6 +811,7 @@ function showVerifiedUI(){
   document.getElementById('uiName').textContent = SESSION.name || '—';
   document.getElementById('uiTaka').textContent = '৳ ' + formatBDT(SESSION.taka);
   validateForm();
+  startAutoCheck();    /* ⭐ auto-check চালু */
 }
 
 function showUnverifiedUI(){
@@ -757,6 +825,7 @@ function showUnverifiedUI(){
   hideResult('verifyResult');
   SESSION = { password:null, name:null, taka:0 };
   TOTAL_RECHARGE = {};
+  stopAutoCheck();     /* ⭐ auto-check বন্ধ */
 }
 
 async function doVerify(){
@@ -800,6 +869,89 @@ function validateVerifyForm(){
   document.getElementById('verifyBtn').disabled = pwd.length < 1;
 }
 
+/* ============================================
+   ⭐ অটো স্ট্যাটাস চেক
+   ============================================ */
+function startAutoCheck(){
+  stopAutoCheck();
+  autoCheckTimer = setInterval(autoCheckStatuses, AUTO_CHECK_INTERVAL);
+}
+function stopAutoCheck(){
+  if (autoCheckTimer) {
+    clearInterval(autoCheckTimer);
+    autoCheckTimer = null;
+  }
+}
+async function autoCheckStatuses(){
+  if (!SESSION.password) return;
+  /* শুধু ব্যর্থ লেনদেন চেক হবে */
+  const failedItems = document.querySelectorAll('.history-item.fail');
+  if (!failedItems.length) return;
+
+  let anySynced = false;
+  for (const item of failedItems) {
+    const refid = item.dataset.refid;
+    if (!refid) continue;
+    try {
+      const data = await apiPost('check-status', {
+        password: SESSION.password,
+        refid: refid
+      });
+      if (data && data.status && data.synced) {
+        anySynced = true;
+        break;   /* একটাই sync হলেই reload */
+      }
+    } catch (e) {
+      /* silently ignore */
+    }
+  }
+  if (anySynced) {
+    await loadHistory();
+  }
+}
+
+/* ============================================
+   ⭐ পাসওয়ার্ড মডাল
+   ============================================ */
+function askPassword(){
+  return new Promise((resolve) => {
+    const modal = document.getElementById('pwdModal');
+    const input = document.getElementById('pwdConfirmInput');
+    const confirmBtn = document.getElementById('pwdConfirmBtn');
+    const cancelBtn = document.getElementById('pwdCancelBtn');
+
+    input.value = '';
+    modal.classList.add('show');
+    setTimeout(() => input.focus(), 100);
+
+    function cleanup() {
+      modal.classList.remove('show');
+      confirmBtn.removeEventListener('click', onConfirm);
+      cancelBtn.removeEventListener('click', onCancel);
+      input.removeEventListener('keypress', onKey);
+    }
+    function onConfirm(){
+      const val = cleanPassword(input.value);
+      cleanup();
+      resolve(val);
+    }
+    function onCancel(){
+      cleanup();
+      resolve(null);
+    }
+    function onKey(e){
+      if (e.key === 'Enter') onConfirm();
+    }
+
+    confirmBtn.addEventListener('click', onConfirm);
+    cancelBtn.addEventListener('click', onCancel);
+    input.addEventListener('keypress', onKey);
+  });
+}
+
+/* ============================================
+   History / Summary / Render
+   ============================================ */
 async function loadHistory(){
   if (!SESSION.password) return;
   const wrap = document.getElementById('historyList');
@@ -818,11 +970,9 @@ async function loadHistory(){
     document.getElementById('uiName').textContent = SESSION.name;
 
     TOTAL_RECHARGE = data.totalRecharge || {};
-
     renderQuickStats();
     renderSummary(currentSummaryView);
 
-    /* ⭐ ২৪ ঘন্টার ফিল্টার */
     const allList = data.history || [];
     const list = allList.filter(item => isWithinLast24h(item.time));
 
@@ -834,7 +984,6 @@ async function loadHistory(){
       return;
     }
     wrap.innerHTML = list.map(item => renderHistoryItem(item)).join('');
-    bindHistoryButtons();
   } catch (e) {
     wrap.innerHTML = `<div class="empty-history">সংযোগ ব্যর্থ: ${e.message}</div>`;
   }
@@ -921,18 +1070,23 @@ function initSummaryTabs(){
   });
 }
 
+/* ⭐ History item — কোনো manual button নেই */
 function renderHistoryItem(h){
   const ok = h.status === true;
   const statusClass = ok ? 'ok' : 'fail';
   const statusIcon = ok ? 'fa-check-circle' : 'fa-times-circle';
   const statusText = ok ? 'সফল' : 'ব্যর্থ';
   const operatorName = OPERATORS[h.operator]?.name || h.operator || '—';
-
-  /* ⭐ নতুন: সুন্দর সময় ফরম্যাট */
   const timeFmt = formatFirebaseTime(h.time);
 
+  const autoIndicator = ok ? '' : `
+    <div class="auto-check-indicator">
+      <i class="fas fa-sync-alt"></i> অটো চেক চলছে...
+    </div>
+  `;
+
   return `
-    <div class="history-item ${statusClass}">
+    <div class="history-item ${statusClass}" data-refid="${h.refid||''}">
       <div class="hi-top">
         <div class="hi-left">
           <div class="hi-num"><i class="fas fa-mobile-alt" style="color:var(--orange);margin-right:5px"></i>${h.number||'—'}</div>
@@ -944,59 +1098,17 @@ function renderHistoryItem(h){
             <i class="fas ${statusIcon}"></i> ${statusText}
           </span>
           <div class="hi-refid">refid: ${h.refid || '—'}</div>
+          ${autoIndicator}
         </div>
         <div class="hi-amt">৳${h.amount || 0}</div>
-      </div>
-      <div class="hi-actions">
-        <button class="hi-btn" data-refid="${h.refid||''}" data-action="check">
-          <i class="fas fa-search"></i> স্ট্যাটাস চেক
-        </button>
       </div>
     </div>
   `;
 }
 
-function bindHistoryButtons(){
-  document.querySelectorAll('.hi-btn[data-action="check"]').forEach(btn => {
-    btn.addEventListener('click', async function(){
-      const refid = this.dataset.refid;
-      if (!refid) return;
-      const originalHtml = this.innerHTML;
-      this.innerHTML = '<span class="spinner" style="width:10px;height:10px;border-width:1.5px"></span> চেক...';
-      this.disabled = true;
-
-      try {
-        const data = await apiPost('check-status', {
-          password: SESSION.password,
-          refid: refid
-        });
-        if (data && data.status) {
-          const up = data.upstream || {};
-          showResult('resultBox','info','স্ট্যাটাস রিপোর্ট',[
-            { k:'refid', v: refid },
-            { k:'লোকাল স্ট্যাটাস', v: data.local?.savedStatus ? 'সফল' : 'ব্যর্থ' },
-            { k:'eflexi স্ট্যাটাস', v: up.recharge_status || up.message || '—' },
-            { k:'trxid', v: up.recharge_trxid || data.local?.refid || '—' },
-            { k:'Sync', v: data.synced ? 'নতুন করে সফল হয়েছে' : 'কোনো পরিবর্তন নেই' }
-          ]);
-          if (data.synced) await loadHistory();
-        } else {
-          showResult('resultBox','error','স্ট্যাটাস চেক ব্যর্থ',[
-            { k:'কারণ', v: data?.message || 'অজানা ত্রুটি' }
-          ]);
-        }
-      } catch (e) {
-        showResult('resultBox','error','সংযোগ ব্যর্থ',[
-          { k:'কারণ', v: e.message || 'নেটওয়ার্ক সমস্যা' }
-        ]);
-      } finally {
-        this.innerHTML = originalHtml;
-        this.disabled = false;
-      }
-    });
-  });
-}
-
+/* ============================================
+   Recharge form
+   ============================================ */
 const numInput = document.getElementById('numberInput');
 const amtInput = document.getElementById('amountInput');
 const badge    = document.getElementById('operatorBadge');
@@ -1046,6 +1158,7 @@ document.querySelectorAll('.amt-chip').forEach(chip=>{
   });
 });
 
+/* ⭐ Recharge with password confirmation modal */
 async function doRecharge(){
   if (!SESSION.password) {
     showResult('resultBox','error','পাসওয়ার্ড নেই',[
@@ -1084,6 +1197,24 @@ async function doRecharge(){
     return;
   }
 
+  /* ⭐ পাসওয়ার্ড নিশ্চিতকরণ */
+  const confirmPwd = await askPassword();
+  if (confirmPwd === null) return;   /* বাতিল */
+  if (!confirmPwd) {
+    showResult('resultBox','error','পাসওয়ার্ড দিন',[
+      { k:'কারণ', v:'রিচার্জ করতে পাসওয়ার্ড দিতে হবে' }
+    ]);
+    return;
+  }
+  if (confirmPwd !== SESSION.password) {
+    showResult('resultBox','error','ভুল পাসওয়ার্ড',[
+      { k:'কারণ', v:'আপনার দেওয়া পাসওয়ার্ড মেলেনি' },
+      { k:'পরামর্শ', v:'লগআউট করে আবার যাচাই করুন' }
+    ]);
+    return;
+  }
+
+  /* ⭐ এবার রিচার্জ চালাও */
   btn.disabled = true;
   const btnText = document.getElementById('btnText');
   btnText.innerHTML = '<span class="spinner"></span> প্রসেস হচ্ছে...';
@@ -1132,6 +1263,7 @@ async function doRecharge(){
 
 btn.addEventListener('click', doRecharge);
 
+/* Events */
 document.getElementById('verifyBtn').addEventListener('click', doVerify);
 document.getElementById('passwordInput').addEventListener('input', validateVerifyForm);
 document.getElementById('passwordInput').addEventListener('keypress', e=>{
@@ -1140,7 +1272,6 @@ document.getElementById('passwordInput').addEventListener('keypress', e=>{
 document.getElementById('logoutBtn').addEventListener('click', ()=>{
   showUnverifiedUI();
 });
-document.getElementById('reloadHistoryBtn').addEventListener('click', loadHistory);
 document.getElementById('refreshBalance').addEventListener('click', ()=>fetchSiteBalance(false));
 
 document.addEventListener('DOMContentLoaded', ()=>{
@@ -1150,6 +1281,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   fetchSiteBalance(true);
 });
 
+/* Vercel Toolbar ব্লক */
 (function(){
   'use strict';
   function rm(){
@@ -1168,6 +1300,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   setInterval(rm, 1000);
 })();
 
+/* Security */
 (function(){
   'use strict';
   document.addEventListener('keydown', e=>{
