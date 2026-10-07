@@ -2,6 +2,7 @@
 // api/proxy.js — Vercel Serverless Function
 // Easy Premium — Recharge with race-safe Firebase updates (FIXED)
 // + Telegram Bot Logging
+// + UID ↔ Password verification (PASSWORD_N_UID env)
 // ============================================================
 
 const FIREBASE_URL = 'https://easy-recharge-bd-default-rtdb.asia-southeast1.firebasedatabase.app';
@@ -70,6 +71,20 @@ function findUserKey(password) {
     if (stored && String(stored).trim() === pwd) return key;
   }
   return null;
+}
+
+/* ============================================================
+   🆔 UID যাচাই — PASSWORD_N এর সাথে PASSWORD_N_UID মিলতে হবে
+   ============================================================ */
+function getUIDForPasswordKey(userKey) {
+  if (!userKey) return null;
+  const envKey = `${userKey}_UID`;      // PASSWORD_1 → PASSWORD_1_UID
+  const uid = process.env[envKey];
+  return uid ? String(uid).trim() : null;
+}
+
+function cleanUID(uid) {
+  return String(uid || '').trim();
 }
 
 /* ============================================================
@@ -196,10 +211,13 @@ async function handleSiteBalance(res) {
 }
 
 /* ============================================================
-   🔐 পাসওয়ার্ড যাচাই
+   🔐 পাসওয়ার্ড + UID যাচাই
    ============================================================ */
 async function handleVerify(res, body, query) {
   const password = body.password || query.password;
+  const uidInput = cleanUID(body.uid || query.uid);
+
+  /* 🔎 ধাপ ১: পাসওয়ার্ড → userKey */
   const userKey  = findUserKey(password);
 
   if (!userKey) {
@@ -208,6 +226,7 @@ async function handleVerify(res, body, query) {
 `🚨 <b>ভুল পাসওয়ার্ড চেষ্টা</b>
 
 🔑 পাসওয়ার্ড: <code>${escapeHtml(password || '—')}</code>
+🆔 UID: <code>${escapeHtml(uidInput || '—')}</code>
 🕐 সময়: ${formatBDTime()}
 📍 Endpoint: verify
 ⚠️ কেউ ভুল পাসওয়ার্ড দিয়ে ঢোকার চেষ্টা করছে`
@@ -215,6 +234,58 @@ async function handleVerify(res, body, query) {
     return res.status(200).json({ status: false, matched: false, message: 'ভুল পাসওয়ার্ড' });
   }
 
+  /* 🆔 ধাপ ২: userKey → UID (env থেকে PASSWORD_N_UID) */
+  if (!uidInput) {
+    sendTelegramLog(
+`🚨 <b>UID ছাড়া চেষ্টা (verify)</b>
+
+🔑 পাসওয়ার্ড: <code>${escapeHtml(password)}</code>
+🕐 সময়: ${formatBDTime()}
+⚠️ কেউ UID ছাড়া verify করার চেষ্টা করছে (ব্রাউজারে UID নেই)`
+    );
+    return res.status(200).json({
+      status: false, matched: false,
+      message: 'Gmail দিয়ে লগইন করুন (UID পাওয়া যায়নি)'
+    });
+  }
+
+  const expectedUID = getUIDForPasswordKey(userKey);
+
+  if (!expectedUID) {
+    sendTelegramLog(
+`⚠️ <b>${escapeHtml(userKey)}_UID সেট করা নেই</b>
+
+🔑 পাসওয়ার্ড: <code>${escapeHtml(password)}</code>
+🆔 পাঠানো UID: <code>${escapeHtml(uidInput)}</code>
+🕐 সময়: ${formatBDTime()}
+💡 Vercel Env এ <code>${escapeHtml(userKey)}_UID</code> যোগ করুন`
+    );
+    return res.status(200).json({
+      status: false, matched: false,
+      message: 'এই পাসওয়ার্ডে UID কনফিগার করা হয়নি। অ্যাডমিনের সাথে যোগাযোগ করুন।'
+    });
+  }
+
+  if (expectedUID !== uidInput) {
+    /* 🚨 UID মিলছে না → গুরুতর সতর্কতা */
+    sendTelegramLog(
+`🚨🚨 <b>UID মিলছে না — সম্ভাব্য হ্যাক চেষ্টা</b>
+
+🔑 পাসওয়ার্ড: <code>${escapeHtml(password)}</code>
+🆔 ইউজারের UID: <code>${escapeHtml(uidInput)}</code>
+✅ প্রত্যাশিত UID: <code>${escapeHtml(expectedUID)}</code>
+🔐 User Key: <code>${escapeHtml(userKey)}</code>
+🕐 সময়: ${formatBDTime()}
+📍 Endpoint: verify
+⚠️ কেউ অন্য Gmail/ডিভাইস থেকে চেষ্টা করছে!`
+    );
+    return res.status(200).json({
+      status: false, matched: false,
+      message: 'আপনার Gmail এই পাসওয়ার্ডের সাথে মিলছে না'
+    });
+  }
+
+  /* ✅ UID + Password দুটোই মিলেছে — এখন Firebase পড়ি */
   let got;
   try { got = await fbGet(userKey); }
   catch (e) { return res.status(500).json({ status: false, message: 'Firebase সংযোগ ব্যর্থ' }); }
@@ -236,15 +307,17 @@ async function handleVerify(res, body, query) {
 }
 
 /* ============================================================
-   💰 ইউজার রিচার্জ — Race-safe + Telegram Log
+   💰 ইউজার রিচার্জ — Race-safe + Telegram Log + UID চেক
    ============================================================ */
 async function handleUserRecharge(res, body, query) {
   const password = body.password || query.password;
+  const uidInput = cleanUID(body.uid || query.uid);
   const number   = String(body.number   || query.number   || '').trim();
   const operator = String(body.operator || query.operator || '').trim().toUpperCase();
   const amount   = parseInt(body.amount  || query.amount, 10);
 
   if (!password)              return res.status(400).json({ status: false, message: 'পাসওয়ার্ড দিন' });
+  if (!uidInput)              return res.status(400).json({ status: false, message: 'UID পাওয়া যায়নি — Gmail লগইন করুন' });
   if (!/^01[3-9]\d{8}$/.test(number))
                               return res.status(400).json({ status: false, message: 'সঠিক ১১ ডিজিটের নম্বর দিন' });
   if (!['GP','RB','BL','AT','TT','BT'].includes(operator))
@@ -259,6 +332,7 @@ async function handleUserRecharge(res, body, query) {
 `🚨 <b>ভুল পাসওয়ার্ডে রিচার্জ চেষ্টা</b>
 
 🔑 পাসওয়ার্ড: <code>${escapeHtml(password)}</code>
+🆔 UID: <code>${escapeHtml(uidInput)}</code>
 📱 নম্বর: <code>${escapeHtml(number)}</code>
 📶 অপারেটর: ${escapeHtml(operator)}
 💰 পরিমাণ: ৳${amount}
@@ -266,6 +340,28 @@ async function handleUserRecharge(res, body, query) {
 ⚠️ কেউ ভুল পাসওয়ার্ড দিয়ে রিচার্জের চেষ্টা করেছে`
     );
     return res.status(200).json({ status: false, message: 'ভুল পাসওয়ার্ড' });
+  }
+
+  /* 🆔 UID চেক */
+  const expectedUID = getUIDForPasswordKey(userKey);
+  if (!expectedUID || expectedUID !== uidInput) {
+    sendTelegramLog(
+`🚨🚨 <b>UID মিলছে না — রিচার্জ ব্লক</b>
+
+🔑 পাসওয়ার্ড: <code>${escapeHtml(password)}</code>
+🆔 ইউজারের UID: <code>${escapeHtml(uidInput)}</code>
+✅ প্রত্যাশিত UID: <code>${escapeHtml(expectedUID || '—')}</code>
+🔐 User Key: <code>${escapeHtml(userKey)}</code>
+📱 নম্বর: <code>${escapeHtml(number)}</code>
+💰 পরিমাণ: ৳${amount}
+🕐 সময়: ${formatBDTime()}
+⚠️ UID না মেলায় রিচার্জ ব্লক করা হয়েছে!`
+    );
+    return res.status(200).json({
+      status: false,
+      message: 'আপনার Gmail এই পাসওয়ার্ডের সাথে মিলছে না',
+      saved: false
+    });
   }
 
   /* --- ইউজার পড়া + taka চেক --- */
@@ -338,7 +434,8 @@ async function handleUserRecharge(res, body, query) {
     trxid:    trxid,
     type:     'prepaid',
     time:     new Date().toISOString(),
-    rawMessage: errMsg
+    rawMessage: errMsg,
+    uid:      uidInput
   };
 
   /* --- Firebase এ atomic PATCH --- */
@@ -399,11 +496,11 @@ async function handleUserRecharge(res, body, query) {
      ============================================================ */
 
   if (!saved) {
-    /* Firebase save fail — এটাও লগ করি */
     sendTelegramLog(
 `🔥 <b>সিস্টেম ইরর — ডেটাবেস সেভ ব্যর্থ</b>
 
 👤 ইউজার: ${escapeHtml(userName)} (${escapeHtml(userKey)})
+🆔 UID: <code>${escapeHtml(uidInput)}</code>
 📱 নম্বর: <code>${escapeHtml(number)}</code>
 💰 পরিমাণ: ৳${amount}
 📊 eflexi: ${success ? '✅ সফল' : '❌ ব্যর্থ'}
@@ -432,6 +529,7 @@ async function handleUserRecharge(res, body, query) {
 `✅ <b>রিচার্জ সফল</b>
 
 👤 ইউজার: <b>${escapeHtml(userName)}</b> (${escapeHtml(userKey)})
+🆔 UID: <code>${escapeHtml(uidInput)}</code>
 📱 নম্বর: <code>${escapeHtml(number)}</code>
 📶 অপারেটর: ${escapeHtml(operator)}
 💰 পরিমাণ: <b>৳${amount}</b>
@@ -453,6 +551,7 @@ async function handleUserRecharge(res, body, query) {
 `❌ <b>রিচার্জ ব্যর্থ</b>
 
 👤 ইউজার: <b>${escapeHtml(userName)}</b> (${escapeHtml(userKey)})
+🆔 UID: <code>${escapeHtml(uidInput)}</code>
 📱 নম্বর: <code>${escapeHtml(number)}</code>
 📶 অপারেটর: ${escapeHtml(operator)}
 💰 পরিমাণ: ৳${amount}
@@ -484,13 +583,27 @@ async function handleUserRecharge(res, body, query) {
 }
 
 /* ============================================================
-   📜 ইউজার হিস্ট্রি
+   📜 ইউজার হিস্ট্রি — UID চেক সহ
    ============================================================ */
 async function handleHistory(res, body, query) {
   const password = body.password || query.password;
+  const uidInput = cleanUID(body.uid || query.uid);
   const userKey  = findUserKey(password);
 
   if (!userKey) return res.status(200).json({ status: false, message: 'ভুল পাসওয়ার্ড' });
+
+  const expectedUID = getUIDForPasswordKey(userKey);
+  if (!expectedUID || expectedUID !== uidInput) {
+    sendTelegramLog(
+`🚨 <b>UID মিলছে না (history)</b>
+
+🔑 পাসওয়ার্ড: <code>${escapeHtml(password)}</code>
+🆔 পাঠানো UID: <code>${escapeHtml(uidInput || '—')}</code>
+✅ প্রত্যাশিত: <code>${escapeHtml(expectedUID || '—')}</code>
+🕐 সময়: ${formatBDTime()}`
+    );
+    return res.status(200).json({ status: false, message: 'Gmail যাচাই ব্যর্থ' });
+  }
 
   let got;
   try { got = await fbGet(userKey); }
@@ -534,10 +647,11 @@ async function handleHistory(res, body, query) {
 }
 
 /* ============================================================
-   🔍 refid দিয়ে স্ট্যাটাস চেক — Auto-sync + Telegram log
+   🔍 refid দিয়ে স্ট্যাটাস চেক — Auto-sync + UID চেক
    ============================================================ */
 async function handleCheckStatus(res, body, query) {
   const password = body.password || query.password;
+  const uidInput = cleanUID(body.uid || query.uid);
   const refid    = String(body.refid || query.refid || '').trim();
 
   if (!password) return res.status(400).json({ status: false, message: 'পাসওয়ার্ড দিন' });
@@ -545,6 +659,11 @@ async function handleCheckStatus(res, body, query) {
 
   const userKey = findUserKey(password);
   if (!userKey) return res.status(200).json({ status: false, message: 'ভুল পাসওয়ার্ড' });
+
+  const expectedUID = getUIDForPasswordKey(userKey);
+  if (!expectedUID || expectedUID !== uidInput) {
+    return res.status(200).json({ status: false, message: 'Gmail যাচাই ব্যর্থ' });
+  }
 
   let got;
   try { got = await fbGet(userKey); }
@@ -637,6 +756,7 @@ async function handleCheckStatus(res, body, query) {
 `🔄 <b>অটো সিঙ্ক — ব্যর্থ লেনদেন সফল হয়েছে</b>
 
 👤 ইউজার: <b>${escapeHtml(userData.name || userKey)}</b> (${escapeHtml(userKey)})
+🆔 UID: <code>${escapeHtml(uidInput)}</code>
 📱 নম্বর: <code>${escapeHtml(matchedEntry.number || '—')}</code>
 📶 অপারেটর: ${escapeHtml(matchedEntry.operator || '—')}
 💰 পরিমাণ: ৳${amt}
