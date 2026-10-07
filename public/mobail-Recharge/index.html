@@ -694,7 +694,63 @@ const MAX_RECHARGE = 5000;
 const H24_MS = 24 * 60 * 60 * 1000;
 const AUTO_CHECK_INTERVAL = 5000;
 
-let SESSION = { password: null, name: null, taka: 0 };
+/* ============================================================
+   🆔 UID স্টোরেজ — শুধু এই ব্রাউজারে localStorage এ সেভ থাকবে
+   অন্য কোথাও পাঠানো হবে না (শুধু recharge/verify এর সময়)
+   ============================================================ */
+const UID_KEY = 'ep_uid';
+const UID_NAME_KEY = 'ep_uid_name';
+const UID_EMAIL_KEY = 'ep_uid_email';
+
+function getStoredUID(){
+  try {
+    return localStorage.getItem(UID_KEY) || null;
+  } catch(e){ return null; }
+}
+
+function getStoredUIDInfo(){
+  try {
+    return {
+      uid:   localStorage.getItem(UID_KEY) || null,
+      name:  localStorage.getItem(UID_NAME_KEY) || null,
+      email: localStorage.getItem(UID_EMAIL_KEY) || null
+    };
+  } catch(e){
+    return { uid: null, name: null, email: null };
+  }
+}
+
+/* এই ফাংশনটি আপনার Gmail-Login পেজ থেকে কল হবে
+   (অথবা URL ?uid=xxx&name=yyy&email=zzz দিয়ে আসবে) */
+function setStoredUID(uid, name, email){
+  try {
+    if (uid) {
+      localStorage.setItem(UID_KEY, String(uid).trim());
+      if (name)  localStorage.setItem(UID_NAME_KEY, String(name));
+      if (email) localStorage.setItem(UID_EMAIL_KEY, String(email));
+    }
+  } catch(e){}
+}
+
+/* URL থেকে UID নিয়ে localStorage এ সেভ (Gmail-Login পেজ থেকে redirect হলে) */
+function captureUIDFromURL(){
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const uid    = params.get('uid');
+    const name   = params.get('name');
+    const email  = params.get('email');
+    if (uid) {
+      setStoredUID(uid, name, email);
+      // URL পরিষ্কার (UID যাতে URL-এ না থাকে)
+      try {
+        const clean = window.location.pathname;
+        window.history.replaceState({}, document.title, clean);
+      } catch(e){}
+    }
+  } catch(e){}
+}
+
+let SESSION = { password: null, name: null, taka: 0, uid: null };
 let TOTAL_RECHARGE = {};
 let currentSummaryView = 'day';
 let autoCheckTimer = null;
@@ -819,7 +875,7 @@ function showUnverifiedUI(){
   document.getElementById('passwordInput').value = '';
   document.getElementById('verifyBtn').disabled = true;
   hideResult('verifyResult');
-  SESSION = { password:null, name:null, taka:0 };
+  SESSION = { password:null, name:null, taka:0, uid:null };
   TOTAL_RECHARGE = {};
   stopAutoCheck();
 }
@@ -828,6 +884,16 @@ async function doVerify(){
   const password = cleanPassword(document.getElementById('passwordInput').value);
   if (!password) return;
 
+  /* 🆔 UID localStorage থেকে নেওয়া */
+  const uid = getStoredUID();
+  if (!uid) {
+    showResult('verifyResult','error','Gmail লগইন প্রয়োজন',[
+      { k:'কারণ ', v:'আপনার Gmail দিয়ে লগইন করা হয়নি' },
+      { k:'পরামর্শ ', v:'Gmail-Login পেজ থেকে লগইন করুন' }
+    ]);
+    return;
+  }
+
   const btn = document.getElementById('verifyBtn');
   const btnText = document.getElementById('verifyBtnText');
   btn.disabled = true;
@@ -835,18 +901,20 @@ async function doVerify(){
   hideResult('verifyResult');
 
   try {
-    const data = await apiPost('verify', { password });
+    /* 🆔 UID + Password দুটোই পাঠানো */
+    const data = await apiPost('verify', { password, uid });
     if (data && data.status && data.matched) {
       SESSION.password = password;
       SESSION.name = data.name || 'ইউজার';
       SESSION.taka = Number(data.taka || 0);
+      SESSION.uid  = uid;
       TOTAL_RECHARGE = data.totalRecharge || {};
       showVerifiedUI();
       loadHistory();
     } else {
-      showResult('verifyResult','error','ভুল পাসওয়ার্ড',[
-        { k:'কারণ ', v: data?.message || 'পাসওয়ার্ড মেলেনি' },
-        { k:'পরামর্শ ', v:'আপনার সঠিক পাসওয়ার্ড দিন' }
+      showResult('verifyResult','error','যাচাই ব্যর্থ',[
+        { k:'কারণ ', v: data?.message || 'পাসওয়ার্ড বা UID মেলেনি' },
+        { k:'পরামর্শ ', v:'সঠিক পাসওয়ার্ড দিন এবং আপনার Gmail নিশ্চিত করুন' }
       ]);
     }
   } catch (e) {
@@ -862,7 +930,9 @@ async function doVerify(){
 
 function validateVerifyForm(){
   const pwd = cleanPassword(document.getElementById('passwordInput').value);
-  document.getElementById('verifyBtn').disabled = pwd.length < 1;
+  const uid = getStoredUID();
+  /* 🆔 UID থাকলে এবং পাসওয়ার্ড থাকলে তবেই বাটন সক্রিয় */
+  document.getElementById('verifyBtn').disabled = !(pwd.length >= 1 && !!uid);
 }
 
 /* Auto status check */
@@ -881,6 +951,7 @@ async function autoCheckStatuses(){
   const failedItems = document.querySelectorAll('.history-item.fail');
   if (!failedItems.length) return;
 
+  const uid = SESSION.uid || getStoredUID();
   let anySynced = false;
   for (const item of failedItems) {
     const refid = item.dataset.refid;
@@ -888,6 +959,7 @@ async function autoCheckStatuses(){
     try {
       const data = await apiPost('check-status', {
         password: SESSION.password,
+        uid: uid,
         refid: refid
       });
       if (data && data.status && data.synced) {
@@ -942,8 +1014,10 @@ async function loadHistory(){
   const wrap = document.getElementById('historyList');
   wrap.innerHTML = '<div class="empty-history">লোড হচ্ছে...</div>';
 
+  const uid = SESSION.uid || getStoredUID();
   try {
-    const data = await apiPost('history', { password: SESSION.password });
+    /* 🆔 UID + Password দুটোই পাঠানো */
+    const data = await apiPost('history', { password: SESSION.password, uid });
     if (!data || !data.status) {
       wrap.innerHTML = `<div class="empty-history">${data?.message || 'লোড ব্যর্থ'}</div>`;
       return;
@@ -1183,13 +1257,24 @@ async function doRecharge(){
     return;
   }
 
+  /* 🆔 UID চেক */
+  const uid = SESSION.uid || getStoredUID();
+  if (!uid) {
+    showResult('resultBox','error','Gmail লগইন প্রয়োজন',[
+      { k:'কারণ', v:'UID পাওয়া যায়নি — আবার Gmail-Login করুন' }
+    ]);
+    return;
+  }
+
   btn.disabled = true;
   const btnText = document.getElementById('btnText');
   btnText.innerHTML = '<span class="spinner"></span> প্রসেস হচ্ছে...';
 
   try {
+    /* 🆔 UID + Password + Recharge details */
     const data = await apiPost('user-recharge', {
       password: SESSION.password,
+      uid: uid,
       number, amount: amt, operator
     });
 
@@ -1242,11 +1327,37 @@ document.getElementById('logoutBtn').addEventListener('click', ()=>{
 document.getElementById('refreshBalance').addEventListener('click', ()=>fetchSiteBalance(false));
 
 document.addEventListener('DOMContentLoaded', ()=>{
+  /* 🆔 URL থেকে UID ধরা (Gmail-Login থেকে redirect হলে) */
+  captureUIDFromURL();
+
   validateVerifyForm();
   updateOperatorBadge();
   initSummaryTabs();
   fetchSiteBalance(true);
+
+  /* 🆔 UID না থাকলে ইউজারকে জানানো */
+  const uid = getStoredUID();
+  if (!uid) {
+    showResult('verifyResult','info','Gmail লগইন প্রয়োজন',[
+      { k:'কারণ ', v:'আপনার UID পাওয়া যায়নি' },
+      { k:'পরামর্শ ', v:'Gmail-Login পেজ থেকে লগইন করুন' }
+    ]);
+  }
 });
+
+/* ============================================================
+   🆔 বাইরের স্ক্রিপ্ট থেকে UID সেট করার জন্য গ্লোবাল ফাংশন
+   (আপনার Gmail-Login পেজ এই ফাংশন কল করতে পারবে)
+   window.EasyPremiumSetUID(uid, name, email)
+   ============================================================ */
+window.EasyPremiumSetUID = function(uid, name, email){
+  setStoredUID(uid, name, email);
+  validateVerifyForm();
+  const stored = getStoredUID();
+  if (stored) {
+    hideResult('verifyResult');
+  }
+};
 
 /* Vercel Toolbar block */
 (function(){
