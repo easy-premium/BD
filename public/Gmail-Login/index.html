@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Easy Recharge BD - লগইন</title>
+    <style>
+        /* আপনার মেইন সাইটের ডিজাইনের সাথে মানানসই ব্লু-থিম */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 123, 255, 0.15);
+            padding: 40px 30px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            border: 1px solid #e0f2fe;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: #007bff;
+            margin-bottom: 8px;
+        }
+
+        .logo span {
+            color: #0056b3;
+        }
+
+        .subtitle {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        /* Google Sign-In বাটন */
+        .google-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            padding: 14px 20px;
+            background-color: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .google-btn:hover {
+            border-color: #007bff;
+            background-color: #f0f7ff;
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+        }
+
+        .google-btn:active {
+            transform: scale(0.98);
+        }
+
+        .google-btn img {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* স্ট্যাটাস মেসেজ */
+        #status {
+            font-size: 14px;
+            color: #64748b;
+            margin-top: 15px;
+            min-height: 20px;
+        }
+
+        .user-info {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f7ff;
+            border-radius: 12px;
+            border: 1px solid #bae6fd;
+        }
+
+        .user-info img {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            margin-bottom: 8px;
+            border: 2px solid #007bff;
+        }
+
+        .user-info p {
+            font-size: 14px;
+            color: #1e293b;
+            margin: 4px 0;
+        }
+
+        .logout-btn {
+            margin-top: 12px;
+            padding: 8px 20px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #dc2626;
+        }
+
+        .footer-text {
+            margin-top: 25px;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <div class="logo">Easy <span>Recharge</span> BD</div>
+        <p class="subtitle">আপনার অ্যাকাউন্টে লগইন করুন</p>
+
+        <!-- Google লগইন বাটন -->
+        <button class="google-btn" id="googleLoginBtn" onclick="signInWithGoogle()">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Logo">
+            Google দিয়ে লগইন করুন
+        </button>
+
+        <!-- স্ট্যাটাস মেসেজ -->
+        <div id="status"></div>
+
+        <!-- ইউজার ইনফরমেশন (লগইন সফল হলে দেখাবে) -->
+        <div class="user-info" id="userInfo">
+            <img id="userPhoto" src="" alt="Profile">
+            <p><strong>নাম:</strong> <span id="userName"></span></p>
+            <p><strong>ইমেইল:</strong> <span id="userEmail"></span></p>
+            <button class="logout-btn" onclick="signOutUser()">লগআউট</button>
+        </div>
+
+        <p class="footer-text">© ২০২৬ Easy Recharge BD | সর্বস্বত্ব সংরক্ষিত</p>
+    </div>
+
+    <!-- Firebase SDK (মডুলার) -->
+    <script type="module">
+        // ১. প্রয়োজনীয় ফাংশন ইমপোর্ট করুন
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-analytics.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+
+        // ২. আপনার Firebase কনফিগারেশন
+        const firebaseConfig = {
+            apiKey: "AIzaSyAhSNQHIksJ3C-g9vYnC_jKGMtHi33A_50",
+            authDomain: "easy-recharge-bd.firebaseapp.com",
+            databaseURL: "https://easy-recharge-bd-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "easy-recharge-bd",
+            storageBucket: "easy-recharge-bd.firebasestorage.app",
+            messagingSenderId: "691776687982",
+            appId: "1:691776687982:web:ce549cb1566f7d42893b7f",
+            measurementId: "G-LV73WGQ30X"
+        };
+
+        // ৩. Firebase ইনিশিয়ালাইজ করুন
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+
+        // ৪. Google প্রোভাইডার সেটআপ
+        const provider = new GoogleAuthProvider();
+        // ঐচ্ছিক: অতিরিক্ত স্কোপ যোগ করুন
+        // provider.addScope('https://www.googleapis.com/auth/contacts.readonly');
+
+        // ৫. অ্যাপের ভাষা সেট করুন (বাংলা বা ইংরেজি)
+        auth.languageCode = 'bn'; // অথবা 'en' ব্যবহার করুন
+
+        // ৬. গ্লোবাল ফাংশন ডিফাইন করুন (বাটনে ক্লিকের জন্য)
+        window.signInWithGoogle = async function() {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = 'লগইন প্রক্রিয়া চলছে...';
+
+            try {
+                // পপআপ পদ্ধতিতে লগইন চেষ্টা করুন
+                const result = await signInWithPopup(auth, provider);
+                // সফল হলে UI আপডেট হবে onAuthStateChanged এর মাধ্যমে
+                console.log('Popup login success:', result.user.email);
+            } catch (error) {
+                // পপআপ ব্লক বা ব্যর্থ হলে রিডাইরেক্ট পদ্ধতি ব্যবহার করুন
+                if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
+                    console.log('Popup blocked, trying redirect...');
+                    try {
+                        await signInWithRedirect(auth, provider);
+                    } catch (redirectError) {
+                        console.error('Redirect login error:', redirectError);
+                        statusDiv.textContent = 'লগইন ব্যর্থ: ' + redirectError.message;
+                    }
+                } else {
+                    console.error('Login error:', error);
+                    statusDiv.textContent = 'লগইন ব্যর্থ: ' + error.message;
+                }
+            }
+        };
+
+        // ৭. রিডাইরেক্ট রেজাল্ট হ্যান্ডেল করুন (পেজ লোডের সময়)
+        getRedirectResult(auth).then((result) => {
+            if (result) {
+                // সফল রিডাইরেক্ট লগইন
+                console.log('Redirect login success:', result.user.email);
+            }
+        }).catch((error) => {
+            console.error('Redirect result error:', error);
+        });
+
+        // ৮. ইউজার লগইন স্টেট মনিটর করুন
+        onAuthStateChanged(auth, (user) => {
+            const statusDiv = document.getElementById('status');
+            const userInfoDiv = document.getElementById('userInfo');
+            const googleBtn = document.getElementById('googleLoginBtn');
+
+            if (user) {
+                // ইউজার লগইন করা আছে
+                console.log('User signed in:', user.email);
+                statusDiv.textContent = '✅ সফলভাবে লগইন হয়েছে';
+                googleBtn.style.display = 'none';
+                userInfoDiv.style.display = 'block';
+
+                document.getElementById('userName').textContent = user.displayName || 'নাম নেই';
+                document.getElementById('userEmail').textContent = user.email;
+                if (user.photoURL) {
+                    document.getElementById('userPhoto').src = user.photoURL;
+                }
+            } else {
+                // ইউজার লগআউট করা আছে
+                console.log('User signed out');
+                statusDiv.textContent = 'লগইন করতে Google বাটনে ক্লিক করুন';
+                googleBtn.style.display = 'flex';
+                userInfoDiv.style.display = 'none';
+            }
+        });
+
+        // ৯. লগআউট ফাংশন
+        window.signOutUser = async function() {
+            try {
+                await signOut(auth);
+                document.getElementById('status').textContent = 'লগআউট করা হয়েছে';
+            } catch (error) {
+                console.error('Logout error:', error);
+                document.getElementById('status').textContent = 'লগআউট ব্যর্থ: ' + error.message;
+            }
+        };
+    </script>
+</body>
+</html>
