@@ -131,6 +131,28 @@
             background: #dc2626;
         }
 
+        /* ✅ NEW: Recharge পেজে যাওয়ার বাটন */
+        .go-recharge-btn {
+            display: none;
+            margin-top: 12px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+        }
+
+        .go-recharge-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 123, 255, 0.4);
+        }
+
         .footer-text {
             margin-top: 25px;
             font-size: 12px;
@@ -158,6 +180,12 @@
             <img id="userPhoto" src="" alt="Profile">
             <p><strong>নাম:</strong> <span id="userName"></span></p>
             <p><strong>ইমেইল:</strong> <span id="userEmail"></span></p>
+
+            <!-- ✅ NEW: Recharge পেজে যাওয়ার বাটন -->
+            <button class="go-recharge-btn" id="goRechargeBtn" onclick="goToRecharge()">
+                🚀 রিচার্জ পেজে যান
+            </button>
+
             <button class="logout-btn" onclick="signOutUser()">লগআউট</button>
         </div>
 
@@ -190,11 +218,50 @@
 
         // ৪. Google প্রোভাইডার সেটআপ
         const provider = new GoogleAuthProvider();
-        // ঐচ্ছিক: অতিরিক্ত স্কোপ যোগ করুন
-        // provider.addScope('https://www.googleapis.com/auth/contacts.readonly');
 
-        // ৫. অ্যাপের ভাষা সেট করুন (বাংলা বা ইংরেজি)
-        auth.languageCode = 'bn'; // অথবা 'en' ব্যবহার করুন
+        // ৫. অ্যাপের ভাষা সেট করুন
+        auth.languageCode = 'bn';
+
+        /* ============================================================
+           ✅ NEW: UID localStorage-এ সেভ করার ফাংশন
+           শুধু এই ব্রাউজারে সেভ থাকবে, অন্য কোথাও যাবে না
+           ============================================================ */
+        const UID_KEY       = 'ep_uid';
+        const UID_NAME_KEY  = 'ep_uid_name';
+        const UID_EMAIL_KEY = 'ep_uid_email';
+
+        function saveUIDToStorage(user) {
+            try {
+                if (user && user.uid) {
+                    localStorage.setItem(UID_KEY,       String(user.uid).trim());
+                    localStorage.setItem(UID_NAME_KEY,  String(user.displayName || ''));
+                    localStorage.setItem(UID_EMAIL_KEY, String(user.email || ''));
+                    console.log('✅ UID saved:', user.uid);
+                }
+            } catch (e) {
+                console.error('UID save error:', e);
+            }
+        }
+
+        function clearUIDFromStorage() {
+            try {
+                localStorage.removeItem(UID_KEY);
+                localStorage.removeItem(UID_NAME_KEY);
+                localStorage.removeItem(UID_EMAIL_KEY);
+                console.log('🗑️ UID cleared');
+            } catch (e) {
+                console.error('UID clear error:', e);
+            }
+        }
+
+        /* ============================================================
+           ✅ NEW: Recharge পেজে যাওয়ার ফাংশন
+           ============================================================ */
+        window.goToRecharge = function() {
+            // আপনার Recharge পেজের সঠিক path দিন
+            // উদাহরণ: '/Recharge/index.html' অথবা './Recharge/index.html'
+            window.location.href = './Recharge/index.html';
+        };
 
         // ৬. গ্লোবাল ফাংশন ডিফাইন করুন (বাটনে ক্লিকের জন্য)
         window.signInWithGoogle = async function() {
@@ -202,12 +269,10 @@
             statusDiv.textContent = 'লগইন প্রক্রিয়া চলছে...';
 
             try {
-                // পপআপ পদ্ধতিতে লগইন চেষ্টা করুন
                 const result = await signInWithPopup(auth, provider);
-                // সফল হলে UI আপডেট হবে onAuthStateChanged এর মাধ্যমে
                 console.log('Popup login success:', result.user.email);
+                // UID সেভ হবে onAuthStateChanged এ
             } catch (error) {
-                // পপআপ ব্লক বা ব্যর্থ হলে রিডাইরেক্ট পদ্ধতি ব্যবহার করুন
                 if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
                     console.log('Popup blocked, trying redirect...');
                     try {
@@ -223,10 +288,9 @@
             }
         };
 
-        // ৭. রিডাইরেক্ট রেজাল্ট হ্যান্ডেল করুন (পেজ লোডের সময়)
+        // ৭. রিডাইরেক্ট রেজাল্ট হ্যান্ডেল করুন
         getRedirectResult(auth).then((result) => {
             if (result) {
-                // সফল রিডাইরেক্ট লগইন
                 console.log('Redirect login success:', result.user.email);
             }
         }).catch((error) => {
@@ -235,34 +299,51 @@
 
         // ৮. ইউজার লগইন স্টেট মনিটর করুন
         onAuthStateChanged(auth, (user) => {
-            const statusDiv = document.getElementById('status');
-            const userInfoDiv = document.getElementById('userInfo');
-            const googleBtn = document.getElementById('googleLoginBtn');
+            const statusDiv    = document.getElementById('status');
+            const userInfoDiv  = document.getElementById('userInfo');
+            const googleBtn    = document.getElementById('googleLoginBtn');
+            const goRechargeBtn = document.getElementById('goRechargeBtn');
 
             if (user) {
-                // ইউজার লগইন করা আছে
                 console.log('User signed in:', user.email);
+
+                /* ✅ NEW: UID localStorage-এ সেভ */
+                saveUIDToStorage(user);
+
                 statusDiv.textContent = '✅ সফলভাবে লগইন হয়েছে';
                 googleBtn.style.display = 'none';
                 userInfoDiv.style.display = 'block';
+                if (goRechargeBtn) goRechargeBtn.style.display = 'block';
 
-                document.getElementById('userName').textContent = user.displayName || 'নাম নেই';
+                document.getElementById('userName').textContent  = user.displayName || 'নাম নেই';
                 document.getElementById('userEmail').textContent = user.email;
                 if (user.photoURL) {
                     document.getElementById('userPhoto').src = user.photoURL;
                 }
+
+                /* ✅ NEW: অটো ২ সেকেন্ড পরে Recharge পেজে চলে যাবে */
+                // যদি চান auto-redirect না হোক, নিচের লাইন মুছে দিন:
+                setTimeout(() => { window.location.href = './Recharge/index.html'; }, 2000);
+
             } else {
-                // ইউজার লগআউট করা আছে
                 console.log('User signed out');
+
+                /* ✅ NEW: লগআউট হলে UID মুছে ফেলো */
+                clearUIDFromStorage();
+
                 statusDiv.textContent = 'লগইন করতে Google বাটনে ক্লিক করুন';
                 googleBtn.style.display = 'flex';
                 userInfoDiv.style.display = 'none';
+                if (goRechargeBtn) goRechargeBtn.style.display = 'none';
             }
         });
 
         // ৯. লগআউট ফাংশন
         window.signOutUser = async function() {
             try {
+                /* ✅ NEW: লগআউট করার আগে UID মুছে ফেলো */
+                clearUIDFromStorage();
+
                 await signOut(auth);
                 document.getElementById('status').textContent = 'লগআউট করা হয়েছে';
             } catch (error) {
