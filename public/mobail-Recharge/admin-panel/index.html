@@ -174,6 +174,9 @@ body::after{
 .dash-tab.active{background:var(--grad-btn);color:#fff;box-shadow:0 4px 12px rgba(255,152,0,.3)}
 .dash-tab i{font-size:.9rem}
 
+/* ============================================
+   ⭐ Summary Tiles — 2 গ্রুপ (এড ও মাইনাস)
+   ============================================ */
 .summary-tiles{
   display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
   gap:10px;margin-bottom:18px;
@@ -187,18 +190,49 @@ body::after{
   content:'';position:absolute;top:0;left:0;right:0;height:3px;
   background:var(--grad-btn);
 }
-.summary-tile.cyan::before{background:linear-gradient(90deg,#00bcd4,#0088cc)}
-.summary-tile.green::before{background:linear-gradient(90deg,#4caf50,#00bcd4)}
-.summary-tile.orange::before{background:linear-gradient(90deg,#ff9800,#ff5722)}
-.summary-tile.purple::before{background:linear-gradient(90deg,#9c27b0,#00bcd4)}
-.summary-tile.gold::before{background:var(--grad-gold)}
-.summary-tile .st-icon{font-size:.85rem;color:var(--muted);margin-bottom:6px}
-.summary-tile .st-label{font-size:.68rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
-.summary-tile .st-value{font-size:1.2rem;font-weight:800;color:var(--orange);word-break:break-all;line-height:1.2}
-.summary-tile.cyan .st-value{color:var(--cyan)}
-.summary-tile.green .st-value{color:var(--green)}
-.summary-tile.purple .st-value{color:#b76ef0}
-.summary-tile.gold .st-value{color:var(--gold)}
+/* এড মানি colors */
+.summary-tile.add-today::before{background:linear-gradient(90deg,#4caf50,#00bcd4)}
+.summary-tile.add-month::before{background:linear-gradient(90deg,#4caf50,#8bc34a)}
+.summary-tile.add-year::before{background:linear-gradient(90deg,#2e7d32,#4caf50)}
+/* মাইনাস মানি colors */
+.summary-tile.sub-today::before{background:linear-gradient(90deg,#f44336,#ff5722)}
+.summary-tile.sub-month::before{background:linear-gradient(90deg,#e53935,#f44336)}
+.summary-tile.sub-year::before{background:linear-gradient(90deg,#b71c1c,#e53935)}
+
+.summary-tile .st-header{
+  display:flex;align-items:center;gap:6px;margin-bottom:8px;
+}
+.summary-tile .st-header-icon{font-size:.9rem}
+.summary-tile.add-today .st-header-icon,
+.summary-tile.add-month .st-header-icon,
+.summary-tile.add-year .st-header-icon{color:var(--green)}
+.summary-tile.sub-today .st-header-icon,
+.summary-tile.sub-month .st-header-icon,
+.summary-tile.sub-year .st-header-icon{color:var(--red)}
+
+.summary-tile .st-header-label{
+  font-size:.68rem;color:var(--muted);font-weight:700;
+  text-transform:uppercase;letter-spacing:.5px;
+}
+.summary-tile .st-value{
+  font-size:1.3rem;font-weight:800;word-break:break-all;line-height:1.2;
+}
+.summary-tile.add-today .st-value,
+.summary-tile.add-month .st-value,
+.summary-tile.add-year .st-value{color:var(--green)}
+.summary-tile.sub-today .st-value,
+.summary-tile.sub-month .st-value,
+.summary-tile.sub-year .st-value{color:var(--red)}
+
+/* Section headings for the two groups */
+.summary-group-title{
+  font-size:.95rem;font-weight:800;color:#fff;
+  margin-bottom:10px;margin-top:4px;
+  display:flex;align-items:center;gap:8px;
+}
+.summary-group-title.add-group{color:var(--green)}
+.summary-group-title.sub-group{color:var(--red)}
+.summary-group-title i{font-size:1rem}
 
 .section-title{
   font-size:1.05rem;font-weight:700;color:#fff;margin-bottom:12px;
@@ -519,7 +553,6 @@ body::after{
 .footer{background:rgba(10,10,26,.95);padding:30px 20px 22px;text-align:center;width:100%;margin-top:40px}
 .footer .copyright{color:var(--muted);font-size:.8rem;line-height:1.6}
 
-/* Modal */
 .bal-modal{
   display:none;position:fixed;inset:0;
   background:rgba(0,0,0,.88);backdrop-filter:blur(10px);
@@ -746,23 +779,31 @@ body::after{
     <div id="officersContent">
       <div class="summary-tiles">
         <div class="summary-tile cyan">
-          <div class="st-icon"><i class="fas fa-users"></i></div>
-          <div class="st-label">মোট অফিসার</div>
-          <div class="st-value" id="stOfficers">0</div>
+          <div class="st-header">
+            <i class="fas fa-users st-header-icon" style="color:var(--cyan)"></i>
+            <span class="st-header-label">মোট অফিসার</span>
+          </div>
+          <div class="st-value" id="stOfficers" style="color:var(--cyan)">0</div>
         </div>
-        <div class="summary-tile green">
-          <div class="st-icon"><i class="fas fa-wallet"></i></div>
-          <div class="st-label">মোট ব্যালেন্স</div>
-          <div class="st-value" id="stBalance">৳ 0</div>
+        <div class="summary-tile month">
+          <div class="st-header">
+            <i class="fas fa-wallet st-header-icon" style="color:var(--orange)"></i>
+            <span class="st-header-label">মোট ব্যালেন্স</span>
+          </div>
+          <div class="st-value" id="stBalance" style="color:var(--orange)">৳ 0</div>
         </div>
-        <div class="summary-tile orange">
-          <div class="st-icon"><i class="fas fa-calendar-day"></i></div>
-          <div class="st-label">আজকের মোট</div>
+        <div class="summary-tile today">
+          <div class="st-header">
+            <i class="fas fa-calendar-day st-header-icon"></i>
+            <span class="st-header-label">আজকের মোট</span>
+          </div>
           <div class="st-value" id="stToday">৳ 0</div>
         </div>
-        <div class="summary-tile purple">
-          <div class="st-icon"><i class="fas fa-calendar-alt"></i></div>
-          <div class="st-label">এই মাসের মোট</div>
+        <div class="summary-tile year">
+          <div class="st-header">
+            <i class="fas fa-calendar-alt st-header-icon"></i>
+            <span class="st-header-label">এই মাসের মোট</span>
+          </div>
           <div class="st-value" id="stMonth">৳ 0</div>
         </div>
       </div>
@@ -787,22 +828,62 @@ body::after{
       </div>
     </div>
 
+    <!-- ============ GLOBAL LOG ============ -->
     <div id="globalLogContent" style="display:none">
+
+      <!-- ⭐ এড মানি group -->
+      <div class="summary-group-title add-group">
+        <i class="fas fa-arrow-down"></i> এড মানি হিস্টোরি
+      </div>
       <div class="summary-tiles">
-        <div class="summary-tile gold">
-          <div class="st-icon"><i class="fas fa-scroll"></i></div>
-          <div class="st-label">মোট লেনদেন</div>
-          <div class="st-value" id="glTotal">0</div>
+        <div class="summary-tile add-year">
+          <div class="st-header">
+            <i class="fas fa-calendar st-header-icon"></i>
+            <span class="st-header-label">এই বছরে এড মানি</span>
+          </div>
+          <div class="st-value" id="glAddYear">৳ 0</div>
         </div>
-        <div class="summary-tile green">
-          <div class="st-icon"><i class="fas fa-arrow-down"></i></div>
-          <div class="st-label">মোট যোগ</div>
-          <div class="st-value" id="glAdded">৳ 0</div>
+        <div class="summary-tile add-month">
+          <div class="st-header">
+            <i class="fas fa-calendar-alt st-header-icon"></i>
+            <span class="st-header-label">এই মাসে এড মানি</span>
+          </div>
+          <div class="st-value" id="glAddMonth">৳ 0</div>
         </div>
-        <div class="summary-tile orange">
-          <div class="st-icon"><i class="fas fa-arrow-up"></i></div>
-          <div class="st-label">মোট কর্তন</div>
-          <div class="st-value" id="glSubtracted">৳ 0</div>
+        <div class="summary-tile add-today">
+          <div class="st-header">
+            <i class="fas fa-calendar-day st-header-icon"></i>
+            <span class="st-header-label">আজ এড মানি</span>
+          </div>
+          <div class="st-value" id="glAddToday">৳ 0</div>
+        </div>
+      </div>
+
+      <!-- ⭐ মাইনাস মানি group -->
+      <div class="summary-group-title sub-group">
+        <i class="fas fa-arrow-up"></i> মাইনাস মানি হিস্টোরি
+      </div>
+      <div class="summary-tiles">
+        <div class="summary-tile sub-year">
+          <div class="st-header">
+            <i class="fas fa-calendar st-header-icon"></i>
+            <span class="st-header-label">এই বছরে মাইনাস মানি</span>
+          </div>
+          <div class="st-value" id="glSubYear">৳ 0</div>
+        </div>
+        <div class="summary-tile sub-month">
+          <div class="st-header">
+            <i class="fas fa-calendar-alt st-header-icon"></i>
+            <span class="st-header-label">এই মাসে মাইনাস মানি</span>
+          </div>
+          <div class="st-value" id="glSubMonth">৳ 0</div>
+        </div>
+        <div class="summary-tile sub-today">
+          <div class="st-header">
+            <i class="fas fa-calendar-day st-header-icon"></i>
+            <span class="st-header-label">আজ মাইনাস মানি</span>
+          </div>
+          <div class="st-value" id="glSubToday">৳ 0</div>
         </div>
       </div>
 
@@ -1022,7 +1103,6 @@ let GLOBAL_LOG = [];
 
 let BAL_MODAL = { officer: null, action: 'add', submitting: false };
 
-/* ⭐ বাটন রিসেট helper */
 const BTN_DEFAULT_HTML = '<i class="fas fa-check"></i> নিশ্চিত করুন';
 const BTN_LOADING_HTML = '<span class="spinner"></span> প্রসেস হচ্ছে...';
 
@@ -1354,7 +1434,7 @@ document.getElementById('officerSearch').addEventListener('input', function(){
   renderOfficerCards(filtered);
 });
 
-/* Global Log */
+/* ⭐ Global Log + Summary */
 async function loadGlobalLog(){
   const wrap = document.getElementById('globalLogList');
   wrap.innerHTML = `<div class="empty-history"><i class="fas fa-spinner fa-spin"></i> লোড হচ্ছে...</div>`;
@@ -1364,7 +1444,7 @@ async function loadGlobalLog(){
 
   try {
     const data = await apiPost(API_BALANCE, 'global-log', {
-      limit: 500,
+      limit: 1000,
       officerKey: filterOfficer || undefined,
       action: filterAction || undefined
     });
@@ -1373,10 +1453,40 @@ async function loadGlobalLog(){
       return;
     }
     GLOBAL_LOG = data.history || [];
-    const st = data.stats || {};
-    document.getElementById('glTotal').textContent = st.totalEntries || 0;
-    document.getElementById('glAdded').textContent = '৳ ' + formatBDT(st.totalAdded || 0);
-    document.getElementById('glSubtracted').textContent = '৳ ' + formatBDT(st.totalSubtracted || 0);
+
+    /* ⭐ আজ/মাস/বছরের হিসাব বের করুন (বাংলাদেশ সময়) */
+    const now = new Date();
+    const bd = new Date(now.getTime() + 6 * 60 * 60 * 1000);
+    const todayKey = `${bd.getUTCFullYear()}-${String(bd.getUTCMonth()+1).padStart(2,'0')}-${String(bd.getUTCDate()).padStart(2,'0')}`;
+    const monthKey = `${bd.getUTCFullYear()}-${String(bd.getUTCMonth()+1).padStart(2,'0')}`;
+    const yearKey  = `${bd.getUTCFullYear()}`;
+
+    let addToday = 0, addMonth = 0, addYear = 0;
+    let subToday = 0, subMonth = 0, subYear = 0;
+
+    GLOBAL_LOG.forEach(e => {
+      const ts = String(e.timestamp || '');
+      const amt = Number(e.amount || 0);
+      const isAdd = e.action === 'add';
+
+      if (ts.startsWith(todayKey)) {
+        if (isAdd) addToday += amt; else subToday += amt;
+      }
+      if (ts.startsWith(monthKey)) {
+        if (isAdd) addMonth += amt; else subMonth += amt;
+      }
+      if (ts.startsWith(yearKey)) {
+        if (isAdd) addYear += amt; else subYear += amt;
+      }
+    });
+
+    document.getElementById('glAddYear').textContent  = '৳ ' + formatBDT(addYear);
+    document.getElementById('glAddMonth').textContent = '৳ ' + formatBDT(addMonth);
+    document.getElementById('glAddToday').textContent = '৳ ' + formatBDT(addToday);
+
+    document.getElementById('glSubYear').textContent  = '৳ ' + formatBDT(subYear);
+    document.getElementById('glSubMonth').textContent = '৳ ' + formatBDT(subMonth);
+    document.getElementById('glSubToday').textContent = '৳ ' + formatBDT(subToday);
 
     renderGlobalLog(GLOBAL_LOG);
   } catch (e) {
@@ -1490,7 +1600,6 @@ function openBalanceModal(officer, action) {
   BAL_MODAL.action = action;
   BAL_MODAL.submitting = false;
 
-  /* ⭐ বাটন reset — সবসময় fresh state এ */
   resetBalanceButton();
 
   balModalBox.classList.remove('add-mode', 'sub-mode');
@@ -1532,8 +1641,6 @@ function closeBalanceModal() {
   BAL_MODAL.officer = null;
   balConfirmPwd.value = '';
   BAL_MODAL.submitting = false;
-
-  /* ⭐ বাটন reset */
   resetBalanceButton();
 }
 
@@ -1630,8 +1737,6 @@ balConfirmBtn.addEventListener('click', async () => {
     if (data && data.status) {
       BAL_MODAL.submitting = false;
       balModal.classList.remove('show');
-
-      /* ⭐ বাটন reset — পরের বার modal খুললে fresh state */
       resetBalanceButton();
 
       const officer = OFFICERS.find(x => x.userKey === data.officer.userKey);
@@ -1651,13 +1756,11 @@ balConfirmBtn.addEventListener('click', async () => {
       if (DASH_TAB === 'global-log') loadGlobalLog();
     } else {
       showToast('❌ ' + (data?.message || 'ব্যর্থ হয়েছে'), 'err', 5000);
-      /* ⭐ ব্যর্থ হলেও বাটন reset */
       resetBalanceButton();
       BAL_MODAL.submitting = false;
     }
   } catch (e) {
     showToast('❌ ' + (e.message || 'নেটওয়ার্ক সমস্যা'), 'err', 5000);
-    /* ⭐ এরর হলেও বাটন reset */
     resetBalanceButton();
     BAL_MODAL.submitting = false;
   }
