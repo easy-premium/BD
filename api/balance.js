@@ -1,6 +1,7 @@
 // ============================================================
 // api/balance.js — Admin Balance Management (with global log)
 // 🚨 কঠোর ডাবল অথেন্টিকেশন: PASSWORD_1 + PASSWORD_1_UID
+// ✅ FIXED: fbUrl() এ /.json করা হয়েছে (root path DNS fix)
 // ============================================================
 
 const FIREBASE_URL = 'https://easy-recharge-bd-default-rtdb.asia-southeast1.firebasedatabase.app';
@@ -81,11 +82,15 @@ function isMainAdmin(password, uid) {
 
 /* ============================================================
    🔥 Firebase REST
+   ============================================================
+   ⭐ FIX: `${p}/.json` — আগে ছিল `${p}.json`
+   root path (path='') এ আগে URL হত `.app.json` → DNS error
+   এখন হবে `.app/.json` → সঠিক
    ============================================================ */
 function fbUrl(path = '') {
   const secret = process.env.DATABASE_SECRETS;
   const p = path ? `/${path}` : '';
-  return `${FIREBASE_URL}${p}.json?auth=${encodeURIComponent(secret)}`;
+  return `${FIREBASE_URL}${p}/.json?auth=${encodeURIComponent(secret)}`;
 }
 
 async function fbGet(path) {
@@ -114,7 +119,7 @@ async function fbPatchUser(userKey, updates, etag = null) {
   return { ok: true };
 }
 
-/* ⭐ নতুন: রুটে PATCH (গ্লোবাল লগ সেভ করতে) */
+/* ⭐ রুটে PATCH (গ্লোবাল লগ সেভ) */
 async function fbPatchRoot(updates) {
   const headers = { 'Content-Type': 'application/json' };
   const res = await fetch(fbUrl(''), {
@@ -171,7 +176,7 @@ export default async function handler(req, res) {
       case 'adjust':       return await handleAdjust(res, body, query);
       case 'log':          return await handleGetLog(res, body, query);
       case 'all-logs':     return await handleGetAllLogs(res, body, query);
-      case 'global-log':   return await handleGlobalLog(res, body, query);   // ⭐ নতুন
+      case 'global-log':   return await handleGlobalLog(res, body, query);
       default:
         return res.status(400).json({ status: false, message: 'Invalid endpoint' });
     }
@@ -237,7 +242,6 @@ async function enforceMainAdmin(res, body, query, endpointName) {
 
 /* ============================================================
    💰 Balance Adjust
-   ⭐ এখন admin-actions-log/ এও সেভ হবে + PASSWORD_1 (নিজে) অনুমোদিত
    ============================================================ */
 async function handleAdjust(res, body, query) {
   const authorized = await enforceMainAdmin(res, body, query, 'adjust');
@@ -251,7 +255,6 @@ async function handleAdjust(res, body, query) {
   const amount     = parseInt(amountRaw, 10);
   const note       = String(body.note || query.note || '').trim().slice(0, 200);
 
-  /* ⭐ PASSWORD_1 (Admin নিজে) ও এখন অনুমোদিত */
   if (!/^PASSWORD_([1-9]|1[0-9]|20)$/.test(officerKey)) {
     return res.status(400).json({
       status: false,
@@ -277,7 +280,7 @@ async function handleAdjust(res, body, query) {
     return res.status(404).json({ status: false, message: 'এই অফিসার নেই' });
   }
 
-  /* ⭐ Admin এর নাম জেনে নাও — লগে দেখাতে */
+  /* Admin এর নাম পড়া */
   let adminName = 'Main Admin';
   try {
     const adminData = await fbGet('PASSWORD_1');
@@ -286,7 +289,6 @@ async function handleAdjust(res, body, query) {
     }
   } catch (e) { /* silent */ }
 
-  /* Step 3: অফিসার ডেটা পড়া + হিসাব + PATCH (retry loop) */
   const MAX_RETRIES = 3;
   let saved = false;
   let newTaka = 0;
@@ -329,7 +331,6 @@ async function handleAdjust(res, body, query) {
     const officerName = data.name || officerKey;
     const officerNumber = data.number || '—';
 
-    /* অফিসারের নিজের balance-history এন্ট্রি */
     const officerEntry = {
       action:      action,
       amount:      amount,
@@ -377,13 +378,11 @@ async function handleAdjust(res, body, query) {
           timestamp:     timeKeys.full
         };
 
-        /* key: `{timestamp}_{officerKey}` — যাতে একই সেকেন্ডে দুইটা অ্যাডজাস্টমেন্ট হলে ওভাররাইট না হয় */
         await fbPatchRoot({
           [`admin-actions-log/${timeKeys.full}_${officerKey}`]: globalEntry
         });
       } catch (gErr) {
         console.error('Global log save failed:', gErr);
-        /* global log fail হলেও main অ্যাডজাস্টমেন্ট সফল — তাই throw করব না */
       }
 
       saved = true;
@@ -450,8 +449,6 @@ async function handleAdjust(res, body, query) {
 
 /* ============================================================
    📜 Single Officer Balance Log
-   POST /api/balance?endpoint=log
-       { password, uid, officerKey: 'PASSWORD_2', limit?: 200 }
    ============================================================ */
 async function handleGetLog(res, body, query) {
   const authorized = await enforceMainAdmin(res, body, query, 'log');
@@ -460,7 +457,6 @@ async function handleGetLog(res, body, query) {
   const officerKey = String(body.officerKey || query.officerKey || '').trim().toUpperCase();
   const limit      = Math.min(parseInt(body.limit || query.limit || 200, 10), 500);
 
-  /* ⭐ PASSWORD_1 ও এখন অনুমোদিত */
   if (!/^PASSWORD_([1-9]|1[0-9]|20)$/.test(officerKey)) {
     return res.status(400).json({
       status: false,
@@ -516,8 +512,6 @@ async function handleGetLog(res, body, query) {
 
 /* ============================================================
    📊 All Officers Balance Log (Combined)
-   POST /api/balance?endpoint=all-logs
-       { password, uid, limit?: 100 }
    ============================================================ */
 async function handleGetAllLogs(res, body, query) {
   const authorized = await enforceMainAdmin(res, body, query, 'all-logs');
@@ -526,7 +520,6 @@ async function handleGetAllLogs(res, body, query) {
   const limit = Math.min(parseInt(body.limit || query.limit || 100, 10), 500);
   const allEntries = [];
 
-  /* ⭐ PASSWORD_1 ও এখন থেকে শুরু */
   for (let i = 1; i <= MAX_PASSWORDS; i++) {
     const key = `PASSWORD_${i}`;
     if (!process.env[key]) continue;
@@ -579,7 +572,7 @@ async function handleGetAllLogs(res, body, query) {
 }
 
 /* ============================================================
-   ⭐ নতুন: Global Admin Actions Log
+   ⭐ Global Admin Actions Log
    POST /api/balance?endpoint=global-log
        { password, uid, limit?: 300, officerKey?: 'PASSWORD_2', action?: 'add' }
    ============================================================ */
@@ -599,28 +592,41 @@ async function handleGlobalLog(res, body, query) {
 
   const logObj = got.data || {};
 
+  /* ফাঁকা হলে খালি রেসপন্স */
+  if (!logObj || typeof logObj !== 'object') {
+    return res.status(200).json({
+      status: true,
+      filter: { officerKey: filterKey || null, action: filterAct || null },
+      stats: { totalEntries: 0, totalAdded: 0, totalSubtracted: 0 },
+      history: []
+    });
+  }
+
   let entries = Object.entries(logObj)
-    .map(([key, d]) => ({
-      logKey:        key,
-      adminKey:      d.adminKey || 'PASSWORD_1',
-      adminName:     d.adminName || 'Main Admin',
-      adminPassword: d.adminPassword || '—',
-      adminUid:      d.adminUid || '—',
-      officerKey:    d.officerKey || '—',
-      officerName:   d.officerName || '—',
-      officerNumber: d.officerNumber || '—',
-      action:        d.action || '—',
-      amount:        Number(d.amount || 0),
-      change:        Number(d.change || 0),
-      oldTaka:       Number(d.oldTaka || 0),
-      newTaka:       Number(d.newTaka || 0),
-      note:          d.note || '—',
-      time:          d.time || '',
-      timestamp:     d.timestamp || key
-    }))
+    .map(([key, d]) => {
+      if (!d || typeof d !== 'object') return null;
+      return {
+        logKey:        key,
+        adminKey:      d.adminKey || 'PASSWORD_1',
+        adminName:     d.adminName || 'Main Admin',
+        adminPassword: d.adminPassword || '—',
+        adminUid:      d.adminUid || '—',
+        officerKey:    d.officerKey || '—',
+        officerName:   d.officerName || '—',
+        officerNumber: d.officerNumber || '—',
+        action:        d.action || '—',
+        amount:        Number(d.amount || 0),
+        change:        Number(d.change || 0),
+        oldTaka:       Number(d.oldTaka || 0),
+        newTaka:       Number(d.newTaka || 0),
+        note:          d.note || '—',
+        time:          d.time || '',
+        timestamp:     d.timestamp || key
+      };
+    })
+    .filter(Boolean)
     .sort((a, b) => String(b.timestamp).localeCompare(String(a.timestamp)));
 
-  /* ফিল্টার */
   if (filterKey) entries = entries.filter(e => e.officerKey === filterKey);
   if (filterAct && ['add', 'subtract'].includes(filterAct)) {
     entries = entries.filter(e => e.action === filterAct);
