@@ -129,6 +129,7 @@ export default async function handler(req, res) {
       case 'list-officers':  return await handleListOfficers(res, body, query);
       case 'officer-detail': return await handleOfficerDetail(res, body, query);
       case 'officer-stats':  return await handleOfficerStats(res, body, query);
+      case 'debug-env':      return await handleDebugEnv(res, body, query);   // ⭐ নতুন
       default:
         return res.status(400).json({ status: false, message: 'Invalid endpoint' });
     }
@@ -136,6 +137,54 @@ export default async function handler(req, res) {
     console.error('❌ Handler error:', err);
     return res.status(500).json({ status: false, message: 'Server error: ' + err.message });
   }
+}
+
+/* ============================================================
+   ⭐ DEBUG — env variables diagnostic (সাময়িক)
+   POST /api/offers?endpoint=debug-env
+       { password, uid }
+   ⚠️ নিরাপত্তার জন্য শুধু length দেখাবে, পুরো value নয়
+   ============================================================ */
+async function handleDebugEnv(res, body, query) {
+  const password = body.password || query.password;
+  const uid      = body.uid      || query.uid;
+
+  const envPwd = process.env.PASSWORD_1;
+  const envUid = process.env.PASSWORD_1_UID;
+
+  const info = {
+    PASSWORD_1: {
+      exists: !!envPwd,
+      length: envPwd ? envPwd.length : 0,
+      preview: envPwd ? envPwd.substring(0, 3) + '***' : '—',
+      hasWhitespace: envPwd ? (envPwd !== envPwd.trim()) : false
+    },
+    PASSWORD_1_UID: {
+      exists: !!envUid,
+      length: envUid ? envUid.length : 0,
+      preview: envUid ? envUid.substring(0, 6) + '***' : '—',
+      hasWhitespace: envUid ? (envUid !== envUid.trim()) : false
+    },
+    sent: {
+      password: {
+        length: password ? String(password).length : 0,
+        preview: password ? String(password).substring(0, 3) + '***' : '—'
+      },
+      uid: {
+        length: uid ? String(uid).length : 0,
+        preview: uid ? String(uid).substring(0, 6) + '***' : '—'
+      }
+    },
+    match: {
+      password: envPwd && password ? (envPwd.trim() === String(password).trim()) : false,
+      uid: envUid && uid ? (envUid.trim() === String(uid).trim()) : false
+    }
+  };
+
+  return res.status(200).json({
+    status: true,
+    debug: info
+  });
 }
 
 /* ============================================================
