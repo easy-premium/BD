@@ -15,10 +15,12 @@
 :root{
   --bg1:#0a0a1a; --bg2:#121230; --bg3:#1a1a3a;
   --orange:#ff9800; --cyan:#00bcd4; --green:#4caf50; --red:#f44336;
+  --gold:#ffd700;
   --card:rgba(20,20,40,.9); --muted:#b0bec5;
   --grad-btn:linear-gradient(45deg,#ff9800,#ff5722);
   --grad-green:linear-gradient(45deg,#4caf50,#00bcd4);
   --grad-red:linear-gradient(45deg,#f44336,#c62828);
+  --grad-gold:linear-gradient(45deg,#ffd700,#ff9800);
 }
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI','Noto Sans Bengali',sans-serif;-webkit-tap-highlight-color:transparent;color:#fff}
 
@@ -157,6 +159,22 @@ body::after{
 .screen{display:none}
 .screen.active{display:block;animation:fadeIn .3s}
 
+/* Tabs for dashboard */
+.dash-tabs{
+  display:flex;gap:6px;margin-bottom:18px;
+  background:var(--card);padding:6px;border-radius:12px;
+  border:1px solid rgba(255,255,255,.06);flex-wrap:wrap;
+}
+.dash-tab{
+  flex:1;min-width:110px;padding:12px 10px;border:none;background:transparent;
+  color:var(--muted);font-size:.85rem;font-weight:700;
+  border-radius:8px;cursor:pointer;transition:.25s;
+  font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.dash-tab:hover{color:#fff;background:rgba(255,255,255,.05)}
+.dash-tab.active{background:var(--grad-btn);color:#fff;box-shadow:0 4px 12px rgba(255,152,0,.3)}
+.dash-tab i{font-size:.9rem}
+
 .summary-tiles{
   display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
   gap:10px;margin-bottom:18px;
@@ -174,12 +192,14 @@ body::after{
 .summary-tile.green::before{background:linear-gradient(90deg,#4caf50,#00bcd4)}
 .summary-tile.orange::before{background:linear-gradient(90deg,#ff9800,#ff5722)}
 .summary-tile.purple::before{background:linear-gradient(90deg,#9c27b0,#00bcd4)}
+.summary-tile.gold::before{background:var(--grad-gold)}
 .summary-tile .st-icon{font-size:.85rem;color:var(--muted);margin-bottom:6px}
 .summary-tile .st-label{font-size:.68rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
 .summary-tile .st-value{font-size:1.2rem;font-weight:800;color:var(--orange);word-break:break-all;line-height:1.2}
 .summary-tile.cyan .st-value{color:var(--cyan)}
 .summary-tile.green .st-value{color:var(--green)}
 .summary-tile.purple .st-value{color:#b76ef0}
+.summary-tile.gold .st-value{color:var(--gold)}
 
 .section-title{
   font-size:1.05rem;font-weight:700;color:#fff;margin-bottom:12px;
@@ -199,6 +219,14 @@ body::after{
   box-shadow:0 10px 25px rgba(0,0,0,.35);
   border-left-color:var(--cyan);
 }
+.officer-card.admin-card{
+  border-left-color:var(--gold);
+  background:linear-gradient(135deg, rgba(255,215,0,.06), var(--card));
+}
+.officer-card.admin-card:hover{
+  border-left-color:var(--gold);
+  box-shadow:0 10px 30px rgba(255,215,0,.25);
+}
 .officer-card .oc-head{
   display:flex;justify-content:space-between;align-items:flex-start;
   gap:10px;margin-bottom:10px;cursor:pointer;
@@ -210,19 +238,27 @@ body::after{
   background:rgba(255,152,0,.15);color:var(--orange);
   font-weight:800;letter-spacing:.3px;
 }
+.officer-card .oc-badge.admin-badge{
+  background:var(--grad-gold);color:#1a1a2e;
+  box-shadow:0 2px 8px rgba(255,215,0,.4);
+}
 .officer-card .oc-wallet{
   display:flex;justify-content:space-between;align-items:center;
   padding:10px 12px;background:rgba(0,0,0,.35);border-radius:10px;
   margin-bottom:10px;
 }
+.officer-card.admin-card .oc-wallet{
+  background:rgba(255,215,0,.08);
+  border:1px solid rgba(255,215,0,.2);
+}
 .officer-card .oc-wallet-label{font-size:.75rem;color:var(--muted);font-weight:600}
 .officer-card .oc-wallet-value{font-size:1.05rem;font-weight:800;color:var(--orange)}
+.officer-card.admin-card .oc-wallet-value{color:var(--gold)}
 .officer-card .oc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
 .officer-card .oc-stat{text-align:center;padding:8px 4px;background:rgba(255,255,255,.03);border-radius:8px}
 .officer-card .oc-stat-label{font-size:.62rem;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:3px}
 .officer-card .oc-stat-value{font-size:.85rem;font-weight:800;color:var(--cyan)}
 
-/* ⭐ Balance action buttons */
 .oc-balance-actions{
   display:grid;grid-template-columns:1fr 1fr;gap:8px;
   margin-top:4px;
@@ -245,11 +281,14 @@ body::after{
 .oc-bal-btn.sub:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(244,67,54,.5)}
 .oc-bal-btn:active{transform:translateY(0)}
 
-/* Officer detail */
 .officer-header{
   background:linear-gradient(135deg,rgba(255,152,0,.12),rgba(0,188,212,.06));
   border-radius:16px;padding:18px 20px;margin-bottom:18px;
   border:1px solid rgba(255,152,0,.3);
+}
+.officer-header.admin-header{
+  background:linear-gradient(135deg,rgba(255,215,0,.15),rgba(255,152,0,.08));
+  border-color:rgba(255,215,0,.4);
 }
 .officer-header .oh-name{
   font-size:1.2rem;font-weight:800;color:#fff;margin-bottom:6px;
@@ -259,6 +298,7 @@ body::after{
   content:'\f007';font-family:'Font Awesome 6 Free';font-weight:900;
   color:var(--orange);font-size:1rem;
 }
+.officer-header.admin-header .oh-name::before{color:var(--gold)}
 .officer-header .oh-meta{display:flex;gap:14px;flex-wrap:wrap;font-size:.8rem;color:var(--muted);margin-top:4px}
 .officer-header .oh-meta span{display:inline-flex;align-items:center;gap:5px}
 .officer-header .oh-meta i{color:var(--cyan)}
@@ -352,6 +392,24 @@ body::after{
   padding:6px 10px;background:rgba(0,188,212,.08);border-radius:6px;
   border-left:2px solid var(--cyan);
 }
+.history-item .hi-flow{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  font-size:.78rem;color:var(--muted);margin-top:6px;
+}
+.history-item .hi-flow .admin-tag{
+  display:inline-flex;align-items:center;gap:4px;
+  background:rgba(255,215,0,.15);color:var(--gold);
+  padding:3px 8px;border-radius:12px;font-weight:700;
+  border:1px solid rgba(255,215,0,.3);
+}
+.history-item .hi-flow .officer-tag{
+  display:inline-flex;align-items:center;gap:4px;
+  background:rgba(0,188,212,.15);color:var(--cyan);
+  padding:3px 8px;border-radius:12px;font-weight:700;
+  border:1px solid rgba(0,188,212,.3);
+}
+.history-item .hi-flow .arrow{color:var(--orange);font-weight:800}
+
 .empty-history{
   text-align:center;color:var(--muted);padding:24px 12px;font-size:.9rem;
   background:var(--card);border-radius:12px;
@@ -369,7 +427,101 @@ body::after{
 .search-input::placeholder{color:rgba(255,255,255,.35)}
 .search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--orange);pointer-events:none;font-size:.9rem}
 
-/* ⭐ MODAL — Balance Adjust */
+.filter-row{
+  display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap;
+}
+.filter-select{
+  padding:10px 14px;border-radius:10px;
+  border:2px solid rgba(255,152,0,.35);background:rgba(0,0,0,.55);
+  color:#fff;font-size:.85rem;font-family:inherit;outline:none;cursor:pointer;
+  font-weight:600;min-width:140px;
+}
+.filter-select:focus{border-color:var(--orange)}
+.filter-select option{background:#1a1a3a;color:#fff;padding:8px}
+
+/* Global log cards */
+.global-log-list{display:flex;flex-direction:column;gap:12px}
+.global-log-card{
+  background:var(--card);border-radius:14px;padding:16px;
+  border:1px solid rgba(255,255,255,.06);
+  border-left:4px solid var(--orange);
+  transition:.25s;
+}
+.global-log-card.add{border-left-color:var(--green)}
+.global-log-card.subtract{border-left-color:var(--red)}
+.global-log-card:hover{
+  box-shadow:0 10px 25px rgba(0,0,0,.35);
+  transform:translateY(-2px);
+}
+.global-log-card .glc-top{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  gap:12px;margin-bottom:12px;
+}
+.global-log-card .glc-action-badge{
+  font-size:.72rem;padding:4px 10px;border-radius:14px;
+  font-weight:800;letter-spacing:.3px;
+  display:inline-flex;align-items:center;gap:5px;
+}
+.global-log-card.add .glc-action-badge{
+  background:rgba(76,175,80,.2);color:var(--green);
+  border:1px solid rgba(76,175,80,.4);
+}
+.global-log-card.subtract .glc-action-badge{
+  background:rgba(244,67,54,.2);color:var(--red);
+  border:1px solid rgba(244,67,54,.4);
+}
+.global-log-card .glc-time{
+  font-size:.72rem;color:var(--muted);
+  display:flex;align-items:center;gap:5px;
+}
+.global-log-card .glc-time i{color:var(--cyan)}
+
+.glc-flow{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  margin:10px 0;padding:10px 12px;
+  background:rgba(0,0,0,.35);border-radius:10px;
+}
+.glc-flow .flow-user{
+  display:flex;flex-direction:column;gap:2px;min-width:0;flex:1;
+}
+.glc-flow .flow-user .name{font-weight:800;font-size:.9rem;color:#fff;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.glc-flow .flow-user .sub{font-size:.72rem;color:var(--muted);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.glc-flow .flow-arrow{
+  font-size:1.1rem;color:var(--orange);font-weight:800;
+  display:flex;align-items:center;
+}
+.glc-flow .flow-user.admin-side .name{color:var(--gold)}
+.glc-flow .flow-user.officer-side .name{color:var(--cyan)}
+
+.glc-amount{
+  font-size:1.4rem;font-weight:800;text-align:right;
+  letter-spacing:.5px;
+}
+.global-log-card.add .glc-amount{color:var(--green)}
+.global-log-card.subtract .glc-amount{color:var(--red)}
+
+.glc-balance-change{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  font-size:.82rem;color:var(--muted);margin-top:6px;
+  padding:8px 10px;background:rgba(0,0,0,.25);border-radius:8px;
+}
+.glc-balance-change .before{color:var(--muted)}
+.glc-balance-change .after{color:var(--orange);font-weight:800}
+
+.glc-note{
+  font-size:.8rem;color:var(--cyan);margin-top:10px;
+  padding:8px 12px;background:rgba(0,188,212,.08);border-radius:8px;
+  border-left:3px solid var(--cyan);
+  display:flex;gap:6px;align-items:flex-start;
+}
+.glc-note i{margin-top:2px;flex-shrink:0}
+
+.footer{background:rgba(10,10,26,.95);padding:30px 20px 22px;text-align:center;width:100%;margin-top:40px}
+.footer .copyright{color:var(--muted);font-size:.8rem;line-height:1.6}
+
+/* Modal */
 .bal-modal{
   display:none;position:fixed;inset:0;
   background:rgba(0,0,0,.88);backdrop-filter:blur(10px);
@@ -393,16 +545,17 @@ body::after{
 .bal-modal-box.add-mode .bal-modal-title{color:var(--green)}
 .bal-modal-box.sub-mode .bal-modal-title{color:var(--red)}
 
-.bal-modal-sub{
-  font-size:.82rem;color:var(--muted);margin-bottom:16px;line-height:1.5;
-}
+.bal-modal-sub{font-size:.82rem;color:var(--muted);margin-bottom:16px;line-height:1.5}
 
 .bal-officer-info{
   padding:12px 14px;border-radius:10px;
   background:rgba(0,0,0,.4);margin-bottom:16px;
   border-left:3px solid var(--orange);
 }
-.bal-officer-info .boi-name{font-size:.95rem;font-weight:800;color:#fff}
+.bal-officer-info.admin-info{border-left-color:var(--gold);background:rgba(255,215,0,.06)}
+.bal-officer-info .boi-name{font-size:.95rem;font-weight:800;color:#fff;
+  display:flex;align-items:center;gap:8px}
+.bal-officer-info.admin-info .boi-name{color:var(--gold)}
 .bal-officer-info .boi-meta{font-size:.75rem;color:var(--muted);margin-top:3px}
 .bal-officer-info .boi-current{
   display:flex;justify-content:space-between;margin-top:10px;
@@ -410,6 +563,7 @@ body::after{
 }
 .bal-officer-info .boi-current .label{font-size:.78rem;color:var(--muted);font-weight:600}
 .bal-officer-info .boi-current .value{font-size:1rem;font-weight:800;color:var(--orange)}
+.bal-officer-info.admin-info .boi-current .value{color:var(--gold)}
 
 .bal-label{
   display:block;font-size:.8rem;color:var(--muted);
@@ -443,20 +597,41 @@ body::after{
   width:100%;padding:12px 14px;border-radius:10px;
   border:2px solid rgba(255,152,0,.3);background:rgba(0,0,0,.4);
   color:#fff;font-size:.9rem;outline:none;transition:.25s;
-  font-family:inherit;resize:vertical;min-height:70px;
+  font-family:inherit;resize:vertical;min-height:60px;
   margin-bottom:16px;
 }
 .bal-note:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(255,152,0,.12)}
 .bal-note::placeholder{color:rgba(255,255,255,.35)}
+
+.bal-pwd-wrap{position:relative;margin-bottom:16px}
+.bal-pwd-input{
+  width:100%;padding:14px 16px 14px 46px;border-radius:12px;
+  border:2px solid rgba(255,215,0,.5);background:rgba(0,0,0,.5);
+  color:#fff;font-size:1rem;font-weight:600;outline:none;
+  letter-spacing:1px;transition:.25s;
+  font-family:inherit;
+}
+.bal-pwd-input:focus{
+  border-color:var(--gold);
+  box-shadow:0 0 0 4px rgba(255,215,0,.15);
+  background:rgba(0,0,0,.7);
+}
+.bal-pwd-input::placeholder{color:rgba(255,255,255,.35);font-weight:400;letter-spacing:0}
+.bal-pwd-icon{
+  position:absolute;left:16px;top:50%;transform:translateY(-50%);
+  color:var(--gold);font-size:1rem;pointer-events:none;
+}
+.bal-pwd-hint{
+  font-size:.7rem;color:var(--muted);margin-top:-10px;
+  margin-bottom:14px;line-height:1.4;
+}
 
 .bal-preview{
   padding:12px 14px;border-radius:10px;
   background:rgba(0,188,212,.08);border:1px solid rgba(0,188,212,.25);
   font-size:.85rem;margin-bottom:16px;
 }
-.bal-preview .bp-row{
-  display:flex;justify-content:space-between;padding:5px 0;
-}
+.bal-preview .bp-row{display:flex;justify-content:space-between;padding:5px 0}
 .bal-preview .bp-row .label{color:var(--muted);font-weight:600}
 .bal-preview .bp-row .value{font-weight:800}
 .bal-preview .bp-row.current .value{color:var(--muted)}
@@ -479,9 +654,7 @@ body::after{
   background:transparent;color:#fff;
 }
 .bal-cancel-btn:hover{background:rgba(255,255,255,.08)}
-.bal-confirm-btn{
-  border:none;color:#fff;
-}
+.bal-confirm-btn{border:none;color:#fff}
 .bal-modal-box.add-mode .bal-confirm-btn{
   background:var(--grad-green);
   box-shadow:0 4px 15px rgba(76,175,80,.4);
@@ -490,7 +663,7 @@ body::after{
   background:var(--grad-red);
   box-shadow:0 4px 15px rgba(244,67,54,.4);
 }
-.bal-confirm-btn:hover{transform:translateY(-1px)}
+.bal-confirm-btn:hover:not(:disabled){transform:translateY(-1px)}
 .bal-confirm-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
 .bal-confirm-btn .spinner{
   display:inline-block;width:14px;height:14px;
@@ -498,17 +671,14 @@ body::after{
   border-radius:50%;animation:spin .8s linear infinite;
 }
 
-.footer{background:rgba(10,10,26,.95);padding:30px 20px 22px;text-align:center;width:100%;margin-top:40px}
-.footer .copyright{color:var(--muted);font-size:.8rem;line-height:1.6}
-
 @media(max-width:480px){
   .page-title{font-size:1.35rem}
   .container{padding:16px 12px}
   .card{padding:18px 16px}
   .officer-list{grid-template-columns:1fr}
   .summary-tiles{grid-template-columns:repeat(2,1fr)}
-  .tab{font-size:.75rem;padding:8px 4px}
-  .tab i{font-size:.75rem}
+  .tab, .dash-tab{font-size:.75rem;padding:8px 4px}
+  .tab i, .dash-tab i{font-size:.75rem}
   .bal-quick-amounts{grid-template-columns:repeat(3,1fr)}
 }
 </style>
@@ -529,12 +699,12 @@ body::after{
 
 <div class="container">
 
+  <!-- ============ LOGIN ============ -->
   <div class="screen active" id="loginScreen">
     <h1 class="page-title">Admin Panel</h1>
     <p class="page-sub">Google (Gmail) দিয়ে লগইন করুন</p>
 
     <div class="card" style="max-width:480px;margin-left:auto;margin-right:auto">
-
       <button class="google-btn" id="googleLoginBtn">
         <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
         Google দিয়ে লগইন করুন
@@ -560,56 +730,116 @@ body::after{
     </div>
   </div>
 
+  <!-- ============ DASHBOARD ============ -->
   <div class="screen" id="dashboardScreen">
 
-    <h1 class="page-title">অফিসার রিপোর্ট</h1>
-    <p class="page-sub">সব অফিসারের আজকের, এই মাসের এবং এই বছরের রিপোর্ট</p>
+    <h1 class="page-title">Admin Panel</h1>
+    <p class="page-sub">সব অফিসার ও অ্যাডজাস্টমেন্ট হিস্ট্রি</p>
 
-    <div class="summary-tiles">
-      <div class="summary-tile cyan">
-        <div class="st-icon"><i class="fas fa-users"></i></div>
-        <div class="st-label">মোট অফিসার</div>
-        <div class="st-value" id="stOfficers">0</div>
+    <!-- ⭐ Dashboard Tabs -->
+    <div class="dash-tabs" id="dashTabs">
+      <button class="dash-tab active" data-tab="officers">
+        <i class="fas fa-users"></i> অফিসার লিস্ট
+      </button>
+      <button class="dash-tab" data-tab="global-log">
+        <i class="fas fa-scroll"></i> সব অ্যাডজাস্টমেন্ট
+      </button>
+    </div>
+
+    <!-- ⭐ Officers Tab Content -->
+    <div id="officersContent">
+      <div class="summary-tiles">
+        <div class="summary-tile cyan">
+          <div class="st-icon"><i class="fas fa-users"></i></div>
+          <div class="st-label">মোট অফিসার</div>
+          <div class="st-value" id="stOfficers">0</div>
+        </div>
+        <div class="summary-tile green">
+          <div class="st-icon"><i class="fas fa-wallet"></i></div>
+          <div class="st-label">মোট ব্যালেন্স</div>
+          <div class="st-value" id="stBalance">৳ 0</div>
+        </div>
+        <div class="summary-tile orange">
+          <div class="st-icon"><i class="fas fa-calendar-day"></i></div>
+          <div class="st-label">আজকের মোট</div>
+          <div class="st-value" id="stToday">৳ 0</div>
+        </div>
+        <div class="summary-tile purple">
+          <div class="st-icon"><i class="fas fa-calendar-alt"></i></div>
+          <div class="st-label">এই মাসের মোট</div>
+          <div class="st-value" id="stMonth">৳ 0</div>
+        </div>
       </div>
-      <div class="summary-tile green">
-        <div class="st-icon"><i class="fas fa-wallet"></i></div>
-        <div class="st-label">মোট ব্যালেন্স</div>
-        <div class="st-value" id="stBalance">৳ 0</div>
+
+      <div class="search-row">
+        <div class="search-input-wrap">
+          <i class="fas fa-search search-icon"></i>
+          <input type="text" id="officerSearch" class="search-input"
+                 placeholder="নাম / নম্বর দিয়ে খুঁজুন...">
+        </div>
       </div>
-      <div class="summary-tile orange">
-        <div class="st-icon"><i class="fas fa-calendar-day"></i></div>
-        <div class="st-label">আজকের মোট</div>
-        <div class="st-value" id="stToday">৳ 0</div>
+
+      <div class="section-title">
+        <div class="st-left"><i class="fas fa-user-tie"></i> অফিসার লিস্ট</div>
       </div>
-      <div class="summary-tile purple">
-        <div class="st-icon"><i class="fas fa-calendar-alt"></i></div>
-        <div class="st-label">এই মাসের মোট</div>
-        <div class="st-value" id="stMonth">৳ 0</div>
+
+      <div class="officer-list" id="officerList">
+        <div class="empty-history">
+          <i class="fas fa-spinner fa-spin"></i>
+          অফিসার লোড হচ্ছে...
+        </div>
       </div>
     </div>
 
-    <div class="search-row">
-      <div class="search-input-wrap">
-        <i class="fas fa-search search-icon"></i>
-        <input type="text" id="officerSearch" class="search-input"
-               placeholder="নাম / নম্বর দিয়ে খুঁজুন...">
+    <!-- ⭐ Global Log Tab Content -->
+    <div id="globalLogContent" style="display:none">
+      <div class="summary-tiles">
+        <div class="summary-tile gold">
+          <div class="st-icon"><i class="fas fa-scroll"></i></div>
+          <div class="st-label">মোট লেনদেন</div>
+          <div class="st-value" id="glTotal">0</div>
+        </div>
+        <div class="summary-tile green">
+          <div class="st-icon"><i class="fas fa-arrow-down"></i></div>
+          <div class="st-label">মোট যোগ</div>
+          <div class="st-value" id="glAdded">৳ 0</div>
+        </div>
+        <div class="summary-tile orange">
+          <div class="st-icon"><i class="fas fa-arrow-up"></i></div>
+          <div class="st-label">মোট কর্তন</div>
+          <div class="st-value" id="glSubtracted">৳ 0</div>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <select class="filter-select" id="glFilterAction">
+          <option value="">সব অ্যাকশন</option>
+          <option value="add">শুধু এড</option>
+          <option value="subtract">শুধু মাইনাস</option>
+        </select>
+        <select class="filter-select" id="glFilterOfficer">
+          <option value="">সব অফিসার</option>
+        </select>
+        <div class="search-input-wrap" style="flex:1;min-width:180px">
+          <i class="fas fa-search search-icon"></i>
+          <input type="text" id="glSearch" class="search-input"
+                 placeholder="নাম / নোট / নম্বর...">
+        </div>
+      </div>
+
+      <div class="section-title">
+        <div class="st-left"><i class="fas fa-scroll"></i> সব এডমিন অ্যাকশন হিস্ট্রি</div>
+      </div>
+
+      <div class="global-log-list" id="globalLogList">
+        <div class="empty-history"><i class="fas fa-spinner fa-spin"></i> লোড হচ্ছে...</div>
       </div>
     </div>
 
-    <div class="section-title">
-      <div class="st-left"><i class="fas fa-user-tie"></i> অফিসার লিস্ট</div>
-    </div>
-
-    <div class="officer-list" id="officerList">
-      <div class="empty-history">
-        <i class="fas fa-spinner fa-spin"></i>
-        অফিসার লোড হচ্ছে...
-      </div>
-    </div>
   </div>
 
+  <!-- ============ DETAIL ============ -->
   <div class="screen" id="detailScreen">
-
     <div class="officer-header" id="officerHeader"></div>
 
     <div class="tabs" id="detailTabs">
@@ -674,7 +904,7 @@ body::after{
 
 </div>
 
-<!-- ⭐ Balance Modal -->
+<!-- Balance Modal -->
 <div class="bal-modal" id="balModal">
   <div class="bal-modal-box" id="balModalBox">
     <div class="bal-modal-title" id="balModalTitle">
@@ -682,7 +912,7 @@ body::after{
       <span>ব্যালেন্স এড করুন</span>
     </div>
     <div class="bal-modal-sub" id="balModalSub">
-      পরিমাণ দিন — টাকা সরাসরি অফিসারের একাউন্টে যোগ হবে।
+      পরিমাণ ও পাসওয়ার্ড দিয়ে নিশ্চিত করুন।
     </div>
 
     <div class="bal-officer-info" id="balOfficerInfo"></div>
@@ -722,6 +952,20 @@ body::after{
       </div>
     </div>
 
+    <label class="bal-label">
+      <i class="fas fa-shield-halved" style="color:var(--gold);margin-right:4px"></i>
+      নিশ্চিত করতে পাসওয়ার্ড দিন <span style="color:var(--red)">*</span>
+    </label>
+    <div class="bal-pwd-wrap">
+      <i class="fas fa-key bal-pwd-icon"></i>
+      <input type="password" id="balConfirmPwd" class="bal-pwd-input"
+             placeholder="Admin পাসওয়ার্ড" maxlength="30" autocomplete="off">
+    </div>
+    <div class="bal-pwd-hint">
+      <i class="fas fa-info-circle"></i>
+      প্রতি অ্যাডজাস্টমেন্টে পাসওয়ার্ড লাগবে।
+    </div>
+
     <div class="bal-actions">
       <button class="bal-cancel-btn" id="balCancelBtn">
         <i class="fas fa-times"></i> বাতিল
@@ -741,9 +985,7 @@ body::after{
 </footer>
 
 <script>
-/* ============================================================
-   Firebase Config — easy-recharge-bd
-   ============================================================ */
+/* Firebase Config */
 const firebaseConfig = {
   apiKey: "AIzaSyAhSNQHIksJ3C-g9vYnC_jKGMtHi33A_50",
   authDomain: "easy-recharge-bd.firebaseapp.com",
@@ -780,17 +1022,12 @@ let CURRENT_HISTORY = [];
 let CURRENT_OFFICER_DATA = null;
 let CURRENT_TAB = 'history';
 let HISTORY_FILTER = '';
+let DASH_TAB = 'officers';
+let GLOBAL_LOG = [];
 
-/* Balance modal state */
-let BAL_MODAL = {
-  officer: null,        /* { userKey, name, number, taka } */
-  action: 'add',        /* 'add' | 'subtract' */
-  submitting: false
-};
+let BAL_MODAL = { officer: null, action: 'add', submitting: false };
 
-/* ============================================================
-   Helpers
-   ============================================================ */
+/* Helpers */
 function formatBDT(n){ return Number(n||0).toLocaleString('en-IN'); }
 function escapeHtml(str){
   return String(str||'')
@@ -836,9 +1073,7 @@ function hideResult(boxId){
   box.innerHTML = '';
 }
 
-/* ============================================================
-   Google Sign-In
-   ============================================================ */
+/* Google Sign-In */
 function renderSignedUserCard(user) {
   const photo = user.photoURL || '';
   const name = user.displayName || user.email || 'Admin';
@@ -870,8 +1105,6 @@ googleLoginBtn.addEventListener('click', async () => {
     try {
       localStorage.removeItem(LS_ADMIN_UID_KEY);
       localStorage.removeItem(LS_ADMIN_PWD_KEY);
-      localStorage.removeItem('ep_admin_email');
-      localStorage.removeItem('ep_admin_name');
     } catch (e) {}
 
     const result = await auth.signInWithPopup(googleProvider);
@@ -883,14 +1116,11 @@ googleLoginBtn.addEventListener('click', async () => {
 
     try {
       localStorage.setItem(LS_ADMIN_UID_KEY, user.uid);
-      localStorage.setItem('ep_admin_email', user.email || '');
-      localStorage.setItem('ep_admin_name', user.displayName || '');
     } catch (e) {}
 
     renderSignedUserCard(user);
     showResult('loginResult','success','Google লগইন সফল',[
       { k:'Gmail', v: escapeHtml(user.email || '') },
-      { k:'UID', v: '✅ সিস্টেমে সংরক্ষিত (হাইড)' },
       { k:'পরবর্তী ধাপ', v: 'Admin পাসওয়ার্ড দিন' }
     ]);
     document.getElementById('loginPassword').focus();
@@ -898,8 +1128,6 @@ googleLoginBtn.addEventListener('click', async () => {
   } catch (err) {
     let msg = err.message || 'লগইন ব্যর্থ';
     if (err.code === 'auth/popup-closed-by-user') msg = 'Popup বন্ধ করা হয়েছে';
-    if (err.code === 'auth/cancelled-popup-request') msg = 'আবার চেষ্টা করুন';
-    if (err.code === 'auth/popup-blocked') msg = 'Browser popup ব্লক করেছে';
     showResult('loginResult','error','Google লগইন ব্যর্থ',[{ k:'কারণ', v: msg }]);
   } finally {
     googleLoginBtn.disabled = false;
@@ -916,8 +1144,6 @@ auth.onAuthStateChanged(user => {
     validateLoginForm();
   } else {
     SESSION.uid = null;
-    SESSION.email = null;
-    SESSION.name = null;
     const card = document.getElementById('signedUserCard');
     card.style.display = 'none';
     card.innerHTML = '';
@@ -951,8 +1177,7 @@ async function doLogin(){
       try { localStorage.setItem(LS_ADMIN_PWD_KEY, password); } catch (e) {}
       showResult('loginResult','success','লগইন সফল',[
         { k:'রোল', v:'Main Admin' },
-        { k:'Gmail', v: SESSION.email || '—' },
-        { k:'মেসেজ', v: data.message || 'স্বাগতম' }
+        { k:'Gmail', v: SESSION.email || '—' }
       ]);
       setTimeout(() => { showScreen('dashboardScreen'); loadOfficers(); }, 400);
     } else {
@@ -970,34 +1195,42 @@ async function doLogin(){
 }
 loginBtn.addEventListener('click', doLogin);
 
-/* ============================================================
-   API helpers
-   ============================================================ */
+/* API */
 async function apiPost(base, endpoint, body = {}){
   const url = new URL(base, window.location.origin);
   url.searchParams.set('endpoint', endpoint);
   const res = await fetch(url.toString(), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      password: SESSION.password,
-      uid: SESSION.uid,
-      ...body
-    })
+    body: JSON.stringify({ password: SESSION.password, uid: SESSION.uid, ...body })
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return await res.json();
 }
 
-/* ============================================================
-   Load officers
-   ============================================================ */
+/* Dashboard Tabs */
+document.querySelectorAll('.dash-tab').forEach(tab => {
+  tab.addEventListener('click', function(){
+    document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
+    this.classList.add('active');
+    DASH_TAB = this.dataset.tab;
+
+    if (DASH_TAB === 'officers') {
+      document.getElementById('officersContent').style.display = '';
+      document.getElementById('globalLogContent').style.display = 'none';
+      loadOfficers();
+    } else {
+      document.getElementById('officersContent').style.display = 'none';
+      document.getElementById('globalLogContent').style.display = '';
+      loadGlobalLog();
+    }
+  });
+});
+
+/* Load officers */
 async function loadOfficers(){
   const wrap = document.getElementById('officerList');
-  wrap.innerHTML = `<div class="empty-history">
-    <i class="fas fa-spinner fa-spin"></i>
-    অফিসার লোড হচ্ছে...
-  </div>`;
+  wrap.innerHTML = `<div class="empty-history"><i class="fas fa-spinner fa-spin"></i> অফিসার লোড হচ্ছে...</div>`;
 
   try {
     const data = await apiPost(API_BASE, 'list-officers');
@@ -1012,6 +1245,17 @@ async function loadOfficers(){
     document.getElementById('stToday').textContent    = '৳ ' + formatBDT(sum.totalToday || 0);
     document.getElementById('stMonth').textContent    = '৳ ' + formatBDT(sum.totalMonth || 0);
 
+    /* populate filter dropdown */
+    const filterSel = document.getElementById('glFilterOfficer');
+    if (filterSel && filterSel.options.length <= 1) {
+      OFFICERS.forEach(o => {
+        const opt = document.createElement('option');
+        opt.value = o.userKey;
+        opt.textContent = `${o.name} (${o.userKey.replace('PASSWORD_','#')})`;
+        filterSel.appendChild(opt);
+      });
+    }
+
     renderOfficerCards(OFFICERS);
   } catch (e) {
     wrap.innerHTML = `<div class="empty-history">সংযোগ ব্যর্থ: ${escapeHtml(e.message)}</div>`;
@@ -1025,57 +1269,55 @@ function renderOfficerCards(list){
     return;
   }
 
-  wrap.innerHTML = list.map(o => `
-    <div class="officer-card" data-officer="${escapeHtml(o.userKey)}">
-      <div class="oc-head" data-action="detail">
-        <div>
-          <div class="oc-name">${escapeHtml(o.name)}</div>
-          <div class="oc-num"><i class="fas fa-mobile-alt" style="color:var(--orange);margin-right:4px"></i>${escapeHtml(o.number)}</div>
-        </div>
-        <span class="oc-badge">${escapeHtml(o.userKey.replace('PASSWORD_','অফিসার '))}</span>
-      </div>
-      <div class="oc-wallet">
-        <span class="oc-wallet-label"><i class="fas fa-wallet"></i> ব্যালেন্স</span>
-        <span class="oc-wallet-value">৳ ${formatBDT(o.taka)}</span>
-      </div>
-      <div class="oc-stats">
-        <div class="oc-stat">
-          <div class="oc-stat-label">আজ</div>
-          <div class="oc-stat-value">৳ ${formatBDT(o.totals.day)}</div>
-        </div>
-        <div class="oc-stat">
-          <div class="oc-stat-label">মাস</div>
-          <div class="oc-stat-value">৳ ${formatBDT(o.totals.month)}</div>
-        </div>
-        <div class="oc-stat">
-          <div class="oc-stat-label">বছর</div>
-          <div class="oc-stat-value">৳ ${formatBDT(o.totals.year)}</div>
-        </div>
-      </div>
+  const sorted = [...list].sort((a, b) => {
+    const aAdmin = a.userKey === 'PASSWORD_1' ? -1 : 0;
+    const bAdmin = b.userKey === 'PASSWORD_1' ? -1 : 0;
+    return aAdmin - bAdmin;
+  });
 
-      <div class="oc-balance-actions">
-        <button class="oc-bal-btn add" data-action="add" data-key="${escapeHtml(o.userKey)}">
-          <i class="fas fa-plus-circle"></i> এড
-        </button>
-        <button class="oc-bal-btn sub" data-action="subtract" data-key="${escapeHtml(o.userKey)}">
-          <i class="fas fa-minus-circle"></i> মাইনাস
-        </button>
-      </div>
-    </div>
-  `).join('');
+  wrap.innerHTML = sorted.map(o => {
+    const isAdmin = o.userKey === 'PASSWORD_1';
+    const cardClass = isAdmin ? 'officer-card admin-card' : 'officer-card';
+    const badgeClass = isAdmin ? 'oc-badge admin-badge' : 'oc-badge';
+    const badgeText = isAdmin ? '👑 ADMIN' : o.userKey.replace('PASSWORD_','অফিসার ');
 
-  /* Bind events */
+    return `
+      <div class="${cardClass}" data-officer="${escapeHtml(o.userKey)}">
+        <div class="oc-head" data-action="detail">
+          <div>
+            <div class="oc-name">${escapeHtml(o.name)}</div>
+            <div class="oc-num"><i class="fas fa-mobile-alt" style="color:${isAdmin ? 'var(--gold)' : 'var(--orange)'};margin-right:4px"></i>${escapeHtml(o.number)}</div>
+          </div>
+          <span class="${badgeClass}">${escapeHtml(badgeText)}</span>
+        </div>
+        <div class="oc-wallet">
+          <span class="oc-wallet-label"><i class="fas fa-wallet"></i> ব্যালেন্স</span>
+          <span class="oc-wallet-value">৳ ${formatBDT(o.taka)}</span>
+        </div>
+        <div class="oc-stats">
+          <div class="oc-stat"><div class="oc-stat-label">আজ</div><div class="oc-stat-value">৳ ${formatBDT(o.totals.day)}</div></div>
+          <div class="oc-stat"><div class="oc-stat-label">মাস</div><div class="oc-stat-value">৳ ${formatBDT(o.totals.month)}</div></div>
+          <div class="oc-stat"><div class="oc-stat-label">বছর</div><div class="oc-stat-value">৳ ${formatBDT(o.totals.year)}</div></div>
+        </div>
+        <div class="oc-balance-actions">
+          <button class="oc-bal-btn add" data-action="add" data-key="${escapeHtml(o.userKey)}">
+            <i class="fas fa-plus-circle"></i> এড
+          </button>
+          <button class="oc-bal-btn sub" data-action="subtract" data-key="${escapeHtml(o.userKey)}">
+            <i class="fas fa-minus-circle"></i> মাইনাস
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
   document.querySelectorAll('.officer-card').forEach(card => {
     const key = card.dataset.officer;
-
-    /* Head click → detail */
     const head = card.querySelector('.oc-head');
     head.addEventListener('click', () => {
       const officer = OFFICERS.find(x => x.userKey === key);
       if (officer) openOfficerDetail(officer.userKey);
     });
-
-    /* Add button */
     const addBtn = card.querySelector('.oc-bal-btn.add');
     if (addBtn) {
       addBtn.addEventListener('click', (e) => {
@@ -1084,8 +1326,6 @@ function renderOfficerCards(list){
         if (officer) openBalanceModal(officer, 'add');
       });
     }
-
-    /* Subtract button */
     const subBtn = card.querySelector('.oc-bal-btn.sub');
     if (subBtn) {
       subBtn.addEventListener('click', (e) => {
@@ -1108,9 +1348,121 @@ document.getElementById('officerSearch').addEventListener('input', function(){
   renderOfficerCards(filtered);
 });
 
-/* ============================================================
-   ⭐ Balance Modal
-   ============================================================ */
+/* ⭐ Global Log */
+async function loadGlobalLog(){
+  const wrap = document.getElementById('globalLogList');
+  wrap.innerHTML = `<div class="empty-history"><i class="fas fa-spinner fa-spin"></i> লোড হচ্ছে...</div>`;
+
+  const filterAction = document.getElementById('glFilterAction').value;
+  const filterOfficer = document.getElementById('glFilterOfficer').value;
+
+  try {
+    const data = await apiPost(API_BALANCE, 'global-log', {
+      limit: 500,
+      officerKey: filterOfficer || undefined,
+      action: filterAction || undefined
+    });
+    if (!data || !data.status) {
+      wrap.innerHTML = `<div class="empty-history">${escapeHtml(data?.message || 'লোড ব্যর্থ')}</div>`;
+      return;
+    }
+    GLOBAL_LOG = data.history || [];
+    const st = data.stats || {};
+    document.getElementById('glTotal').textContent = st.totalEntries || 0;
+    document.getElementById('glAdded').textContent = '৳ ' + formatBDT(st.totalAdded || 0);
+    document.getElementById('glSubtracted').textContent = '৳ ' + formatBDT(st.totalSubtracted || 0);
+
+    renderGlobalLog(GLOBAL_LOG);
+  } catch (e) {
+    wrap.innerHTML = `<div class="empty-history">সংযোগ ব্যর্থ: ${escapeHtml(e.message)}</div>`;
+  }
+}
+
+function renderGlobalLog(list){
+  const wrap = document.getElementById('globalLogList');
+  if (!list.length) {
+    wrap.innerHTML = `<div class="empty-history"><i class="fas fa-inbox"></i> কোনো অ্যাডজাস্টমেন্ট হিস্ট্রি নেই</div>`;
+    return;
+  }
+
+  wrap.innerHTML = list.map(e => {
+    const isAdd = e.action === 'add';
+    const cls = isAdd ? 'add' : 'subtract';
+    const icon = isAdd ? 'fa-plus-circle' : 'fa-minus-circle';
+    const label = isAdd ? 'ব্যালেন্স এড' : 'ব্যালেন্স মাইনাস';
+
+    const officerIsAdmin = e.officerKey === 'PASSWORD_1';
+    const officerNameDisplay = escapeHtml(e.officerName) + (officerIsAdmin ? ' 👑' : '');
+
+    return `
+      <div class="global-log-card ${cls}">
+        <div class="glc-top">
+          <span class="glc-action-badge">
+            <i class="fas ${icon}"></i> ${label}
+          </span>
+          <span class="glc-time">
+            <i class="fas fa-clock"></i> ${formatFirebaseTime(e.timestamp)}
+          </span>
+        </div>
+
+        <div class="glc-flow">
+          <div class="flow-user admin-side">
+            <div class="name">
+              <i class="fas fa-user-shield" style="color:var(--gold);margin-right:4px"></i>
+              ${escapeHtml(e.adminName || 'Main Admin')}
+            </div>
+            <div class="sub">${escapeHtml(e.adminKey || 'PASSWORD_1')}</div>
+          </div>
+          <div class="flow-arrow">
+            <i class="fas fa-arrow-right"></i>
+          </div>
+          <div class="flow-user officer-side">
+            <div class="name">
+              <i class="fas fa-user" style="color:var(--cyan);margin-right:4px"></i>
+              ${officerNameDisplay}
+            </div>
+            <div class="sub">${escapeHtml(e.officerNumber || '—')} · ${escapeHtml(e.officerKey || '—')}</div>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+          <div style="flex:1">
+            <div class="glc-balance-change">
+              <span class="before">৳${formatBDT(e.oldTaka)}</span>
+              <i class="fas fa-arrow-right" style="color:var(--orange)"></i>
+              <span class="after">৳${formatBDT(e.newTaka)}</span>
+            </div>
+          </div>
+          <div class="glc-amount">${isAdd ? '+' : '-'}৳${formatBDT(e.amount)}</div>
+        </div>
+
+        ${e.note && e.note !== '—' ? `
+          <div class="glc-note">
+            <i class="fas fa-sticky-note"></i>
+            <span>${escapeHtml(e.note)}</span>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+document.getElementById('glFilterAction').addEventListener('change', loadGlobalLog);
+document.getElementById('glFilterOfficer').addEventListener('change', loadGlobalLog);
+document.getElementById('glSearch').addEventListener('input', function(){
+  const term = this.value.toLowerCase().trim();
+  if (!term) { renderGlobalLog(GLOBAL_LOG); return; }
+  const filtered = GLOBAL_LOG.filter(e =>
+    (e.officerName||'').toLowerCase().includes(term) ||
+    (e.officerNumber||'').toLowerCase().includes(term) ||
+    (e.adminName||'').toLowerCase().includes(term) ||
+    (e.note||'').toLowerCase().includes(term) ||
+    (e.officerKey||'').toLowerCase().includes(term)
+  );
+  renderGlobalLog(filtered);
+});
+
+/* Balance Modal */
 const balModal     = document.getElementById('balModal');
 const balModalBox  = document.getElementById('balModalBox');
 const balModalTitle= document.getElementById('balModalTitle');
@@ -1118,6 +1470,7 @@ const balModalSub  = document.getElementById('balModalSub');
 const balOfficerInfo=document.getElementById('balOfficerInfo');
 const balAmount    = document.getElementById('balAmount');
 const balNote      = document.getElementById('balNote');
+const balConfirmPwd= document.getElementById('balConfirmPwd');
 const balPreview   = document.getElementById('balPreview');
 const bpCurrent    = document.getElementById('bpCurrent');
 const bpChange     = document.getElementById('bpChange');
@@ -1136,18 +1489,18 @@ function openBalanceModal(officer, action) {
 
   if (action === 'add') {
     balModalTitle.innerHTML = '<i class="fas fa-plus-circle"></i> <span>ব্যালেন্স এড করুন</span>';
-    balModalSub.textContent = 'পরিমাণ দিন — টাকা সরাসরি অফিসারের একাউন্টে যোগ হবে।';
   } else {
     balModalTitle.innerHTML = '<i class="fas fa-minus-circle"></i> <span>ব্যালেন্স মাইনাস করুন</span>';
-    balModalSub.textContent = 'পরিমাণ দিন — টাকা অফিসারের একাউন্ট থেকে কর্তন হবে।';
   }
+  balModalSub.textContent = 'পরিমাণ ও পাসওয়ার্ড দিয়ে নিশ্চিত করুন।';
+
+  const isAdmin = officer.userKey === 'PASSWORD_1';
+  balOfficerInfo.className = isAdmin ? 'bal-officer-info admin-info' : 'bal-officer-info';
+  const adminBadge = isAdmin ? ' <span style="font-size:.7rem;background:var(--grad-gold);color:#1a1a2e;padding:2px 6px;border-radius:10px;font-weight:800">👑 ADMIN</span>' : '';
 
   balOfficerInfo.innerHTML = `
-    <div class="boi-name">${escapeHtml(officer.name)}</div>
-    <div class="boi-meta">
-      <i class="fas fa-mobile-alt"></i> ${escapeHtml(officer.number)} &nbsp;·&nbsp;
-      <i class="fas fa-fingerprint"></i> ${escapeHtml(officer.userKey)}
-    </div>
+    <div class="boi-name">${escapeHtml(officer.name)}${adminBadge}</div>
+    <div class="boi-meta"><i class="fas fa-mobile-alt"></i> ${escapeHtml(officer.number)} · <i class="fas fa-fingerprint"></i> ${escapeHtml(officer.userKey)}</div>
     <div class="boi-current">
       <span class="label">বর্তমান ব্যালেন্স</span>
       <span class="value">৳ ${formatBDT(officer.taka)}</span>
@@ -1156,6 +1509,7 @@ function openBalanceModal(officer, action) {
 
   balAmount.value = '';
   balNote.value = '';
+  balConfirmPwd.value = '';
   document.querySelectorAll('.bal-amt-chip').forEach(c => c.classList.remove('active'));
   balPreview.style.display = 'none';
   balConfirmBtn.disabled = true;
@@ -1168,11 +1522,14 @@ function closeBalanceModal() {
   if (BAL_MODAL.submitting) return;
   balModal.classList.remove('show');
   BAL_MODAL.officer = null;
+  balConfirmPwd.value = '';
 }
 
 function updateBalancePreview() {
   if (!BAL_MODAL.officer) return;
   const amt = parseInt(balAmount.value, 10);
+  const pwdOk = balConfirmPwd.value.trim().length >= 1;
+
   if (!amt || amt < 1) {
     balPreview.style.display = 'none';
     balConfirmBtn.disabled = true;
@@ -1203,10 +1560,9 @@ function updateBalancePreview() {
   bpResult.style.color = 'var(--orange)';
 
   balPreview.style.display = 'block';
-  balConfirmBtn.disabled = false;
+  balConfirmBtn.disabled = !pwdOk;
 }
 
-/* Amount input */
 balAmount.addEventListener('input', e => {
   e.target.value = (e.target.value||'').replace(/\D/g,'').slice(0,7);
   document.querySelectorAll('.bal-amt-chip').forEach(c => {
@@ -1214,8 +1570,10 @@ balAmount.addEventListener('input', e => {
   });
   updateBalancePreview();
 });
-
-/* Quick chips */
+balConfirmPwd.addEventListener('input', updateBalancePreview);
+balConfirmPwd.addEventListener('keypress', e => {
+  if (e.key === 'Enter' && !balConfirmBtn.disabled) balConfirmBtn.click();
+});
 document.querySelectorAll('.bal-amt-chip').forEach(chip => {
   chip.addEventListener('click', () => {
     document.querySelectorAll('.bal-amt-chip').forEach(c => c.classList.remove('active'));
@@ -1224,23 +1582,26 @@ document.querySelectorAll('.bal-amt-chip').forEach(chip => {
     updateBalancePreview();
   });
 });
-
-/* Cancel */
 balCancelBtn.addEventListener('click', closeBalanceModal);
-
-/* Backdrop close */
-balModal.addEventListener('click', (e) => {
+balModal.addEventListener('click', e => {
   if (e.target === balModal) closeBalanceModal();
 });
 
-/* Confirm — API কল */
 balConfirmBtn.addEventListener('click', async () => {
   if (!BAL_MODAL.officer || BAL_MODAL.submitting) return;
-
   const amt = parseInt(balAmount.value, 10);
   const note = balNote.value.trim();
+  const typedPwd = balConfirmPwd.value.trim();
 
   if (!amt || amt < 1) return;
+  if (!typedPwd) { showToast('❌ পাসওয়ার্ড দিন', 'err'); return; }
+
+  if (typedPwd !== SESSION.password) {
+    showToast('❌ পাসওয়ার্ড ভুল', 'err');
+    balConfirmPwd.value = '';
+    updateBalancePreview();
+    return;
+  }
 
   BAL_MODAL.submitting = true;
   balConfirmBtn.disabled = true;
@@ -1255,28 +1616,25 @@ balConfirmBtn.addEventListener('click', async () => {
     });
 
     if (data && data.status) {
-      /* ✅ সফল — মডাল বন্ধ + অফিসার কার্ড আপডেট */
       BAL_MODAL.submitting = false;
       balModal.classList.remove('show');
 
-      /* Local update */
       const officer = OFFICERS.find(x => x.userKey === data.officer.userKey);
       if (officer) officer.taka = data.newTaka;
-
-      /* Render */
       renderOfficerCards(OFFICERS);
 
-      /* Summary tiles update */
       const totalBalance = OFFICERS.reduce((s, o) => s + Number(o.taka || 0), 0);
       document.getElementById('stBalance').textContent = '৳ ' + formatBDT(totalBalance);
 
-      /* ✅ টোস্ট নোটিফিকেশন */
       showToast(
         data.action === 'add'
           ? `✅ ${data.officer.name} — ৳${formatBDT(data.amount)} এড হয়েছে`
           : `✅ ${data.officer.name} — ৳${formatBDT(data.amount)} মাইনাস হয়েছে`,
         'ok'
       );
+
+      /* যদি গ্লোবাল লগ ট্যাবে থাকি — refresh */
+      if (DASH_TAB === 'global-log') loadGlobalLog();
     } else {
       showToast('❌ ' + (data?.message || 'ব্যর্থ হয়েছে'), 'err', 5000);
       balConfirmBtn.disabled = false;
@@ -1291,7 +1649,7 @@ balConfirmBtn.addEventListener('click', async () => {
   }
 });
 
-/* ⭐ টোস্ট helper */
+/* Toast */
 let toastTimer;
 function showToast(msg, type='', ms=3000) {
   let toast = document.getElementById('epToast');
@@ -1308,22 +1666,18 @@ function showToast(msg, type='', ms=3000) {
     `;
     document.body.appendChild(toast);
   }
-  toast.className = 'ep-toast' + (type==='ok'?' ok':'') + (type==='err'?' err':'');
   if (type === 'ok') toast.style.borderColor = '#4caf50';
   else if (type === 'err') toast.style.borderColor = '#f44336';
   else toast.style.borderColor = '#ff9800';
   toast.textContent = msg;
   toast.style.transform = 'translateX(-50%) translateY(0)';
-
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => {
     toast.style.transform = 'translateX(-50%) translateY(150%)';
   }, ms);
 }
 
-/* ============================================================
-   Officer Detail
-   ============================================================ */
+/* Officer Detail */
 async function openOfficerDetail(officerKey){
   CURRENT_OFFICER = officerKey;
   CURRENT_HISTORY = [];
@@ -1353,16 +1707,19 @@ async function loadOfficerDetail(){
     }
     const o = data.officer || {};
     const st = data.stats || {};
+    const isAdmin = o.userKey === 'PASSWORD_1';
+    const adminBadge = isAdmin ? ' <span style="font-size:.75rem;background:var(--grad-gold);color:#1a1a2e;padding:3px 8px;border-radius:10px;font-weight:800">👑 ADMIN</span>' : '';
 
+    document.getElementById('officerHeader').className = isAdmin ? 'officer-header admin-header' : 'officer-header';
     document.getElementById('officerHeader').innerHTML = `
-      <div class="oh-name">${escapeHtml(o.name)}</div>
+      <div class="oh-name">${escapeHtml(o.name)}${adminBadge}</div>
       <div class="oh-meta">
         <span><i class="fas fa-mobile-alt"></i> ${escapeHtml(o.number)}</span>
         <span><i class="fas fa-envelope"></i> ${escapeHtml(o.email)}</span>
         <span><i class="fas fa-fingerprint"></i> ${escapeHtml(o.userKey)}</span>
       </div>
       <div class="oh-meta">
-        <span style="color:var(--orange);font-weight:800;font-size:1rem">
+        <span style="color:${isAdmin ? 'var(--gold)' : 'var(--orange)'};font-weight:800;font-size:1rem">
           <i class="fas fa-wallet"></i> ৳ ${formatBDT(o.taka)}
         </span>
         <span><i class="fas fa-check-circle" style="color:var(--green)"></i> সফল: ${st.success||0}</span>
@@ -1370,16 +1727,10 @@ async function loadOfficerDetail(){
         <span><i class="fas fa-chart-line" style="color:var(--cyan)"></i> সফল টাকা: ৳ ${formatBDT(st.successAmount||0)}</span>
       </div>
       <div class="oh-balance-actions">
-        <button class="oc-bal-btn add" id="detailAddBtn">
-          <i class="fas fa-plus-circle"></i> এড
-        </button>
-        <button class="oc-bal-btn sub" id="detailSubBtn">
-          <i class="fas fa-minus-circle"></i> মাইনাস
-        </button>
+        <button class="oc-bal-btn add" id="detailAddBtn"><i class="fas fa-plus-circle"></i> এড</button>
+        <button class="oc-bal-btn sub" id="detailSubBtn"><i class="fas fa-minus-circle"></i> মাইনাস</button>
       </div>
     `;
-
-    /* Bind detail buttons */
     document.getElementById('detailAddBtn').addEventListener('click', () => {
       openBalanceModal({ userKey: o.userKey, name: o.name, number: o.number, taka: o.taka }, 'add');
     });
@@ -1439,7 +1790,6 @@ document.getElementById('historySearch').addEventListener('input', function(){
   renderHistoryList(filtered);
 });
 
-/* Tabs */
 document.querySelectorAll('#detailTabs .tab').forEach(tab => {
   tab.addEventListener('click', function(){
     document.querySelectorAll('#detailTabs .tab').forEach(t => t.classList.remove('active'));
@@ -1464,7 +1814,6 @@ document.querySelectorAll('#detailTabs .tab').forEach(tab => {
   });
 });
 
-/* ⭐ Balance Log load */
 async function loadBalanceLog() {
   if (!CURRENT_OFFICER) return;
   const wrap = document.getElementById('balanceLogList');
@@ -1496,12 +1845,10 @@ async function loadBalanceLog() {
               </div>
               <div class="hi-meta">
                 <span><i class="fas fa-clock"></i> ${formatFirebaseTime(e.timestamp)}</span>
-                <span><i class="fas fa-user-shield"></i> ${escapeHtml(e.byRole || 'Main Admin')}</span>
+                <span><i class="fas fa-user-shield"></i> ${escapeHtml(e.byName || e.byRole || 'Main Admin')}</span>
               </div>
               ${e.note && e.note !== '—' ? `<div class="hi-note"><i class="fas fa-sticky-note"></i> ${escapeHtml(e.note)}</div>` : ''}
-              <div class="hi-refid">
-                আগে: ৳${formatBDT(e.oldTaka)} → পরে: ৳${formatBDT(e.newTaka)}
-              </div>
+              <div class="hi-refid">আগে: ৳${formatBDT(e.oldTaka)} → পরে: ৳${formatBDT(e.newTaka)}</div>
             </div>
             <div class="hi-amt">${isAdd ? '+' : '-'}৳${formatBDT(e.amount)}</div>
           </div>
@@ -1513,7 +1860,6 @@ async function loadBalanceLog() {
   }
 }
 
-/* Aggregate */
 function renderAggregate(view){
   const tbody = document.getElementById('aggBody');
   const tfoot = document.getElementById('aggFoot');
@@ -1554,7 +1900,6 @@ document.addEventListener('DOMContentLoaded', () => {
   validateLoginForm();
 });
 
-/* Vercel Toolbar block */
 (function(){
   'use strict';
   function rm(){
