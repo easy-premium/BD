@@ -159,7 +159,6 @@ body::after{
 .screen{display:none}
 .screen.active{display:block;animation:fadeIn .3s}
 
-/* Tabs for dashboard */
 .dash-tabs{
   display:flex;gap:6px;margin-bottom:18px;
   background:var(--card);padding:6px;border-radius:12px;
@@ -439,7 +438,6 @@ body::after{
 .filter-select:focus{border-color:var(--orange)}
 .filter-select option{background:#1a1a3a;color:#fff;padding:8px}
 
-/* Global log cards */
 .global-log-list{display:flex;flex-direction:column;gap:12px}
 .global-log-card{
   background:var(--card);border-radius:14px;padding:16px;
@@ -736,7 +734,6 @@ body::after{
     <h1 class="page-title">Admin Panel</h1>
     <p class="page-sub">সব অফিসার ও অ্যাডজাস্টমেন্ট হিস্ট্রি</p>
 
-    <!-- ⭐ Dashboard Tabs -->
     <div class="dash-tabs" id="dashTabs">
       <button class="dash-tab active" data-tab="officers">
         <i class="fas fa-users"></i> অফিসার লিস্ট
@@ -746,7 +743,6 @@ body::after{
       </button>
     </div>
 
-    <!-- ⭐ Officers Tab Content -->
     <div id="officersContent">
       <div class="summary-tiles">
         <div class="summary-tile cyan">
@@ -791,7 +787,6 @@ body::after{
       </div>
     </div>
 
-    <!-- ⭐ Global Log Tab Content -->
     <div id="globalLogContent" style="display:none">
       <div class="summary-tiles">
         <div class="summary-tile gold">
@@ -1027,6 +1022,18 @@ let GLOBAL_LOG = [];
 
 let BAL_MODAL = { officer: null, action: 'add', submitting: false };
 
+/* ⭐ বাটন রিসেট helper */
+const BTN_DEFAULT_HTML = '<i class="fas fa-check"></i> নিশ্চিত করুন';
+const BTN_LOADING_HTML = '<span class="spinner"></span> প্রসেস হচ্ছে...';
+
+function resetBalanceButton() {
+  const btn = document.getElementById('balConfirmBtn');
+  if (btn) {
+    btn.innerHTML = BTN_DEFAULT_HTML;
+    btn.disabled = true;
+  }
+}
+
 /* Helpers */
 function formatBDT(n){ return Number(n||0).toLocaleString('en-IN'); }
 function escapeHtml(str){
@@ -1245,7 +1252,6 @@ async function loadOfficers(){
     document.getElementById('stToday').textContent    = '৳ ' + formatBDT(sum.totalToday || 0);
     document.getElementById('stMonth').textContent    = '৳ ' + formatBDT(sum.totalMonth || 0);
 
-    /* populate filter dropdown */
     const filterSel = document.getElementById('glFilterOfficer');
     if (filterSel && filterSel.options.length <= 1) {
       OFFICERS.forEach(o => {
@@ -1348,7 +1354,7 @@ document.getElementById('officerSearch').addEventListener('input', function(){
   renderOfficerCards(filtered);
 });
 
-/* ⭐ Global Log */
+/* Global Log */
 async function loadGlobalLog(){
   const wrap = document.getElementById('globalLogList');
   wrap.innerHTML = `<div class="empty-history"><i class="fas fa-spinner fa-spin"></i> লোড হচ্ছে...</div>`;
@@ -1484,6 +1490,9 @@ function openBalanceModal(officer, action) {
   BAL_MODAL.action = action;
   BAL_MODAL.submitting = false;
 
+  /* ⭐ বাটন reset — সবসময় fresh state এ */
+  resetBalanceButton();
+
   balModalBox.classList.remove('add-mode', 'sub-mode');
   balModalBox.classList.add(action === 'add' ? 'add-mode' : 'sub-mode');
 
@@ -1512,7 +1521,6 @@ function openBalanceModal(officer, action) {
   balConfirmPwd.value = '';
   document.querySelectorAll('.bal-amt-chip').forEach(c => c.classList.remove('active'));
   balPreview.style.display = 'none';
-  balConfirmBtn.disabled = true;
 
   balModal.classList.add('show');
   setTimeout(() => balAmount.focus(), 200);
@@ -1523,6 +1531,10 @@ function closeBalanceModal() {
   balModal.classList.remove('show');
   BAL_MODAL.officer = null;
   balConfirmPwd.value = '';
+  BAL_MODAL.submitting = false;
+
+  /* ⭐ বাটন reset */
+  resetBalanceButton();
 }
 
 function updateBalancePreview() {
@@ -1605,7 +1617,7 @@ balConfirmBtn.addEventListener('click', async () => {
 
   BAL_MODAL.submitting = true;
   balConfirmBtn.disabled = true;
-  balConfirmBtn.innerHTML = '<span class="spinner"></span> প্রসেস হচ্ছে...';
+  balConfirmBtn.innerHTML = BTN_LOADING_HTML;
 
   try {
     const data = await apiPost(API_BALANCE, 'adjust', {
@@ -1618,6 +1630,9 @@ balConfirmBtn.addEventListener('click', async () => {
     if (data && data.status) {
       BAL_MODAL.submitting = false;
       balModal.classList.remove('show');
+
+      /* ⭐ বাটন reset — পরের বার modal খুললে fresh state */
+      resetBalanceButton();
 
       const officer = OFFICERS.find(x => x.userKey === data.officer.userKey);
       if (officer) officer.taka = data.newTaka;
@@ -1633,18 +1648,17 @@ balConfirmBtn.addEventListener('click', async () => {
         'ok'
       );
 
-      /* যদি গ্লোবাল লগ ট্যাবে থাকি — refresh */
       if (DASH_TAB === 'global-log') loadGlobalLog();
     } else {
       showToast('❌ ' + (data?.message || 'ব্যর্থ হয়েছে'), 'err', 5000);
-      balConfirmBtn.disabled = false;
-      balConfirmBtn.innerHTML = '<i class="fas fa-check"></i> নিশ্চিত করুন';
+      /* ⭐ ব্যর্থ হলেও বাটন reset */
+      resetBalanceButton();
       BAL_MODAL.submitting = false;
     }
   } catch (e) {
     showToast('❌ ' + (e.message || 'নেটওয়ার্ক সমস্যা'), 'err', 5000);
-    balConfirmBtn.disabled = false;
-    balConfirmBtn.innerHTML = '<i class="fas fa-check"></i> নিশ্চিত করুন';
+    /* ⭐ এরর হলেও বাটন reset */
+    resetBalanceButton();
     BAL_MODAL.submitting = false;
   }
 });
