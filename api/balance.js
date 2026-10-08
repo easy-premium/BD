@@ -2,23 +2,29 @@
 // api/balance.js — Admin Balance Management (with global log)
 // 🚨 কঠোর ডাবল অথেন্টিকেশন: PASSWORD_1 + PASSWORD_1_UID
 // ✅ FIXED: fbUrl() এ /.json করা হয়েছে (root path DNS fix)
+// ✅ FIXED: Telegram log এ await যোগ করা হয়েছে
 // ============================================================
 
 const FIREBASE_URL = 'https://easy-recharge-bd-default-rtdb.asia-southeast1.firebasedatabase.app';
 const MAX_PASSWORDS = 20;
 
 /* ============================================================
-   📢 Telegram লগ
+   📢 Telegram লগ — await করা বাধ্যতামূলক
    ============================================================ */
 async function sendTelegramLog(message) {
   const token  = process.env.TELEGRAM_BOT_TOKENa;
   const chatId = process.env.TELEGRAM_CHAT_ID;
-  if (!token || !chatId) return;
+
+  if (!token || !chatId) {
+    console.error('[Telegram] Missing token or chatId. Skipping.');
+    return;
+  }
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 3000);
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
+
   try {
-    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -29,8 +35,15 @@ async function sendTelegramLog(message) {
       }),
       signal: controller.signal
     });
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      console.error(`[Telegram] API error ${res.status}: ${errText}`);
+    } else {
+      console.log('[Telegram] Log sent successfully.');
+    }
   } catch (e) {
-    console.error('Telegram log failed:', e.message);
+    console.error('[Telegram] Fetch failed:', e.message);
   } finally {
     clearTimeout(timeoutId);
   }
@@ -82,10 +95,6 @@ function isMainAdmin(password, uid) {
 
 /* ============================================================
    🔥 Firebase REST
-   ============================================================
-   ⭐ FIX: `${p}/.json` — আগে ছিল `${p}.json`
-   root path (path='') এ আগে URL হত `.app.json` → DNS error
-   এখন হবে `.app/.json` → সঠিক
    ============================================================ */
 function fbUrl(path = '') {
   const secret = process.env.DATABASE_SECRETS;
@@ -217,7 +226,9 @@ async function enforceMainAdmin(res, body, query, endpointName) {
       else reason = 'অজানা ত্রুটি';
     }
 
-    sendTelegramLog(
+    /* ⭐ FIX: await দিয়ে Telegram লগ পাঠান */
+    try {
+      await sendTelegramLog(
 `🚨 <b>Balance API — Unauthorized Access চেষ্টা</b>
 
 📌 Endpoint: <code>${escapeHtml(endpointName)}</code>
@@ -226,7 +237,10 @@ async function enforceMainAdmin(res, body, query, endpointName) {
 ❗ কারণ: ${escapeHtml(reason)}
 🕐 সময়: ${formatBDTime()}
 ⚠️ PASSWORD_1 + PASSWORD_1_UID দুটোই সঠিক থাকতে হবে`
-    );
+      );
+    } catch (tgErr) {
+      console.error('[Telegram] Unauthorized log failed:', tgErr);
+    }
 
     res.status(401).json({
       status: false,
@@ -394,14 +408,20 @@ async function handleAdjust(res, body, query) {
   }
 
   if (!saved) {
-    sendTelegramLog(
+    /* ⭐ FIX: await দিয়ে Telegram লগ পাঠান */
+    try {
+      await sendTelegramLog(
 `🔥 <b>Balance Adjust সেভ ব্যর্থ</b>
 
 👤 Officer: ${escapeHtml(officerKey)}
 🎬 Action: ${escapeHtml(action)}
 💰 Amount: ৳${fmtBDT(amount)}
 🕐 সময়: ${formatBDTime()}`
-    );
+      );
+    } catch (tgErr) {
+      console.error('[Telegram] Save-failed log error:', tgErr);
+    }
+
     return res.status(500).json({
       status: false,
       message: 'ডেটাবেসে সেভ ব্যর্থ। আবার চেষ্টা করুন।'
@@ -414,7 +434,9 @@ async function handleAdjust(res, body, query) {
   const actionText  = action === 'add' ? 'ব্যালেন্স এড' : 'ব্যালেন্স মাইনাস';
   const selfNote    = officerKey === 'PASSWORD_1' ? ' 👑 <b>(নিজের একাউন্ট)</b>' : '';
 
-  sendTelegramLog(
+  /* ⭐ FIX: await দিয়ে Telegram লগ পাঠান — এটাই সবচেয়ে গুরুত্বপূর্ণ */
+  try {
+    await sendTelegramLog(
 `${actionIcon} <b>${actionText}</b>${selfNote}
 
 👤 অফিসার: <b>${escapeHtml(officerName)}</b> (${escapeHtml(officerKey)})
@@ -428,7 +450,11 @@ async function handleAdjust(res, body, query) {
 👮 কর্তৃক: <b>${escapeHtml(adminName)}</b>
 🕐 সময়: ${formatBDTime()}
 ✅ Main Admin কর্তৃক সম্পন্ন`
-  );
+    );
+  } catch (tgErr) {
+    console.error('[Telegram] Success log error:', tgErr);
+    /* Telegram fail হলেও response এ ব্যাঘাত করব না */
+  }
 
   return res.status(200).json({
     status: true,
@@ -573,8 +599,6 @@ async function handleGetAllLogs(res, body, query) {
 
 /* ============================================================
    ⭐ Global Admin Actions Log
-   POST /api/balance?endpoint=global-log
-       { password, uid, limit?: 300, officerKey?: 'PASSWORD_2', action?: 'add' }
    ============================================================ */
 async function handleGlobalLog(res, body, query) {
   const authorized = await enforceMainAdmin(res, body, query, 'global-log');
@@ -592,7 +616,6 @@ async function handleGlobalLog(res, body, query) {
 
   const logObj = got.data || {};
 
-  /* ফাঁকা হলে খালি রেসপন্স */
   if (!logObj || typeof logObj !== 'object') {
     return res.status(200).json({
       status: true,
