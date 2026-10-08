@@ -1,5 +1,5 @@
 // ============================================================
-// api/offers.js — Officer Reports API
+// api/offers.js — Officer Reports API (Admin সহ)
 // 🚨 শুধুমাত্র PASSWORD_1 + PASSWORD_1_UID (Main Admin)
 // ============================================================
 
@@ -53,7 +53,7 @@ function fmtBDT(n) {
 }
 
 /* ============================================================
-   🔐 Main Admin check — PASSWORD_1 + PASSWORD_1_UID দুটোই লাগবে
+   🔐 Main Admin check
    ============================================================ */
 function isMainAdmin(password, uid) {
   const storedPwd = process.env.PASSWORD_1;
@@ -129,7 +129,7 @@ export default async function handler(req, res) {
       case 'list-officers':  return await handleListOfficers(res, body, query);
       case 'officer-detail': return await handleOfficerDetail(res, body, query);
       case 'officer-stats':  return await handleOfficerStats(res, body, query);
-      case 'debug-env':      return await handleDebugEnv(res, body, query);   // ⭐ নতুন
+      case 'debug-env':      return await handleDebugEnv(res, body, query);
       default:
         return res.status(400).json({ status: false, message: 'Invalid endpoint' });
     }
@@ -140,10 +140,7 @@ export default async function handler(req, res) {
 }
 
 /* ============================================================
-   ⭐ DEBUG — env variables diagnostic (সাময়িক)
-   POST /api/offers?endpoint=debug-env
-       { password, uid }
-   ⚠️ নিরাপত্তার জন্য শুধু length দেখাবে, পুরো value নয়
+   ⭐ DEBUG — env variables diagnostic
    ============================================================ */
 async function handleDebugEnv(res, body, query) {
   const password = body.password || query.password;
@@ -188,16 +185,13 @@ async function handleDebugEnv(res, body, query) {
 }
 
 /* ============================================================
-   🔐 Login — PASSWORD_1 + PASSWORD_1_UID দুটোই লাগবে
-   POST /api/offers?endpoint=login
-       { password, uid }
+   🔐 Login
    ============================================================ */
 async function handleLogin(res, body, query) {
   const password = body.password || query.password;
   const uid      = body.uid      || query.uid;
 
   if (!isMainAdmin(password, uid)) {
-    /* 🚨 Unauthorized চেষ্টা → Telegram লগ */
     const pwdMatched = process.env.PASSWORD_1 &&
                        String(process.env.PASSWORD_1).trim() === String(password || '').trim();
     const uidMatched = process.env.PASSWORD_1_UID &&
@@ -241,7 +235,7 @@ async function handleLogin(res, body, query) {
 }
 
 /* ============================================================
-   👥 List Officers — সব অফিসারের সামারি
+   👥 List Officers — সব অফিসার + Admin (PASSWORD_1)
    POST /api/offers?endpoint=list-officers   { password, uid }
    ============================================================ */
 async function handleListOfficers(res, body, query) {
@@ -255,7 +249,8 @@ async function handleListOfficers(res, body, query) {
   const t = getTimeKeys();
   const officers = [];
 
-  for (let i = 2; i <= MAX_PASSWORDS; i++) {
+  /* ⭐ i=1 থেকে শুরু — Admin ও অন্তর্ভুক্ত */
+  for (let i = 1; i <= MAX_PASSWORDS; i++) {
     const key = `PASSWORD_${i}`;
     const envPwd = process.env[key];
     if (!envPwd) continue;
@@ -278,6 +273,7 @@ async function handleListOfficers(res, body, query) {
 
     officers.push({
       userKey: key,
+      isAdmin: key === 'PASSWORD_1',
       name: data.name || '—',
       email: data.email || '—',
       number: data.number || '—',
@@ -312,9 +308,9 @@ async function handleListOfficers(res, body, query) {
 }
 
 /* ============================================================
-   📜 Officer Detail — একজন অফিসারের সম্পূর্ণ হিস্ট্রি
+   📜 Officer Detail — Admin (PASSWORD_1) ও অনুমোদিত
    POST /api/offers?endpoint=officer-detail
-       { password, uid, officerKey: 'PASSWORD_2' }
+       { password, uid, officerKey: 'PASSWORD_1' }
    ============================================================ */
 async function handleOfficerDetail(res, body, query) {
   const password   = body.password   || query.password;
@@ -325,15 +321,16 @@ async function handleOfficerDetail(res, body, query) {
     return res.status(401).json({ status: false, message: 'শুধু মেইন এডমিন' });
   }
 
-  if (!/^PASSWORD_([2-9]|1[0-9]|20)$/.test(officerKey)) {
+  /* ⭐ PASSWORD_1 - PASSWORD_20 সব অনুমোদিত */
+  if (!/^PASSWORD_([1-9]|1[0-9]|20)$/.test(officerKey)) {
     return res.status(400).json({
       status: false,
-      message: 'সঠিক অফিসার key দিন (PASSWORD_2 - PASSWORD_20)'
+      message: 'সঠিক key দিন (PASSWORD_1 - PASSWORD_20)'
     });
   }
 
   if (!process.env[officerKey]) {
-    return res.status(404).json({ status: false, message: 'এই অফিসার নেই' });
+    return res.status(404).json({ status: false, message: 'এই ইউজার নেই' });
   }
 
   let data;
@@ -341,7 +338,7 @@ async function handleOfficerDetail(res, body, query) {
   catch (e) { return res.status(500).json({ status: false, message: 'Firebase সংযোগ ব্যর্থ' }); }
 
   if (!data || typeof data !== 'object') {
-    return res.status(404).json({ status: false, message: 'এই অফিসারের কোনো ডেটা নেই' });
+    return res.status(404).json({ status: false, message: 'এই ইউজারের কোনো ডেটা নেই' });
   }
 
   const histObj = data['mobail-Recharge'] || {};
@@ -362,10 +359,11 @@ async function handleOfficerDetail(res, body, query) {
   const failedCount  = entries.length - successCount;
   const successSum   = entries.filter(e => e.status).reduce((s, e) => s + Number(e.amount || 0), 0);
 
+  const isAdmin = officerKey === 'PASSWORD_1';
   sendTelegramLog(
-`📊 <b>Main Admin Review — Officer Detail</b>
+`📊 <b>Main Admin Review — ${isAdmin ? '👑 নিজের' : 'Officer'} Detail</b>
 
-👤 অফিসার: <b>${escapeHtml(data.name || officerKey)}</b> (${escapeHtml(officerKey)})
+👤 ${isAdmin ? 'Admin' : 'অফিসার'}: <b>${escapeHtml(data.name || officerKey)}</b> (${escapeHtml(officerKey)})
 📱 নম্বর: ${escapeHtml(data.number || '—')}
 💵 বর্তমান ব্যালেন্স: ৳${fmtBDT(data.taka || 0)}
 📈 মোট লেনদেন: ${entries.length} (✅ ${successCount} / ❌ ${failedCount})
@@ -378,6 +376,7 @@ async function handleOfficerDetail(res, body, query) {
     status: true,
     officer: {
       userKey: officerKey,
+      isAdmin: isAdmin,
       name:    data.name   || '—',
       email:   data.email  || '—',
       number:  data.number || '—',
@@ -395,7 +394,7 @@ async function handleOfficerDetail(res, body, query) {
 }
 
 /* ============================================================
-   📊 Officer Stats — দিন / মাস / বছরের aggregate
+   📊 Officer Stats — Admin (PASSWORD_1) ও অনুমোদিত
    POST /api/offers?endpoint=officer-stats
        { password, uid, view: 'day' | 'month' | 'year' }
    ============================================================ */
@@ -414,7 +413,8 @@ async function handleOfficerStats(res, body, query) {
 
   const rows = [];
 
-  for (let i = 2; i <= MAX_PASSWORDS; i++) {
+  /* ⭐ i=1 থেকে শুরু */
+  for (let i = 1; i <= MAX_PASSWORDS; i++) {
     const key = `PASSWORD_${i}`;
     if (!process.env[key]) continue;
 
@@ -435,6 +435,7 @@ async function handleOfficerStats(res, body, query) {
 
     rows.push({
       userKey: key,
+      isAdmin: key === 'PASSWORD_1',
       name:    data.name   || '—',
       number:  data.number || '—',
       values,
