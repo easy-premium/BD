@@ -1,5 +1,5 @@
 // ============================================================
-// api/balance.js — Admin Balance Management
+// api/balance.js — Admin Balance Management (with global log)
 // 🚨 কঠোর ডাবল অথেন্টিকেশন: PASSWORD_1 + PASSWORD_1_UID
 // ============================================================
 
@@ -61,29 +61,21 @@ function maskSecret(s) {
 
 /* ============================================================
    🔐 কঠোর Main Admin যাচাই
-   ============================================================
-   PASSWORD_1 এবং PASSWORD_1_UID — দুটোই লাগবে
-   একটা না থাকলে বা ভুল হলে → কোনো কাজ হবে না
    ============================================================ */
 function isMainAdmin(password, uid) {
   const storedPwd = process.env.PASSWORD_1;
   const storedUid = process.env.PASSWORD_1_UID;
 
-  /* env var না থাকলে → DENY */
   if (!storedPwd || !storedUid) {
     console.error('SECURITY: PASSWORD_1 or PASSWORD_1_UID missing in env');
     return false;
   }
-
-  /* পাসওয়ার্ড বা UID না দিলে → DENY */
   if (!password || !uid) return false;
   if (typeof password !== 'string' || typeof uid !== 'string') return false;
 
-  /* trim করে মিলাও — strict compare */
   const pwdMatch = String(storedPwd).trim() === password.trim();
   const uidMatch = String(storedUid).trim() === uid.trim();
 
-  /* দুটোই মিলতে হবে */
   return pwdMatch && uidMatch;
 }
 
@@ -118,6 +110,21 @@ async function fbPatchUser(userKey, updates, etag = null) {
   if (!res.ok) {
     const text = await res.text().catch(() => '');
     throw new Error(`FB PATCH ${res.status}: ${text}`);
+  }
+  return { ok: true };
+}
+
+/* ⭐ নতুন: রুটে PATCH (গ্লোবাল লগ সেভ করতে) */
+async function fbPatchRoot(updates) {
+  const headers = { 'Content-Type': 'application/json' };
+  const res = await fetch(fbUrl(''), {
+    method: 'PATCH',
+    headers,
+    body: JSON.stringify(updates)
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`FB PATCH ROOT ${res.status}: ${text}`);
   }
   return { ok: true };
 }
@@ -164,6 +171,7 @@ export default async function handler(req, res) {
       case 'adjust':       return await handleAdjust(res, body, query);
       case 'log':          return await handleGetLog(res, body, query);
       case 'all-logs':     return await handleGetAllLogs(res, body, query);
+      case 'global-log':   return await handleGlobalLog(res, body, query);   // ⭐ নতুন
       default:
         return res.status(400).json({ status: false, message: 'Invalid endpoint' });
     }
@@ -174,18 +182,13 @@ export default async function handler(req, res) {
 }
 
 /* ============================================================
-   🛡️ Auth Check Helper — প্রতি endpoint এ ব্যবহার হবে
-   ============================================================
-   Returns true if authorized, otherwise sends 401 response and returns false
+   🛡️ Auth Check Helper
    ============================================================ */
 async function enforceMainAdmin(res, body, query, endpointName) {
   const password = body.password || query.password;
   const uid      = body.uid      || query.uid;
 
-  /* ⭐ কঠোর চেক — দুটোই লাগবে */
   if (!isMainAdmin(password, uid)) {
-
-    /* কারণ নির্ধারণ */
     let reason = '';
     const hasPwd = !!password;
     const hasUid = !!uid;
@@ -209,7 +212,6 @@ async function enforceMainAdmin(res, body, query, endpointName) {
       else reason = 'অজানা ত্রুটি';
     }
 
-    /* 🚨 Telegram সতর্কতা */
     sendTelegramLog(
 `🚨 <b>Balance API — Unauthorized Access চেষ্টা</b>
 
@@ -221,7 +223,6 @@ async function enforceMainAdmin(res, body, query, endpointName) {
 ⚠️ PASSWORD_1 + PASSWORD_1_UID দুটোই সঠিক থাকতে হবে`
     );
 
-    /* ⭐ কোনো কাজ হবে না — শুধু ৪০১ রেসপন্স */
     res.status(401).json({
       status: false,
       message: 'Unauthorized — শুধু মেইন এডমিন অ্যাক্সেস পাবেন',
@@ -236,21 +237,12 @@ async function enforceMainAdmin(res, body, query, endpointName) {
 
 /* ============================================================
    💰 Balance Adjust
-   POST /api/balance?endpoint=adjust
-       {
-         password, uid,                 // ⭐ বাধ্যতামূলক
-         officerKey: 'PASSWORD_2',
-         action: 'add' | 'subtract',
-         amount: 100,
-         note: 'বেতন'
-       }
+   ⭐ এখন admin-actions-log/ এও সেভ হবে + PASSWORD_1 (নিজে) অনুমোদিত
    ============================================================ */
 async function handleAdjust(res, body, query) {
-  /* ⭐ Step 1: কঠোর Auth Check — না হলে আর কিছুই হবে না */
   const authorized = await enforceMainAdmin(res, body, query, 'adjust');
-  if (!authorized) return;   /* রেসপন্স ইতিমধ্যে পাঠানো হয়েছে */
+  if (!authorized) return;
 
-  /* Step 2: Auth ঠিক আছে — এখন অফিসার key, action, amount যাচাই */
   const password   = body.password   || query.password;
   const uid        = body.uid        || query.uid;
   const officerKey = String(body.officerKey || query.officerKey || '').trim().toUpperCase();
@@ -259,10 +251,11 @@ async function handleAdjust(res, body, query) {
   const amount     = parseInt(amountRaw, 10);
   const note       = String(body.note || query.note || '').trim().slice(0, 200);
 
-  if (!/^PASSWORD_([2-9]|1[0-9]|20)$/.test(officerKey)) {
+  /* ⭐ PASSWORD_1 (Admin নিজে) ও এখন অনুমোদিত */
+  if (!/^PASSWORD_([1-9]|1[0-9]|20)$/.test(officerKey)) {
     return res.status(400).json({
       status: false,
-      message: 'সঠিক অফিসার key দিন (PASSWORD_2 - PASSWORD_20)'
+      message: 'সঠিক key দিন (PASSWORD_1 - PASSWORD_20)'
     });
   }
 
@@ -283,6 +276,15 @@ async function handleAdjust(res, body, query) {
   if (!process.env[officerKey]) {
     return res.status(404).json({ status: false, message: 'এই অফিসার নেই' });
   }
+
+  /* ⭐ Admin এর নাম জেনে নাও — লগে দেখাতে */
+  let adminName = 'Main Admin';
+  try {
+    const adminData = await fbGet('PASSWORD_1');
+    if (adminData && adminData.data && adminData.data.name) {
+      adminName = adminData.data.name;
+    }
+  } catch (e) { /* silent */ }
 
   /* Step 3: অফিসার ডেটা পড়া + হিসাব + PATCH (retry loop) */
   const MAX_RETRIES = 3;
@@ -324,25 +326,28 @@ async function handleAdjust(res, body, query) {
     }
 
     const timeKeys = getTimeKeys();
+    const officerName = data.name || officerKey;
+    const officerNumber = data.number || '—';
 
-    /* ⭐ Audit: কে টাকা এড/মাইনাস করেছে সেটা সেভ */
-    const adjustEntry = {
+    /* অফিসারের নিজের balance-history এন্ট্রি */
+    const officerEntry = {
       action:      action,
       amount:      amount,
       change:      change,
       oldTaka:     oldTaka,
       newTaka:     newTaka,
       note:        note || '—',
-      byPassword:  maskSecret(password),         /* masked */
-      byUid:       maskSecret(uid),              /* masked */
+      byPassword:  maskSecret(password),
+      byUid:       maskSecret(uid),
       byRole:      'Main Admin',
+      byName:      adminName,
       time:        new Date().toISOString(),
       timestamp:   timeKeys.full
     };
 
     const updates = {
       [`taka`]: newTaka,
-      [`balance-history/${timeKeys.full}`]: adjustEntry
+      [`balance-history/${timeKeys.full}`]: officerEntry
     };
 
     try {
@@ -351,6 +356,36 @@ async function handleAdjust(res, body, query) {
         await new Promise(r => setTimeout(r, 80));
         continue;
       }
+
+      /* ⭐⭐ গ্লোবাল লগ — admin-actions-log/ */
+      try {
+        const globalEntry = {
+          adminKey:      'PASSWORD_1',
+          adminName:     adminName,
+          adminPassword: maskSecret(password),
+          adminUid:      maskSecret(uid),
+          officerKey:    officerKey,
+          officerName:   officerName,
+          officerNumber: officerNumber,
+          action:        action,
+          amount:        amount,
+          change:        change,
+          oldTaka:       oldTaka,
+          newTaka:       newTaka,
+          note:          note || '—',
+          time:          new Date().toISOString(),
+          timestamp:     timeKeys.full
+        };
+
+        /* key: `{timestamp}_{officerKey}` — যাতে একই সেকেন্ডে দুইটা অ্যাডজাস্টমেন্ট হলে ওভাররাইট না হয় */
+        await fbPatchRoot({
+          [`admin-actions-log/${timeKeys.full}_${officerKey}`]: globalEntry
+        });
+      } catch (gErr) {
+        console.error('Global log save failed:', gErr);
+        /* global log fail হলেও main অ্যাডজাস্টমেন্ট সফল — তাই throw করব না */
+      }
+
       saved = true;
       break;
     } catch (e) {
@@ -366,8 +401,7 @@ async function handleAdjust(res, body, query) {
 👤 Officer: ${escapeHtml(officerKey)}
 🎬 Action: ${escapeHtml(action)}
 💰 Amount: ৳${fmtBDT(amount)}
-🕐 সময়: ${formatBDTime()}
-⚠️ Firebase এ সেভ হয়নি`
+🕐 সময়: ${formatBDTime()}`
     );
     return res.status(500).json({
       status: false,
@@ -375,14 +409,14 @@ async function handleAdjust(res, body, query) {
     });
   }
 
-  /* Step 4: ✅ সফল — Telegram লগ */
   const officerName = officerData?.name || officerKey;
   const officerNum  = officerData?.number || '—';
   const actionIcon  = action === 'add' ? '➕' : '➖';
   const actionText  = action === 'add' ? 'ব্যালেন্স এড' : 'ব্যালেন্স মাইনাস';
+  const selfNote    = officerKey === 'PASSWORD_1' ? ' 👑 <b>(নিজের একাউন্ট)</b>' : '';
 
   sendTelegramLog(
-`${actionIcon} <b>${actionText}</b>
+`${actionIcon} <b>${actionText}</b>${selfNote}
 
 👤 অফিসার: <b>${escapeHtml(officerName)}</b> (${escapeHtml(officerKey)})
 📱 নম্বর: <code>${escapeHtml(officerNum)}</code>
@@ -392,11 +426,8 @@ async function handleAdjust(res, body, query) {
 💵 নতুন ব্যালেন্স: <b>৳${fmtBDT(newTaka)}</b>
 
 📝 নোট: ${escapeHtml(note || '—')}
+👮 কর্তৃক: <b>${escapeHtml(adminName)}</b>
 🕐 সময়: ${formatBDTime()}
-
-🔐 <b>Auth:</b>
-  • Password: <code>${escapeHtml(maskSecret(password))}</code>
-  • UID: <code>${escapeHtml(maskSecret(uid))}</code>
 ✅ Main Admin কর্তৃক সম্পন্ন`
   );
 
@@ -423,17 +454,17 @@ async function handleAdjust(res, body, query) {
        { password, uid, officerKey: 'PASSWORD_2', limit?: 200 }
    ============================================================ */
 async function handleGetLog(res, body, query) {
-  /* ⭐ কঠোর Auth */
   const authorized = await enforceMainAdmin(res, body, query, 'log');
   if (!authorized) return;
 
   const officerKey = String(body.officerKey || query.officerKey || '').trim().toUpperCase();
   const limit      = Math.min(parseInt(body.limit || query.limit || 200, 10), 500);
 
-  if (!/^PASSWORD_([2-9]|1[0-9]|20)$/.test(officerKey)) {
+  /* ⭐ PASSWORD_1 ও এখন অনুমোদিত */
+  if (!/^PASSWORD_([1-9]|1[0-9]|20)$/.test(officerKey)) {
     return res.status(400).json({
       status: false,
-      message: 'সঠিক অফিসার key দিন'
+      message: 'সঠিক key দিন'
     });
   }
 
@@ -456,6 +487,7 @@ async function handleGetLog(res, body, query) {
       byPassword: d.byPassword || '—',
       byUid:     d.byUid || '—',
       byRole:    d.byRole || '—',
+      byName:    d.byName || '—',
       time:      d.time || time
     }))
     .sort((a, b) => String(b.timestamp).localeCompare(String(a.timestamp)))
@@ -488,14 +520,14 @@ async function handleGetLog(res, body, query) {
        { password, uid, limit?: 100 }
    ============================================================ */
 async function handleGetAllLogs(res, body, query) {
-  /* ⭐ কঠোর Auth */
   const authorized = await enforceMainAdmin(res, body, query, 'all-logs');
   if (!authorized) return;
 
   const limit = Math.min(parseInt(body.limit || query.limit || 100, 10), 500);
   const allEntries = [];
 
-  for (let i = 2; i <= MAX_PASSWORDS; i++) {
+  /* ⭐ PASSWORD_1 ও এখন থেকে শুরু */
+  for (let i = 1; i <= MAX_PASSWORDS; i++) {
     const key = `PASSWORD_${i}`;
     if (!process.env[key]) continue;
 
@@ -523,6 +555,7 @@ async function handleGetAllLogs(res, body, query) {
         byPassword: d.byPassword || '—',
         byUid:     d.byUid || '—',
         byRole:    d.byRole || '—',
+        byName:    d.byName || '—',
         time:      d.time || timestamp
       });
     }
@@ -538,6 +571,74 @@ async function handleGetAllLogs(res, body, query) {
     status: true,
     stats: {
       totalEntries: sliced.length,
+      totalAdded: totalAdded,
+      totalSubtracted: totalSubtracted
+    },
+    history: sliced
+  });
+}
+
+/* ============================================================
+   ⭐ নতুন: Global Admin Actions Log
+   POST /api/balance?endpoint=global-log
+       { password, uid, limit?: 300, officerKey?: 'PASSWORD_2', action?: 'add' }
+   ============================================================ */
+async function handleGlobalLog(res, body, query) {
+  const authorized = await enforceMainAdmin(res, body, query, 'global-log');
+  if (!authorized) return;
+
+  const limit     = Math.min(parseInt(body.limit || query.limit || 300, 10), 1000);
+  const filterKey = String(body.officerKey || query.officerKey || '').trim().toUpperCase();
+  const filterAct = String(body.action || query.action || '').trim().toLowerCase();
+
+  let got;
+  try { got = await fbGet('admin-actions-log'); }
+  catch (e) {
+    return res.status(500).json({ status: false, message: 'Firebase সংযোগ ব্যর্থ' });
+  }
+
+  const logObj = got.data || {};
+
+  let entries = Object.entries(logObj)
+    .map(([key, d]) => ({
+      logKey:        key,
+      adminKey:      d.adminKey || 'PASSWORD_1',
+      adminName:     d.adminName || 'Main Admin',
+      adminPassword: d.adminPassword || '—',
+      adminUid:      d.adminUid || '—',
+      officerKey:    d.officerKey || '—',
+      officerName:   d.officerName || '—',
+      officerNumber: d.officerNumber || '—',
+      action:        d.action || '—',
+      amount:        Number(d.amount || 0),
+      change:        Number(d.change || 0),
+      oldTaka:       Number(d.oldTaka || 0),
+      newTaka:       Number(d.newTaka || 0),
+      note:          d.note || '—',
+      time:          d.time || '',
+      timestamp:     d.timestamp || key
+    }))
+    .sort((a, b) => String(b.timestamp).localeCompare(String(a.timestamp)));
+
+  /* ফিল্টার */
+  if (filterKey) entries = entries.filter(e => e.officerKey === filterKey);
+  if (filterAct && ['add', 'subtract'].includes(filterAct)) {
+    entries = entries.filter(e => e.action === filterAct);
+  }
+
+  const sliced = entries.slice(0, limit);
+
+  const totalAdded = entries.filter(e => e.action === 'add').reduce((s, e) => s + e.amount, 0);
+  const totalSubtracted = entries.filter(e => e.action === 'subtract').reduce((s, e) => s + e.amount, 0);
+
+  return res.status(200).json({
+    status: true,
+    filter: {
+      officerKey: filterKey || null,
+      action:     filterAct || null
+    },
+    stats: {
+      totalEntries: entries.length,
       totalAdded: totalAdded,
       totalSubtracted: totalSubtracted
     },
