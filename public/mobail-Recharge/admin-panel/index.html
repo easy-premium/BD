@@ -133,7 +133,7 @@ body::after{
   margin-bottom:16px;
 }
 .user-signed-card .us-top{
-  display:flex;align-items:center;gap:12px;margin-bottom:12px;
+  display:flex;align-items:center;gap:12px;
 }
 .user-signed-card .us-avatar{
   width:48px;height:48px;border-radius:50%;object-fit:cover;
@@ -147,42 +147,6 @@ body::after{
 .user-signed-card .us-email{
   font-size:.78rem;color:var(--muted);margin-top:2px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-
-.us-uid-wrap{
-  display:flex;gap:8px;align-items:stretch;margin-top:8px;
-}
-.us-uid{
-  flex:1;min-width:0;
-  font-size:.75rem;color:var(--cyan);
-  word-break:break-all;font-family:'Consolas','Monaco',monospace;
-  background:rgba(0,0,0,.5);padding:10px 12px;border-radius:8px;
-  border:1px solid rgba(0,188,212,.3);
-  line-height:1.4;
-}
-.us-uid .uid-label{
-  display:block;font-size:.65rem;color:var(--muted);
-  text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;
-  font-family:'Segoe UI',sans-serif;
-}
-.us-uid .uid-value{
-  color:var(--cyan);font-weight:700;
-  user-select:all;
-}
-.uid-copy-btn{
-  padding:0 14px;border-radius:8px;
-  border:2px solid var(--cyan);
-  background:rgba(0,188,212,.15);
-  color:var(--cyan);
-  font-size:.75rem;font-weight:800;
-  cursor:pointer;font-family:inherit;
-  display:inline-flex;align-items:center;gap:5px;
-  transition:.2s;white-space:nowrap;
-}
-.uid-copy-btn:hover{background:rgba(0,188,212,.3)}
-.uid-copy-btn.copied{
-  background:rgba(76,175,80,.2);
-  border-color:var(--green);color:var(--green);
 }
 
 .result-box{display:none;padding:16px;border-radius:12px;margin-top:16px;font-size:.9rem;line-height:1.55}
@@ -580,7 +544,7 @@ body::after{
 
 <script>
 /* ============================================================
-   ⭐ Firebase Config — easy-recharge-bd (সঠিক প্রজেক্ট)
+   Firebase Config — easy-recharge-bd
    ============================================================ */
 const firebaseConfig = {
   apiKey: "AIzaSyAhSNQHIksJ3C-g9vYnC_jKGMtHi33A_50",
@@ -599,7 +563,6 @@ const googleProvider = new firebase.auth.GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
 
 const API_BASE = '/api/offers';
-
 const LS_ADMIN_PWD_KEY = 'ep_admin_pwd';
 const LS_ADMIN_UID_KEY = 'ep_admin_uid';
 
@@ -611,7 +574,15 @@ const OPERATOR_NAMES = {
   AT: 'Airtel', TT: 'Teletalk', BT: 'BT'
 };
 
-let SESSION = { password: null, uid: null, email: null, name: null };
+/* ============================================================
+   State — UID শুধু এই variable এ থাকবে, DOM এ কখনো যাবে না
+   ============================================================ */
+let SESSION = {
+  password: null,
+  uid: null,           /* ⭐ আসল UID — DOM এ কখনো দেখাবে না */
+  email: null,
+  name: null
+};
 let OFFICERS = [];
 let CURRENT_OFFICER = null;
 let CURRENT_HISTORY = [];
@@ -619,6 +590,7 @@ let CURRENT_TAB = 'history';
 let HISTORY_FILTER = '';
 let CURRENT_OFFICER_DATA = null;
 
+/* Helpers */
 function formatBDT(n){ return Number(n||0).toLocaleString('en-IN'); }
 function escapeHtml(str){
   return String(str||'')
@@ -670,11 +642,13 @@ function hideResult(boxId){
   box.innerHTML = '';
 }
 
+/* ============================================================
+   ⭐ Signed User Card — UID ছাড়া (শুধু নাম, ইমেইল, ছবি)
+   ============================================================ */
 function renderSignedUserCard(user) {
   const photo = user.photoURL || '';
   const name = user.displayName || user.email || 'Admin';
   const email = user.email || '';
-  const uid = user.uid || '';
 
   const card = document.getElementById('signedUserCard');
   card.style.display = 'block';
@@ -688,46 +662,13 @@ function renderSignedUserCard(user) {
         <div class="us-email">${escapeHtml(email)}</div>
       </div>
     </div>
-    <div class="us-uid-wrap">
-      <div class="us-uid">
-        <span class="uid-label">আপনার Google UID</span>
-        <span class="uid-value" id="displayedUid">${escapeHtml(uid)}</span>
-      </div>
-      <button class="uid-copy-btn" id="uidCopyBtn" title="UID কপি করুন">
-        <i class="fas fa-copy"></i> কপি
-      </button>
-    </div>
   `;
-
-  const copyBtn = document.getElementById('uidCopyBtn');
-  if (copyBtn) {
-    copyBtn.addEventListener('click', async () => {
-      try {
-        await navigator.clipboard.writeText(uid);
-        copyBtn.classList.add('copied');
-        copyBtn.innerHTML = '<i class="fas fa-check"></i> কপি হয়েছে';
-        setTimeout(() => {
-          copyBtn.classList.remove('copied');
-          copyBtn.innerHTML = '<i class="fas fa-copy"></i> কপি';
-        }, 1800);
-      } catch (e) {
-        const ta = document.createElement('textarea');
-        ta.value = uid;
-        document.body.appendChild(ta);
-        ta.select();
-        try { document.execCommand('copy'); } catch (er) {}
-        document.body.removeChild(ta);
-        copyBtn.classList.add('copied');
-        copyBtn.innerHTML = '<i class="fas fa-check"></i> কপি হয়েছে';
-        setTimeout(() => {
-          copyBtn.classList.remove('copied');
-          copyBtn.innerHTML = '<i class="fas fa-copy"></i> কপি';
-        }, 1800);
-      }
-    });
-  }
+  /* ⭐ UID এখানে নেই — কোথাও দেখানো হয় না */
 }
 
+/* ============================================================
+   Google Sign-In — Force fresh login
+   ============================================================ */
 const googleLoginBtn = document.getElementById('googleLoginBtn');
 
 googleLoginBtn.addEventListener('click', async () => {
@@ -747,6 +688,7 @@ googleLoginBtn.addEventListener('click', async () => {
     const result = await auth.signInWithPopup(googleProvider);
     const user = result.user;
 
+    /* ⭐ UID শুধু SESSION এ থাকবে — কোথাও DOM এ যাবে না */
     const googleUid = user.uid;
     const email = user.email || '';
     const name = user.displayName || email;
@@ -765,7 +707,7 @@ googleLoginBtn.addEventListener('click', async () => {
 
     showResult('loginResult','success','Google লগইন সফল',[
       { k:'Gmail', v: escapeHtml(email) },
-      { k:'UID', v: '<code style="font-size:.75rem">' + escapeHtml(googleUid) + '</code>' },
+      { k:'UID', v: '✅ সিস্টেমে সংরক্ষিত (হাইড)' },
       { k:'পরবর্তী ধাপ', v: 'Admin পাসওয়ার্ড দিন' }
     ]);
 
@@ -788,9 +730,12 @@ googleLoginBtn.addEventListener('click', async () => {
   }
 });
 
+/* ============================================================
+   onAuthStateChanged — শুধু SESSION sync, UID DOM এ যাবে না
+   ============================================================ */
 auth.onAuthStateChanged(user => {
   if (user) {
-    SESSION.uid = user.uid;
+    SESSION.uid = user.uid;   /* ⭐ শুধু variable এ */
     SESSION.email = user.email || '';
     SESSION.name = user.displayName || user.email;
     renderSignedUserCard(user);
@@ -806,6 +751,9 @@ auth.onAuthStateChanged(user => {
   }
 });
 
+/* ============================================================
+   Login form
+   ============================================================ */
 const loginPwd = document.getElementById('loginPassword');
 const loginBtn = document.getElementById('loginBtn');
 
@@ -868,6 +816,7 @@ async function doLogin(){
 
 loginBtn.addEventListener('click', doLogin);
 
+/* Logout */
 document.getElementById('logoutBtn').addEventListener('click', async () => {
   try { await auth.signOut(); } catch (e) {}
   try {
@@ -891,6 +840,7 @@ document.getElementById('logoutBtn').addEventListener('click', async () => {
   showScreen('loginScreen');
 });
 
+/* API helper */
 async function apiPost(endpoint, body = {}){
   const url = new URL(API_BASE, window.location.origin);
   url.searchParams.set('endpoint', endpoint);
@@ -907,6 +857,7 @@ async function apiPost(endpoint, body = {}){
   return await res.json();
 }
 
+/* Load officers */
 async function loadOfficers(){
   const wrap = document.getElementById('officerList');
   wrap.innerHTML = `<div class="empty-history">
@@ -996,6 +947,7 @@ document.getElementById('officerSearch').addEventListener('input', function(){
   renderOfficerCards(filtered);
 });
 
+/* Officer Detail */
 async function openOfficerDetail(officerKey){
   CURRENT_OFFICER = officerKey;
   CURRENT_HISTORY = [];
