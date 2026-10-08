@@ -113,7 +113,6 @@ body::after{
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
 
-/* Google Sign-In button */
 .google-btn{
   width:100%;padding:15px 16px;border-radius:12px;
   border:2px solid rgba(255,255,255,.15);
@@ -127,7 +126,6 @@ body::after{
 .google-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
 .google-btn img{width:22px;height:22px}
 
-/* Logged in user card */
 .user-signed-card{
   padding:16px 18px;border-radius:14px;
   background:linear-gradient(135deg,rgba(76,175,80,.15),rgba(0,188,212,.08));
@@ -150,13 +148,43 @@ body::after{
   font-size:.78rem;color:var(--muted);margin-top:2px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
-.user-signed-card .us-uid{
-  font-size:.7rem;color:var(--cyan);margin-top:4px;
-  word-break:break-all;font-family:monospace;
-  background:rgba(0,0,0,.4);padding:6px 10px;border-radius:6px;
+
+.us-uid-wrap{
+  display:flex;gap:8px;align-items:stretch;margin-top:8px;
+}
+.us-uid{
+  flex:1;min-width:0;
+  font-size:.75rem;color:var(--cyan);
+  word-break:break-all;font-family:'Consolas','Monaco',monospace;
+  background:rgba(0,0,0,.5);padding:10px 12px;border-radius:8px;
+  border:1px solid rgba(0,188,212,.3);
+  line-height:1.4;
+}
+.us-uid .uid-label{
+  display:block;font-size:.65rem;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;
+  font-family:'Segoe UI',sans-serif;
+}
+.us-uid .uid-value{
+  color:var(--cyan);font-weight:700;
+  user-select:all;
+}
+.uid-copy-btn{
+  padding:0 14px;border-radius:8px;
+  border:2px solid var(--cyan);
+  background:rgba(0,188,212,.15);
+  color:var(--cyan);
+  font-size:.75rem;font-weight:800;
+  cursor:pointer;font-family:inherit;
+  display:inline-flex;align-items:center;gap:5px;
+  transition:.2s;white-space:nowrap;
+}
+.uid-copy-btn:hover{background:rgba(0,188,212,.3)}
+.uid-copy-btn.copied{
+  background:rgba(76,175,80,.2);
+  border-color:var(--green);color:var(--green);
 }
 
-/* Result box */
 .result-box{display:none;padding:16px;border-radius:12px;margin-top:16px;font-size:.9rem;line-height:1.55}
 .result-box.show{display:block;animation:fadeIn .3s}
 .result-box.success{background:rgba(76,175,80,.12);border:1px solid var(--green)}
@@ -174,7 +202,6 @@ body::after{
 .screen{display:none}
 .screen.active{display:block;animation:fadeIn .3s}
 
-/* Tiles */
 .summary-tiles{
   display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
   gap:10px;margin-bottom:18px;
@@ -206,7 +233,6 @@ body::after{
 .section-title .st-left{display:flex;align-items:center;gap:8px}
 .section-title i{color:var(--orange)}
 
-/* Officer cards */
 .officer-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
 .officer-card{
   background:var(--card);border-radius:14px;padding:16px 16px 14px;
@@ -400,16 +426,12 @@ body::after{
 
 <div class="container">
 
-  <!-- ============================================================
-       লগইন স্ক্রিন — Google Sign-In
-       ============================================================ -->
   <div class="screen active" id="loginScreen">
     <h1 class="page-title">Admin Panel</h1>
     <p class="page-sub">Google (Gmail) দিয়ে লগইন করুন</p>
 
     <div class="card" style="max-width:480px;margin-left:auto;margin-right:auto">
 
-      <!-- ⭐ Google Sign-In বাটন -->
       <button class="google-btn" id="googleLoginBtn">
         <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
         Google দিয়ে লগইন করুন
@@ -435,9 +457,6 @@ body::after{
     </div>
   </div>
 
-  <!-- ============================================================
-       ড্যাশবোর্ড
-       ============================================================ -->
   <div class="screen" id="dashboardScreen">
 
     <h1 class="page-title">অফিসার রিপোর্ট</h1>
@@ -486,9 +505,6 @@ body::after{
     </div>
   </div>
 
-  <!-- ============================================================
-       ডিটেইল
-       ============================================================ -->
   <div class="screen" id="detailScreen">
 
     <div class="back-row">
@@ -564,17 +580,17 @@ body::after{
 
 <script>
 /* ============================================================
-   Firebase Config (same as main site)
+   ⭐ Firebase Config — easy-recharge-bd (সঠিক প্রজেক্ট)
    ============================================================ */
 const firebaseConfig = {
-  apiKey: "AIzaSyBt9t6mcjUtXxX2igAJdseuIIc8pP_QPEw",
-  authDomain: "easy-premium.firebaseapp.com",
-  databaseURL: "https://easy-premium-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "easy-premium",
-  storageBucket: "easy-premium.firebasestorage.app",
-  messagingSenderId: "155891252265",
-  appId: "1:155891252265:web:77ab41de24231e8e5ef038",
-  measurementId: "G-CHL8K8HRPX"
+  apiKey: "AIzaSyAhSNQHIksJ3C-g9vYnC_jKGMtHi33A_50",
+  authDomain: "easy-recharge-bd.firebaseapp.com",
+  databaseURL: "https://easy-recharge-bd-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "easy-recharge-bd",
+  storageBucket: "easy-recharge-bd.firebasestorage.app",
+  messagingSenderId: "691776687982",
+  appId: "1:691776687982:web:ce549cb1566f7d42893b7f",
+  measurementId: "G-LV73WGQ30X"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -582,12 +598,8 @@ const auth = firebase.auth();
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
 
-/* ============================================================
-   Config
-   ============================================================ */
 const API_BASE = '/api/offers';
 
-/* ⭐ localStorage keys — recharge page ও এই same keys ব্যবহার করে */
 const LS_ADMIN_PWD_KEY = 'ep_admin_pwd';
 const LS_ADMIN_UID_KEY = 'ep_admin_uid';
 
@@ -599,9 +611,6 @@ const OPERATOR_NAMES = {
   AT: 'Airtel', TT: 'Teletalk', BT: 'BT'
 };
 
-/* ============================================================
-   State
-   ============================================================ */
 let SESSION = { password: null, uid: null, email: null, name: null };
 let OFFICERS = [];
 let CURRENT_OFFICER = null;
@@ -610,9 +619,6 @@ let CURRENT_TAB = 'history';
 let HISTORY_FILTER = '';
 let CURRENT_OFFICER_DATA = null;
 
-/* ============================================================
-   Helpers
-   ============================================================ */
 function formatBDT(n){ return Number(n||0).toLocaleString('en-IN'); }
 function escapeHtml(str){
   return String(str||'')
@@ -664,11 +670,65 @@ function hideResult(boxId){
   box.innerHTML = '';
 }
 
-/* ============================================================
-   ⭐ Google Sign-In
-   ============================================================ */
+function renderSignedUserCard(user) {
+  const photo = user.photoURL || '';
+  const name = user.displayName || user.email || 'Admin';
+  const email = user.email || '';
+  const uid = user.uid || '';
+
+  const card = document.getElementById('signedUserCard');
+  card.style.display = 'block';
+  card.className = 'user-signed-card';
+  card.innerHTML = `
+    <div class="us-top">
+      ${photo ? `<img src="${photo}" class="us-avatar" alt="avatar">` :
+                `<div class="us-avatar" style="background:linear-gradient(45deg,#ff9800,#ff5722);display:flex;align-items:center;justify-content:center;font-weight:800">${(name[0]||'?').toUpperCase()}</div>`}
+      <div class="us-info">
+        <div class="us-name">${escapeHtml(name)}</div>
+        <div class="us-email">${escapeHtml(email)}</div>
+      </div>
+    </div>
+    <div class="us-uid-wrap">
+      <div class="us-uid">
+        <span class="uid-label">আপনার Google UID</span>
+        <span class="uid-value" id="displayedUid">${escapeHtml(uid)}</span>
+      </div>
+      <button class="uid-copy-btn" id="uidCopyBtn" title="UID কপি করুন">
+        <i class="fas fa-copy"></i> কপি
+      </button>
+    </div>
+  `;
+
+  const copyBtn = document.getElementById('uidCopyBtn');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(uid);
+        copyBtn.classList.add('copied');
+        copyBtn.innerHTML = '<i class="fas fa-check"></i> কপি হয়েছে';
+        setTimeout(() => {
+          copyBtn.classList.remove('copied');
+          copyBtn.innerHTML = '<i class="fas fa-copy"></i> কপি';
+        }, 1800);
+      } catch (e) {
+        const ta = document.createElement('textarea');
+        ta.value = uid;
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); } catch (er) {}
+        document.body.removeChild(ta);
+        copyBtn.classList.add('copied');
+        copyBtn.innerHTML = '<i class="fas fa-check"></i> কপি হয়েছে';
+        setTimeout(() => {
+          copyBtn.classList.remove('copied');
+          copyBtn.innerHTML = '<i class="fas fa-copy"></i> কপি';
+        }, 1800);
+      }
+    });
+  }
+}
+
 const googleLoginBtn = document.getElementById('googleLoginBtn');
-const signedUserCard = document.getElementById('signedUserCard');
 
 googleLoginBtn.addEventListener('click', async () => {
   googleLoginBtn.disabled = true;
@@ -676,51 +736,39 @@ googleLoginBtn.addEventListener('click', async () => {
   hideResult('loginResult');
 
   try {
+    try { await auth.signOut(); } catch (e) {}
+    try {
+      localStorage.removeItem(LS_ADMIN_UID_KEY);
+      localStorage.removeItem(LS_ADMIN_PWD_KEY);
+      localStorage.removeItem('ep_admin_email');
+      localStorage.removeItem('ep_admin_name');
+    } catch (e) {}
+
     const result = await auth.signInWithPopup(googleProvider);
     const user = result.user;
 
-    /* ⭐ Google Firebase UID — এটাই আমাদের UID */
     const googleUid = user.uid;
     const email = user.email || '';
     const name = user.displayName || email;
-    const photo = user.photoURL || '';
 
     SESSION.uid = googleUid;
     SESSION.email = email;
     SESSION.name = name;
 
-    /* ⭐ localStorage এ সেভ — recharge page এও কাজ করবে */
     try {
       localStorage.setItem(LS_ADMIN_UID_KEY, googleUid);
       localStorage.setItem('ep_admin_email', email);
       localStorage.setItem('ep_admin_name', name);
     } catch (e) {}
 
-    /* ✅ Signed-in card দেখাও */
-    signedUserCard.style.display = 'block';
-    signedUserCard.className = 'user-signed-card';
-    signedUserCard.innerHTML = `
-      <div class="us-top">
-        ${photo ? `<img src="${photo}" class="us-avatar" alt="avatar">` :
-                  `<div class="us-avatar" style="background:linear-gradient(45deg,#ff9800,#ff5722);display:flex;align-items:center;justify-content:center;font-weight:800">${(name[0]||'?').toUpperCase()}</div>`}
-        <div class="us-info">
-          <div class="us-name">${escapeHtml(name)}</div>
-          <div class="us-email">${escapeHtml(email)}</div>
-        </div>
-      </div>
-      <div class="us-uid">
-        <i class="fas fa-fingerprint" style="color:var(--orange)"></i>
-        UID: ${escapeHtml(googleUid)}
-      </div>
-    `;
+    renderSignedUserCard(user);
 
     showResult('loginResult','success','Google লগইন সফল',[
       { k:'Gmail', v: escapeHtml(email) },
-      { k:'UID Auto ক্যাচ', v: '✅ হয়েছে' },
+      { k:'UID', v: '<code style="font-size:.75rem">' + escapeHtml(googleUid) + '</code>' },
       { k:'পরবর্তী ধাপ', v: 'Admin পাসওয়ার্ড দিন' }
     ]);
 
-    /* সব ঠিক হলে password field focus */
     document.getElementById('loginPassword').focus();
     validateLoginForm();
 
@@ -740,41 +788,24 @@ googleLoginBtn.addEventListener('click', async () => {
   }
 });
 
-/* অটো sign-in state detect — পেজ reload হলে */
 auth.onAuthStateChanged(user => {
   if (user) {
     SESSION.uid = user.uid;
     SESSION.email = user.email || '';
     SESSION.name = user.displayName || user.email;
-
-    signedUserCard.style.display = 'block';
-    signedUserCard.className = 'user-signed-card';
-    signedUserCard.innerHTML = `
-      <div class="us-top">
-        ${user.photoURL ? `<img src="${user.photoURL}" class="us-avatar" alt="avatar">` :
-                          `<div class="us-avatar" style="background:linear-gradient(45deg,#ff9800,#ff5722);display:flex;align-items:center;justify-content:center;font-weight:800">${((user.displayName||'?')[0]).toUpperCase()}</div>`}
-        <div class="us-info">
-          <div class="us-name">${escapeHtml(user.displayName || user.email || 'Admin')}</div>
-          <div class="us-email">${escapeHtml(user.email || '')}</div>
-        </div>
-      </div>
-      <div class="us-uid">
-        <i class="fas fa-fingerprint" style="color:var(--orange)"></i>
-        UID: ${escapeHtml(user.uid)}
-      </div>
-    `;
-    try {
-      localStorage.setItem(LS_ADMIN_UID_KEY, user.uid);
-      localStorage.setItem('ep_admin_email', user.email || '');
-      localStorage.setItem('ep_admin_name', user.displayName || '');
-    } catch (e) {}
+    renderSignedUserCard(user);
+    validateLoginForm();
+  } else {
+    SESSION.uid = null;
+    SESSION.email = null;
+    SESSION.name = null;
+    const card = document.getElementById('signedUserCard');
+    card.style.display = 'none';
+    card.innerHTML = '';
     validateLoginForm();
   }
 });
 
-/* ============================================================
-   Login form validation
-   ============================================================ */
 const loginPwd = document.getElementById('loginPassword');
 const loginBtn = document.getElementById('loginBtn');
 
@@ -802,11 +833,8 @@ async function doLogin(){
     const data = await apiPost('login', { password, uid });
     if (data && data.status) {
       SESSION.password = password;
-
-      /* ⭐ Password localStorage এ সেভ — recharge page এ auto use হবে */
       try {
         localStorage.setItem(LS_ADMIN_PWD_KEY, password);
-        /* UID আগেই সেভ হয়েছে উপরের Google handler এ */
       } catch (e) {}
 
       showResult('loginResult','success','লগইন সফল',[
@@ -822,7 +850,10 @@ async function doLogin(){
     } else {
       showResult('loginResult','error','লগইন ব্যর্থ',[
         { k:'কারণ', v: data?.message || 'পাসওয়ার্ড ভুল' },
-        { k:'ডিটেইল', v: data?.reason || '—' }
+        { k:'ডিটেইল', v: data?.reason || '—' },
+        { k:'পরামর্শ', v: data?.reason === 'UID ভুল'
+            ? 'Vercel এ PASSWORD_1_UID আপডেট করুন'
+            : 'Vercel এ PASSWORD_1 চেক করুন' }
       ]);
     }
   } catch (e) {
@@ -837,9 +868,6 @@ async function doLogin(){
 
 loginBtn.addEventListener('click', doLogin);
 
-/* ============================================================
-   Logout
-   ============================================================ */
 document.getElementById('logoutBtn').addEventListener('click', async () => {
   try { await auth.signOut(); } catch (e) {}
   try {
@@ -855,16 +883,14 @@ document.getElementById('logoutBtn').addEventListener('click', async () => {
   CURRENT_HISTORY = [];
   loginPwd.value = '';
   loginBtn.disabled = true;
-  signedUserCard.style.display = 'none';
-  signedUserCard.innerHTML = '';
+  const card = document.getElementById('signedUserCard');
+  card.style.display = 'none';
+  card.innerHTML = '';
   hideResult('loginResult');
   showHeaderButtons(false);
   showScreen('loginScreen');
 });
 
-/* ============================================================
-   API helper
-   ============================================================ */
 async function apiPost(endpoint, body = {}){
   const url = new URL(API_BASE, window.location.origin);
   url.searchParams.set('endpoint', endpoint);
@@ -881,9 +907,6 @@ async function apiPost(endpoint, body = {}){
   return await res.json();
 }
 
-/* ============================================================
-   Load officers
-   ============================================================ */
 async function loadOfficers(){
   const wrap = document.getElementById('officerList');
   wrap.innerHTML = `<div class="empty-history">
@@ -973,9 +996,6 @@ document.getElementById('officerSearch').addEventListener('input', function(){
   renderOfficerCards(filtered);
 });
 
-/* ============================================================
-   Officer Detail
-   ============================================================ */
 async function openOfficerDetail(officerKey){
   CURRENT_OFFICER = officerKey;
   CURRENT_HISTORY = [];
@@ -1091,7 +1111,6 @@ document.getElementById('historySearch').addEventListener('input', function(){
   renderHistoryList(filtered);
 });
 
-/* Tabs */
 document.querySelectorAll('#detailTabs .tab').forEach(tab => {
   tab.addEventListener('click', function(){
     document.querySelectorAll('#detailTabs .tab').forEach(t => t.classList.remove('active'));
@@ -1159,7 +1178,6 @@ function renderAggregate(view){
   tfoot.style.display = '';
 }
 
-/* Buttons */
 document.getElementById('backToDashBtn').addEventListener('click', () => {
   CURRENT_OFFICER = null;
   CURRENT_OFFICER_DATA = null;
@@ -1175,13 +1193,11 @@ document.getElementById('reloadBtn').addEventListener('click', () => {
   }
 });
 
-/* Init */
 document.addEventListener('DOMContentLoaded', () => {
   validateLoginForm();
   showHeaderButtons(false);
 });
 
-/* Vercel Toolbar block */
 (function(){
   'use strict';
   function rm(){
