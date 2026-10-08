@@ -1,23 +1,29 @@
 // ============================================================
 // api/offers.js — Officer Reports API (Admin সহ)
 // 🚨 শুধুমাত্র PASSWORD_1 + PASSWORD_1_UID (Main Admin)
+// ✅ FIXED: Admin এর নিজের লগইন/ভিউ এর Telegram নোটিফিকেশন বন্ধ
 // ============================================================
 
 const FIREBASE_URL = 'https://easy-recharge-bd-default-rtdb.asia-southeast1.firebasedatabase.app';
 const MAX_PASSWORDS = 20;
 
 /* ============================================================
-   📢 Telegram লগ
+   📢 Telegram লগ — await করা বাধ্যতামূলক
    ============================================================ */
 async function sendTelegramLog(message) {
   const token  = process.env.TELEGRAM_BOT_TOKENa;
   const chatId = process.env.TELEGRAM_CHAT_ID;
-  if (!token || !chatId) return;
+
+  if (!token || !chatId) {
+    console.error('[Telegram] Missing token or chatId. Skipping.');
+    return;
+  }
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 3000);
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
+
   try {
-    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -28,8 +34,15 @@ async function sendTelegramLog(message) {
       }),
       signal: controller.signal
     });
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      console.error(`[Telegram] API error ${res.status}: ${errText}`);
+    } else {
+      console.log('[Telegram] Log sent successfully.');
+    }
   } catch (e) {
-    console.error('Telegram log failed:', e.message);
+    console.error('[Telegram] Fetch failed:', e.message);
   } finally {
     clearTimeout(timeoutId);
   }
@@ -186,6 +199,9 @@ async function handleDebugEnv(res, body, query) {
 
 /* ============================================================
    🔐 Login
+   ============================================================
+   ⭐ FIX: Admin এর সফল লগইনে Telegram নোটিফিকেশন বন্ধ
+   ⭐ শুধু Unauthorized চেষ্টায় Telegram সতর্কতা যায়
    ============================================================ */
 async function handleLogin(res, body, query) {
   const password = body.password || query.password;
@@ -202,7 +218,9 @@ async function handleLogin(res, body, query) {
     else if (!pwdMatched)           reason = 'পাসওয়ার্ড ভুল';
     else if (!uidMatched)           reason = 'UID ভুল';
 
-    sendTelegramLog(
+    /* ⭐ Unauthorized চেষ্টা → Telegram সতর্কতা (await দিয়ে) */
+    try {
+      await sendTelegramLog(
 `🚨 <b>Offers Panel এ Unauthorized Access চেষ্টা</b>
 
 🔑 পাসওয়ার্ড: <code>${escapeHtml(password || '—')}</code>
@@ -210,7 +228,10 @@ async function handleLogin(res, body, query) {
 ❗ কারণ: ${escapeHtml(reason)}
 🕐 সময়: ${formatBDTime()}
 ⚠️ সঠিক পাসওয়ার্ড + UID দুটোই লাগবে`
-    );
+      );
+    } catch (tgErr) {
+      console.error('[Telegram] Unauthorized log error:', tgErr);
+    }
 
     return res.status(200).json({
       status: false,
@@ -219,13 +240,8 @@ async function handleLogin(res, body, query) {
     });
   }
 
-  sendTelegramLog(
-`✅ <b>Offers Panel এ মেইন এডমিন লগইন</b>
-
-👤 রোল: Main Admin (PASSWORD_1)
-🔐 Auth: Password + UID ✅
-🕐 সময়: ${formatBDTime()}`
-  );
+  /* ⭐ FIX: সফল Admin লগইনে Telegram নোটিফিকেশন বন্ধ করা হয়েছে
+     এই অংশে আগে sendTelegramLog কল ছিল — সেটা সরিয়ে দেওয়া হলো */
 
   return res.status(200).json({
     status: true,
@@ -236,7 +252,6 @@ async function handleLogin(res, body, query) {
 
 /* ============================================================
    👥 List Officers — সব অফিসার + Admin (PASSWORD_1)
-   POST /api/offers?endpoint=list-officers   { password, uid }
    ============================================================ */
 async function handleListOfficers(res, body, query) {
   const password = body.password || query.password;
@@ -309,8 +324,9 @@ async function handleListOfficers(res, body, query) {
 
 /* ============================================================
    📜 Officer Detail — Admin (PASSWORD_1) ও অনুমোদিত
-   POST /api/offers?endpoint=officer-detail
-       { password, uid, officerKey: 'PASSWORD_1' }
+   ============================================================
+   ⭐ FIX: Admin নিজের Detail দেখলে Telegram নোটিফিকেশন বন্ধ
+   ⭐ অফিসারের Detail দেখলে Telegram নোটিফিকেশন আগের মতোই যাবে
    ============================================================ */
 async function handleOfficerDetail(res, body, query) {
   const password   = body.password   || query.password;
@@ -360,17 +376,26 @@ async function handleOfficerDetail(res, body, query) {
   const successSum   = entries.filter(e => e.status).reduce((s, e) => s + Number(e.amount || 0), 0);
 
   const isAdmin = officerKey === 'PASSWORD_1';
-  sendTelegramLog(
-`📊 <b>Main Admin Review — ${isAdmin ? '👑 নিজের' : 'Officer'} Detail</b>
 
-👤 ${isAdmin ? 'Admin' : 'অফিসার'}: <b>${escapeHtml(data.name || officerKey)}</b> (${escapeHtml(officerKey)})
+  /* ⭐ FIX: Admin নিজের Detail দেখলে Telegram নোটিফিকেশন বন্ধ
+     শুধু অন্য অফিসার দেখলে Telegram এ যাবে */
+  if (!isAdmin) {
+    try {
+      await sendTelegramLog(
+`📊 <b>Main Admin Review — Officer Detail</b>
+
+👤 অফিসার: <b>${escapeHtml(data.name || officerKey)}</b> (${escapeHtml(officerKey)})
 📱 নম্বর: ${escapeHtml(data.number || '—')}
 💵 বর্তমান ব্যালেন্স: ৳${fmtBDT(data.taka || 0)}
 📈 মোট লেনদেন: ${entries.length} (✅ ${successCount} / ❌ ${failedCount})
 💰 সফল রিচার্জ: ৳${fmtBDT(successSum)}
 🕐 সময়: ${formatBDTime()}
 ℹ️ মেইন এডমিন এই ডেটা দেখেছেন`
-  );
+      );
+    } catch (tgErr) {
+      console.error('[Telegram] Officer-detail log error:', tgErr);
+    }
+  }
 
   return res.status(200).json({
     status: true,
@@ -395,8 +420,6 @@ async function handleOfficerDetail(res, body, query) {
 
 /* ============================================================
    📊 Officer Stats — Admin (PASSWORD_1) ও অনুমোদিত
-   POST /api/offers?endpoint=officer-stats
-       { password, uid, view: 'day' | 'month' | 'year' }
    ============================================================ */
 async function handleOfficerStats(res, body, query) {
   const password = body.password || query.password;
