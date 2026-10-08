@@ -17,6 +17,8 @@
   --orange:#ff9800; --cyan:#00bcd4; --green:#4caf50; --red:#f44336;
   --card:rgba(20,20,40,.9); --muted:#b0bec5;
   --grad-btn:linear-gradient(45deg,#ff9800,#ff5722);
+  --grad-green:linear-gradient(45deg,#4caf50,#00bcd4);
+  --grad-red:linear-gradient(45deg,#f44336,#c62828);
 }
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI','Noto Sans Bengali',sans-serif;-webkit-tap-highlight-color:transparent;color:#fff}
 
@@ -51,9 +53,9 @@ body::after{
 
 .header{
   background:rgba(10,10,26,.95);padding:12px 16px;
-  display:flex;justify-content:space-between;align-items:center;
+  display:flex;justify-content:center;align-items:center;
   box-shadow:0 5px 15px rgba(0,0,0,.5);position:sticky;top:0;z-index:1000;
-  backdrop-filter:blur(10px);width:100%;flex-wrap:wrap;gap:10px;
+  backdrop-filter:blur(10px);width:100%;
 }
 .logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0}
 .logo-image-container{
@@ -64,16 +66,6 @@ body::after{
 .logo-text{display:flex;flex-direction:column;line-height:1}
 .logo-main{font-size:1.15rem;font-weight:800;color:var(--orange);letter-spacing:.5px;text-transform:uppercase;white-space:nowrap}
 .logo-sub{font-size:.7rem;font-weight:600;color:var(--cyan);letter-spacing:.3px;margin-top:2px;white-space:nowrap}
-.header-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.nav-btn{
-  padding:9px 14px;border-radius:25px;border:2px solid var(--orange);
-  background:transparent;color:var(--orange);font-size:.8rem;cursor:pointer;
-  text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-weight:700;
-  transition:.3s;font-family:inherit;
-}
-.nav-btn:hover{background:rgba(255,152,0,.15)}
-.nav-btn.danger{border-color:var(--red);color:var(--red)}
-.nav-btn.danger:hover{background:rgba(244,67,54,.15)}
 
 .container{max-width:900px;margin:0 auto;padding:24px 16px;width:100%}
 
@@ -112,6 +104,7 @@ body::after{
 }
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 
 .google-btn{
   width:100%;padding:15px 16px;border-radius:12px;
@@ -132,9 +125,7 @@ body::after{
   border:1px solid rgba(76,175,80,.4);
   margin-bottom:16px;
 }
-.user-signed-card .us-top{
-  display:flex;align-items:center;gap:12px;
-}
+.user-signed-card .us-top{display:flex;align-items:center;gap:12px}
 .user-signed-card .us-avatar{
   width:48px;height:48px;border-radius:50%;object-fit:cover;
   border:2px solid var(--green);
@@ -197,19 +188,21 @@ body::after{
 .section-title .st-left{display:flex;align-items:center;gap:8px}
 .section-title i{color:var(--orange)}
 
-.officer-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.officer-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
 .officer-card{
   background:var(--card);border-radius:14px;padding:16px 16px 14px;
   border:1px solid rgba(255,255,255,.06);
   border-left:4px solid var(--orange);
-  cursor:pointer;transition:.25s;
+  transition:.25s;
 }
 .officer-card:hover{
-  transform:translateY(-3px);
   box-shadow:0 10px 25px rgba(0,0,0,.35);
   border-left-color:var(--cyan);
 }
-.officer-card .oc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px}
+.officer-card .oc-head{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  gap:10px;margin-bottom:10px;cursor:pointer;
+}
 .officer-card .oc-name{font-size:1rem;font-weight:800;color:#fff;line-height:1.3}
 .officer-card .oc-num{font-size:.78rem;color:var(--muted);margin-top:3px}
 .officer-card .oc-badge{
@@ -224,20 +217,35 @@ body::after{
 }
 .officer-card .oc-wallet-label{font-size:.75rem;color:var(--muted);font-weight:600}
 .officer-card .oc-wallet-value{font-size:1.05rem;font-weight:800;color:var(--orange)}
-.officer-card .oc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.officer-card .oc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
 .officer-card .oc-stat{text-align:center;padding:8px 4px;background:rgba(255,255,255,.03);border-radius:8px}
 .officer-card .oc-stat-label{font-size:.62rem;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:3px}
 .officer-card .oc-stat-value{font-size:.85rem;font-weight:800;color:var(--cyan)}
 
-.back-row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
-.back-btn{
-  padding:9px 14px;border-radius:25px;border:2px solid var(--orange);
-  background:transparent;color:var(--orange);font-size:.8rem;cursor:pointer;
-  display:inline-flex;align-items:center;gap:6px;font-weight:700;
-  transition:.3s;font-family:inherit;
+/* ⭐ Balance action buttons */
+.oc-balance-actions{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;
+  margin-top:4px;
 }
-.back-btn:hover{background:rgba(255,152,0,.15)}
+.oc-bal-btn{
+  padding:10px 8px;border:none;border-radius:10px;
+  font-size:.82rem;font-weight:800;cursor:pointer;
+  font-family:inherit;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  transition:.25s;letter-spacing:.3px;
+}
+.oc-bal-btn.add{
+  background:var(--grad-green);color:#fff;
+  box-shadow:0 4px 12px rgba(76,175,80,.3);
+}
+.oc-bal-btn.add:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(76,175,80,.5)}
+.oc-bal-btn.sub{
+  background:var(--grad-red);color:#fff;
+  box-shadow:0 4px 12px rgba(244,67,54,.3);
+}
+.oc-bal-btn.sub:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(244,67,54,.5)}
+.oc-bal-btn:active{transform:translateY(0)}
 
+/* Officer detail */
 .officer-header{
   background:linear-gradient(135deg,rgba(255,152,0,.12),rgba(0,188,212,.06));
   border-radius:16px;padding:18px 20px;margin-bottom:18px;
@@ -254,6 +262,9 @@ body::after{
 .officer-header .oh-meta{display:flex;gap:14px;flex-wrap:wrap;font-size:.8rem;color:var(--muted);margin-top:4px}
 .officer-header .oh-meta span{display:inline-flex;align-items:center;gap:5px}
 .officer-header .oh-meta i{color:var(--cyan)}
+.officer-header .oh-balance-actions{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;
+}
 
 .tabs{
   display:flex;gap:6px;margin-bottom:14px;
@@ -320,11 +331,15 @@ body::after{
 }
 .history-item.ok{border-left-color:var(--green)}
 .history-item.fail{border-left-color:var(--red)}
+.history-item.add{border-left-color:var(--green)}
+.history-item.subtract{border-left-color:var(--red)}
 .history-item .hi-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
 .history-item .hi-left{flex:1;min-width:0}
 .history-item .hi-num{font-weight:700;font-size:.95rem}
 .history-item .hi-meta{font-size:.75rem;color:var(--muted);margin-top:3px;display:flex;gap:10px;flex-wrap:wrap}
-.history-item .hi-amt{font-weight:800;color:var(--orange);font-size:1.05rem;white-space:nowrap}
+.history-item .hi-amt{font-weight:800;font-size:1.05rem;white-space:nowrap}
+.history-item.add .hi-amt{color:var(--green)}
+.history-item.subtract .hi-amt{color:var(--red)}
 .history-item .hi-status{
   display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;
   font-size:.7rem;font-weight:700;margin-top:6px;
@@ -332,6 +347,11 @@ body::after{
 .history-item .hi-status.ok{background:rgba(76,175,80,.2);color:var(--green)}
 .history-item .hi-status.fail{background:rgba(244,67,54,.2);color:var(--red)}
 .history-item .hi-refid{font-size:.7rem;color:#666;margin-top:6px;word-break:break-all}
+.history-item .hi-note{
+  font-size:.78rem;color:var(--cyan);margin-top:6px;
+  padding:6px 10px;background:rgba(0,188,212,.08);border-radius:6px;
+  border-left:2px solid var(--cyan);
+}
 .empty-history{
   text-align:center;color:var(--muted);padding:24px 12px;font-size:.9rem;
   background:var(--card);border-radius:12px;
@@ -349,6 +369,135 @@ body::after{
 .search-input::placeholder{color:rgba(255,255,255,.35)}
 .search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--orange);pointer-events:none;font-size:.9rem}
 
+/* ⭐ MODAL — Balance Adjust */
+.bal-modal{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.88);backdrop-filter:blur(10px);
+  z-index:99999;justify-content:center;align-items:center;padding:20px;
+  overflow-y:auto;
+}
+.bal-modal.show{display:flex;animation:fadeIn .25s}
+.bal-modal-box{
+  max-width:440px;width:100%;background:var(--card);
+  border:2px solid rgba(255,152,0,.4);border-radius:18px;
+  padding:26px 22px;box-shadow:0 20px 50px rgba(0,0,0,.6);
+  animation:slideUp .3s;max-height:92vh;overflow-y:auto;
+}
+.bal-modal-box.add-mode{border-color:rgba(76,175,80,.5)}
+.bal-modal-box.sub-mode{border-color:rgba(244,67,54,.5)}
+
+.bal-modal-title{
+  font-size:1.15rem;font-weight:800;
+  display:flex;align-items:center;gap:8px;margin-bottom:6px;
+}
+.bal-modal-box.add-mode .bal-modal-title{color:var(--green)}
+.bal-modal-box.sub-mode .bal-modal-title{color:var(--red)}
+
+.bal-modal-sub{
+  font-size:.82rem;color:var(--muted);margin-bottom:16px;line-height:1.5;
+}
+
+.bal-officer-info{
+  padding:12px 14px;border-radius:10px;
+  background:rgba(0,0,0,.4);margin-bottom:16px;
+  border-left:3px solid var(--orange);
+}
+.bal-officer-info .boi-name{font-size:.95rem;font-weight:800;color:#fff}
+.bal-officer-info .boi-meta{font-size:.75rem;color:var(--muted);margin-top:3px}
+.bal-officer-info .boi-current{
+  display:flex;justify-content:space-between;margin-top:10px;
+  padding-top:10px;border-top:1px dashed rgba(255,255,255,.1);
+}
+.bal-officer-info .boi-current .label{font-size:.78rem;color:var(--muted);font-weight:600}
+.bal-officer-info .boi-current .value{font-size:1rem;font-weight:800;color:var(--orange)}
+
+.bal-label{
+  display:block;font-size:.8rem;color:var(--muted);
+  font-weight:700;margin-bottom:6px;letter-spacing:.3px;
+}
+
+.bal-quick-amounts{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px;
+}
+.bal-amt-chip{
+  padding:10px 4px;border-radius:8px;
+  border:1.5px solid rgba(255,152,0,.35);
+  background:rgba(0,0,0,.35);color:#fff;
+  font-size:.82rem;font-weight:800;cursor:pointer;
+  transition:.2s;font-family:inherit;
+}
+.bal-amt-chip:hover{border-color:var(--orange);background:rgba(255,152,0,.12)}
+.bal-amt-chip.active{background:var(--grad-btn);border-color:transparent;color:#fff}
+
+.bal-input{
+  width:100%;padding:14px 16px;border-radius:12px;
+  border:2px solid rgba(255,152,0,.4);background:rgba(0,0,0,.45);
+  color:#fff;font-size:1.1rem;font-weight:700;outline:none;
+  letter-spacing:.5px;transition:.25s;margin-bottom:14px;
+  font-family:inherit;
+}
+.bal-input:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(255,152,0,.15)}
+.bal-input::placeholder{color:rgba(255,255,255,.35);font-weight:400}
+
+.bal-note{
+  width:100%;padding:12px 14px;border-radius:10px;
+  border:2px solid rgba(255,152,0,.3);background:rgba(0,0,0,.4);
+  color:#fff;font-size:.9rem;outline:none;transition:.25s;
+  font-family:inherit;resize:vertical;min-height:70px;
+  margin-bottom:16px;
+}
+.bal-note:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(255,152,0,.12)}
+.bal-note::placeholder{color:rgba(255,255,255,.35)}
+
+.bal-preview{
+  padding:12px 14px;border-radius:10px;
+  background:rgba(0,188,212,.08);border:1px solid rgba(0,188,212,.25);
+  font-size:.85rem;margin-bottom:16px;
+}
+.bal-preview .bp-row{
+  display:flex;justify-content:space-between;padding:5px 0;
+}
+.bal-preview .bp-row .label{color:var(--muted);font-weight:600}
+.bal-preview .bp-row .value{font-weight:800}
+.bal-preview .bp-row.current .value{color:var(--muted)}
+.bal-preview .bp-row.change .value{color:var(--cyan)}
+.bal-preview .bp-row.result .value{color:var(--orange);font-size:1.05rem}
+.bal-preview .bp-row.result{
+  margin-top:6px;padding-top:8px;
+  border-top:1px dashed rgba(255,255,255,.15);
+}
+
+.bal-actions{display:flex;gap:10px}
+.bal-cancel-btn, .bal-confirm-btn{
+  flex:1;padding:14px;border-radius:10px;
+  font-size:.92rem;font-weight:800;cursor:pointer;
+  font-family:inherit;transition:.25s;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+}
+.bal-cancel-btn{
+  border:2px solid rgba(255,255,255,.2);
+  background:transparent;color:#fff;
+}
+.bal-cancel-btn:hover{background:rgba(255,255,255,.08)}
+.bal-confirm-btn{
+  border:none;color:#fff;
+}
+.bal-modal-box.add-mode .bal-confirm-btn{
+  background:var(--grad-green);
+  box-shadow:0 4px 15px rgba(76,175,80,.4);
+}
+.bal-modal-box.sub-mode .bal-confirm-btn{
+  background:var(--grad-red);
+  box-shadow:0 4px 15px rgba(244,67,54,.4);
+}
+.bal-confirm-btn:hover{transform:translateY(-1px)}
+.bal-confirm-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.bal-confirm-btn .spinner{
+  display:inline-block;width:14px;height:14px;
+  border:2px solid rgba(255,255,255,.3);border-top-color:#fff;
+  border-radius:50%;animation:spin .8s linear infinite;
+}
+
 .footer{background:rgba(10,10,26,.95);padding:30px 20px 22px;text-align:center;width:100%;margin-top:40px}
 .footer .copyright{color:var(--muted);font-size:.8rem;line-height:1.6}
 
@@ -360,6 +509,7 @@ body::after{
   .summary-tiles{grid-template-columns:repeat(2,1fr)}
   .tab{font-size:.75rem;padding:8px 4px}
   .tab i{font-size:.75rem}
+  .bal-quick-amounts{grid-template-columns:repeat(3,1fr)}
 }
 </style>
 </head>
@@ -375,17 +525,6 @@ body::after{
       <div class="logo-sub">Admin Panel</div>
     </div>
   </a>
-  <div class="header-right">
-    <button class="nav-btn" id="reloadBtn" style="display:none">
-      <i class="fas fa-sync-alt"></i> রিফ্রেশ
-    </button>
-    <button class="nav-btn danger" id="logoutBtn" style="display:none">
-      <i class="fas fa-sign-out-alt"></i> লগআউট
-    </button>
-    <a href="../index.html" class="nav-btn">
-      <i class="fas fa-home"></i> হোম
-    </a>
-  </div>
 </header>
 
 <div class="container">
@@ -471,15 +610,6 @@ body::after{
 
   <div class="screen" id="detailScreen">
 
-    <div class="back-row">
-      <button class="back-btn" id="backToDashBtn">
-        <i class="fas fa-arrow-left"></i> পিছনে
-      </button>
-      <button class="back-btn" id="reloadDetailBtn">
-        <i class="fas fa-sync-alt"></i> রিফ্রেশ
-      </button>
-    </div>
-
     <div class="officer-header" id="officerHeader"></div>
 
     <div class="tabs" id="detailTabs">
@@ -494,6 +624,9 @@ body::after{
       </button>
       <button class="tab" data-view="year">
         <i class="fas fa-calendar"></i> বছর
+      </button>
+      <button class="tab" data-view="balance">
+        <i class="fas fa-wallet"></i> ব্যালেন্স
       </button>
     </div>
 
@@ -531,8 +664,73 @@ body::after{
         </table>
       </div>
     </div>
+
+    <div id="balanceView" style="display:none">
+      <div class="history-list" id="balanceLogList">
+        <div class="empty-history">লোড হচ্ছে...</div>
+      </div>
+    </div>
   </div>
 
+</div>
+
+<!-- ⭐ Balance Modal -->
+<div class="bal-modal" id="balModal">
+  <div class="bal-modal-box" id="balModalBox">
+    <div class="bal-modal-title" id="balModalTitle">
+      <i class="fas fa-plus-circle"></i>
+      <span>ব্যালেন্স এড করুন</span>
+    </div>
+    <div class="bal-modal-sub" id="balModalSub">
+      পরিমাণ দিন — টাকা সরাসরি অফিসারের একাউন্টে যোগ হবে।
+    </div>
+
+    <div class="bal-officer-info" id="balOfficerInfo"></div>
+
+    <label class="bal-label">দ্রুত পরিমাণ</label>
+    <div class="bal-quick-amounts" id="balQuickAmounts">
+      <button class="bal-amt-chip" data-amt="50">৳৫০</button>
+      <button class="bal-amt-chip" data-amt="100">৳১০০</button>
+      <button class="bal-amt-chip" data-amt="200">৳২০০</button>
+      <button class="bal-amt-chip" data-amt="500">৳৫০০</button>
+      <button class="bal-amt-chip" data-amt="1000">৳১০০০</button>
+      <button class="bal-amt-chip" data-amt="2000">৳২০০০</button>
+      <button class="bal-amt-chip" data-amt="5000">৳৫০০০</button>
+      <button class="bal-amt-chip" data-amt="10000">৳১০০০০</button>
+    </div>
+
+    <label class="bal-label">পরিমাণ (৳) <span style="color:var(--red)">*</span></label>
+    <input type="tel" id="balAmount" class="bal-input"
+           placeholder="পরিমাণ লিখুন" inputmode="numeric" autocomplete="off">
+
+    <label class="bal-label">নোট (ঐচ্ছিক)</label>
+    <textarea id="balNote" class="bal-note"
+              placeholder="যেমন: মাসিক বেতন, বোনাস, সংশোধন..."></textarea>
+
+    <div class="bal-preview" id="balPreview" style="display:none">
+      <div class="bp-row current">
+        <span class="label">আগের ব্যালেন্স</span>
+        <span class="value" id="bpCurrent">৳ 0</span>
+      </div>
+      <div class="bp-row change">
+        <span class="label" id="bpChangeLabel">যোগ</span>
+        <span class="value" id="bpChange">+৳ 0</span>
+      </div>
+      <div class="bp-row result">
+        <span class="label">নতুন ব্যালেন্স</span>
+        <span class="value" id="bpResult">৳ 0</span>
+      </div>
+    </div>
+
+    <div class="bal-actions">
+      <button class="bal-cancel-btn" id="balCancelBtn">
+        <i class="fas fa-times"></i> বাতিল
+      </button>
+      <button class="bal-confirm-btn" id="balConfirmBtn" disabled>
+        <i class="fas fa-check"></i> নিশ্চিত করুন
+      </button>
+    </div>
+  </div>
 </div>
 
 <footer class="footer">
@@ -563,6 +761,7 @@ const googleProvider = new firebase.auth.GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
 
 const API_BASE = '/api/offers';
+const API_BALANCE = '/api/balance';
 const LS_ADMIN_PWD_KEY = 'ep_admin_pwd';
 const LS_ADMIN_UID_KEY = 'ep_admin_uid';
 
@@ -574,23 +773,24 @@ const OPERATOR_NAMES = {
   AT: 'Airtel', TT: 'Teletalk', BT: 'BT'
 };
 
-/* ============================================================
-   State — UID শুধু এই variable এ থাকবে, DOM এ কখনো যাবে না
-   ============================================================ */
-let SESSION = {
-  password: null,
-  uid: null,           /* ⭐ আসল UID — DOM এ কখনো দেখাবে না */
-  email: null,
-  name: null
-};
+let SESSION = { password: null, uid: null, email: null, name: null };
 let OFFICERS = [];
 let CURRENT_OFFICER = null;
 let CURRENT_HISTORY = [];
+let CURRENT_OFFICER_DATA = null;
 let CURRENT_TAB = 'history';
 let HISTORY_FILTER = '';
-let CURRENT_OFFICER_DATA = null;
 
-/* Helpers */
+/* Balance modal state */
+let BAL_MODAL = {
+  officer: null,        /* { userKey, name, number, taka } */
+  action: 'add',        /* 'add' | 'subtract' */
+  submitting: false
+};
+
+/* ============================================================
+   Helpers
+   ============================================================ */
 function formatBDT(n){ return Number(n||0).toLocaleString('en-IN'); }
 function escapeHtml(str){
   return String(str||'')
@@ -614,17 +814,11 @@ function formatPeriod(key, view){
   const mi = parseInt(m, 10) - 1;
   return `${d} ${BN_MONTHS[mi] || m} ${y}`;
 }
-
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-function showHeaderButtons(loggedIn){
-  document.getElementById('reloadBtn').style.display = loggedIn ? 'inline-flex' : 'none';
-  document.getElementById('logoutBtn').style.display = loggedIn ? 'inline-flex' : 'none';
-}
-
 function showResult(boxId, type, title, rows=[]){
   const box = document.getElementById(boxId);
   box.className = 'result-box show ' + type;
@@ -643,7 +837,7 @@ function hideResult(boxId){
 }
 
 /* ============================================================
-   ⭐ Signed User Card — UID ছাড়া (শুধু নাম, ইমেইল, ছবি)
+   Google Sign-In
    ============================================================ */
 function renderSignedUserCard(user) {
   const photo = user.photoURL || '';
@@ -663,14 +857,9 @@ function renderSignedUserCard(user) {
       </div>
     </div>
   `;
-  /* ⭐ UID এখানে নেই — কোথাও দেখানো হয় না */
 }
 
-/* ============================================================
-   Google Sign-In — Force fresh login
-   ============================================================ */
 const googleLoginBtn = document.getElementById('googleLoginBtn');
-
 googleLoginBtn.addEventListener('click', async () => {
   googleLoginBtn.disabled = true;
   googleLoginBtn.innerHTML = '<span class="spinner" style="border-top-color:#333"></span> লোড হচ্ছে...';
@@ -688,54 +877,39 @@ googleLoginBtn.addEventListener('click', async () => {
     const result = await auth.signInWithPopup(googleProvider);
     const user = result.user;
 
-    /* ⭐ UID শুধু SESSION এ থাকবে — কোথাও DOM এ যাবে না */
-    const googleUid = user.uid;
-    const email = user.email || '';
-    const name = user.displayName || email;
-
-    SESSION.uid = googleUid;
-    SESSION.email = email;
-    SESSION.name = name;
+    SESSION.uid = user.uid;
+    SESSION.email = user.email || '';
+    SESSION.name = user.displayName || user.email;
 
     try {
-      localStorage.setItem(LS_ADMIN_UID_KEY, googleUid);
-      localStorage.setItem('ep_admin_email', email);
-      localStorage.setItem('ep_admin_name', name);
+      localStorage.setItem(LS_ADMIN_UID_KEY, user.uid);
+      localStorage.setItem('ep_admin_email', user.email || '');
+      localStorage.setItem('ep_admin_name', user.displayName || '');
     } catch (e) {}
 
     renderSignedUserCard(user);
-
     showResult('loginResult','success','Google লগইন সফল',[
-      { k:'Gmail', v: escapeHtml(email) },
+      { k:'Gmail', v: escapeHtml(user.email || '') },
       { k:'UID', v: '✅ সিস্টেমে সংরক্ষিত (হাইড)' },
       { k:'পরবর্তী ধাপ', v: 'Admin পাসওয়ার্ড দিন' }
     ]);
-
     document.getElementById('loginPassword').focus();
     validateLoginForm();
-
   } catch (err) {
-    console.error('Google sign-in error:', err);
     let msg = err.message || 'লগইন ব্যর্থ';
     if (err.code === 'auth/popup-closed-by-user') msg = 'Popup বন্ধ করা হয়েছে';
     if (err.code === 'auth/cancelled-popup-request') msg = 'আবার চেষ্টা করুন';
-    if (err.code === 'auth/popup-blocked') msg = 'Browser popup ব্লক করেছে — permission দিন';
-
-    showResult('loginResult','error','Google লগইন ব্যর্থ',[
-      { k:'কারণ', v: msg }
-    ]);
+    if (err.code === 'auth/popup-blocked') msg = 'Browser popup ব্লক করেছে';
+    showResult('loginResult','error','Google লগইন ব্যর্থ',[{ k:'কারণ', v: msg }]);
   } finally {
     googleLoginBtn.disabled = false;
     googleLoginBtn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google"> Google দিয়ে লগইন করুন';
   }
 });
 
-/* ============================================================
-   onAuthStateChanged — শুধু SESSION sync, UID DOM এ যাবে না
-   ============================================================ */
 auth.onAuthStateChanged(user => {
   if (user) {
-    SESSION.uid = user.uid;   /* ⭐ শুধু variable এ */
+    SESSION.uid = user.uid;
     SESSION.email = user.email || '';
     SESSION.name = user.displayName || user.email;
     renderSignedUserCard(user);
@@ -751,98 +925,56 @@ auth.onAuthStateChanged(user => {
   }
 });
 
-/* ============================================================
-   Login form
-   ============================================================ */
 const loginPwd = document.getElementById('loginPassword');
 const loginBtn = document.getElementById('loginBtn');
-
 function validateLoginForm(){
   const pwdOk = loginPwd.value.trim().length >= 1;
   const uidOk = !!SESSION.uid;
   loginBtn.disabled = !(pwdOk && uidOk);
 }
 loginPwd.addEventListener('input', validateLoginForm);
-loginPwd.addEventListener('keypress', e => {
-  if (e.key === 'Enter') doLogin();
-});
+loginPwd.addEventListener('keypress', e => { if (e.key === 'Enter') doLogin(); });
 
 async function doLogin(){
   const password = loginPwd.value.trim();
   const uid = SESSION.uid;
   if (!password || !uid) return;
-
   loginBtn.disabled = true;
   const btnText = document.getElementById('loginBtnText');
   btnText.innerHTML = '<span class="spinner"></span> যাচাই হচ্ছে...';
   hideResult('loginResult');
 
   try {
-    const data = await apiPost('login', { password, uid });
+    const data = await apiPost(API_BASE, 'login', { password, uid });
     if (data && data.status) {
       SESSION.password = password;
-      try {
-        localStorage.setItem(LS_ADMIN_PWD_KEY, password);
-      } catch (e) {}
-
+      try { localStorage.setItem(LS_ADMIN_PWD_KEY, password); } catch (e) {}
       showResult('loginResult','success','লগইন সফল',[
         { k:'রোল', v:'Main Admin' },
         { k:'Gmail', v: SESSION.email || '—' },
         { k:'মেসেজ', v: data.message || 'স্বাগতম' }
       ]);
-      showHeaderButtons(true);
-      setTimeout(() => {
-        showScreen('dashboardScreen');
-        loadOfficers();
-      }, 400);
+      setTimeout(() => { showScreen('dashboardScreen'); loadOfficers(); }, 400);
     } else {
       showResult('loginResult','error','লগইন ব্যর্থ',[
         { k:'কারণ', v: data?.message || 'পাসওয়ার্ড ভুল' },
-        { k:'ডিটেইল', v: data?.reason || '—' },
-        { k:'পরামর্শ', v: data?.reason === 'UID ভুল'
-            ? 'Vercel এ PASSWORD_1_UID আপডেট করুন'
-            : 'Vercel এ PASSWORD_1 চেক করুন' }
+        { k:'ডিটেইল', v: data?.reason || '—' }
       ]);
     }
   } catch (e) {
-    showResult('loginResult','error','সংযোগ ব্যর্থ',[
-      { k:'কারণ', v: e.message || 'নেটওয়ার্ক সমস্যা' }
-    ]);
+    showResult('loginResult','error','সংযোগ ব্যর্থ',[{ k:'কারণ', v: e.message || 'নেটওয়ার্ক সমস্যা' }]);
   } finally {
     btnText.textContent = 'এডমিন প্যানেলে ঢুকুন';
     validateLoginForm();
   }
 }
-
 loginBtn.addEventListener('click', doLogin);
 
-/* Logout */
-document.getElementById('logoutBtn').addEventListener('click', async () => {
-  try { await auth.signOut(); } catch (e) {}
-  try {
-    localStorage.removeItem(LS_ADMIN_PWD_KEY);
-    localStorage.removeItem(LS_ADMIN_UID_KEY);
-    localStorage.removeItem('ep_admin_email');
-    localStorage.removeItem('ep_admin_name');
-  } catch (e) {}
-
-  SESSION = { password: null, uid: null, email: null, name: null };
-  OFFICERS = [];
-  CURRENT_OFFICER = null;
-  CURRENT_HISTORY = [];
-  loginPwd.value = '';
-  loginBtn.disabled = true;
-  const card = document.getElementById('signedUserCard');
-  card.style.display = 'none';
-  card.innerHTML = '';
-  hideResult('loginResult');
-  showHeaderButtons(false);
-  showScreen('loginScreen');
-});
-
-/* API helper */
-async function apiPost(endpoint, body = {}){
-  const url = new URL(API_BASE, window.location.origin);
+/* ============================================================
+   API helpers
+   ============================================================ */
+async function apiPost(base, endpoint, body = {}){
+  const url = new URL(base, window.location.origin);
   url.searchParams.set('endpoint', endpoint);
   const res = await fetch(url.toString(), {
     method: 'POST',
@@ -857,7 +989,9 @@ async function apiPost(endpoint, body = {}){
   return await res.json();
 }
 
-/* Load officers */
+/* ============================================================
+   Load officers
+   ============================================================ */
 async function loadOfficers(){
   const wrap = document.getElementById('officerList');
   wrap.innerHTML = `<div class="empty-history">
@@ -866,15 +1000,13 @@ async function loadOfficers(){
   </div>`;
 
   try {
-    const data = await apiPost('list-officers');
+    const data = await apiPost(API_BASE, 'list-officers');
     if (!data || !data.status) {
       wrap.innerHTML = `<div class="empty-history">${escapeHtml(data?.message || 'লোড ব্যর্থ')}</div>`;
       return;
     }
-
     OFFICERS = data.officers || [];
     const sum = data.summary || {};
-
     document.getElementById('stOfficers').textContent = sum.totalOfficers || 0;
     document.getElementById('stBalance').textContent  = '৳ ' + formatBDT(sum.totalBalance || 0);
     document.getElementById('stToday').textContent    = '৳ ' + formatBDT(sum.totalToday || 0);
@@ -889,16 +1021,13 @@ async function loadOfficers(){
 function renderOfficerCards(list){
   const wrap = document.getElementById('officerList');
   if (!list.length) {
-    wrap.innerHTML = `<div class="empty-history">
-      <i class="fas fa-users-slash"></i>
-      কোনো অফিসার নেই
-    </div>`;
+    wrap.innerHTML = `<div class="empty-history"><i class="fas fa-users-slash"></i> কোনো অফিসার নেই</div>`;
     return;
   }
 
   wrap.innerHTML = list.map(o => `
     <div class="officer-card" data-officer="${escapeHtml(o.userKey)}">
-      <div class="oc-head">
+      <div class="oc-head" data-action="detail">
         <div>
           <div class="oc-name">${escapeHtml(o.name)}</div>
           <div class="oc-num"><i class="fas fa-mobile-alt" style="color:var(--orange);margin-right:4px"></i>${escapeHtml(o.number)}</div>
@@ -923,22 +1052,54 @@ function renderOfficerCards(list){
           <div class="oc-stat-value">৳ ${formatBDT(o.totals.year)}</div>
         </div>
       </div>
+
+      <div class="oc-balance-actions">
+        <button class="oc-bal-btn add" data-action="add" data-key="${escapeHtml(o.userKey)}">
+          <i class="fas fa-plus-circle"></i> এড
+        </button>
+        <button class="oc-bal-btn sub" data-action="subtract" data-key="${escapeHtml(o.userKey)}">
+          <i class="fas fa-minus-circle"></i> মাইনাস
+        </button>
+      </div>
     </div>
   `).join('');
 
+  /* Bind events */
   document.querySelectorAll('.officer-card').forEach(card => {
-    card.addEventListener('click', () => {
-      openOfficerDetail(card.dataset.officer);
+    const key = card.dataset.officer;
+
+    /* Head click → detail */
+    const head = card.querySelector('.oc-head');
+    head.addEventListener('click', () => {
+      const officer = OFFICERS.find(x => x.userKey === key);
+      if (officer) openOfficerDetail(officer.userKey);
     });
+
+    /* Add button */
+    const addBtn = card.querySelector('.oc-bal-btn.add');
+    if (addBtn) {
+      addBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const officer = OFFICERS.find(x => x.userKey === key);
+        if (officer) openBalanceModal(officer, 'add');
+      });
+    }
+
+    /* Subtract button */
+    const subBtn = card.querySelector('.oc-bal-btn.sub');
+    if (subBtn) {
+      subBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const officer = OFFICERS.find(x => x.userKey === key);
+        if (officer) openBalanceModal(officer, 'subtract');
+      });
+    }
   });
 }
 
 document.getElementById('officerSearch').addEventListener('input', function(){
   const term = this.value.toLowerCase().trim();
-  if (!term) {
-    renderOfficerCards(OFFICERS);
-    return;
-  }
+  if (!term) { renderOfficerCards(OFFICERS); return; }
   const filtered = OFFICERS.filter(o =>
     (o.name||'').toLowerCase().includes(term) ||
     (o.number||'').toLowerCase().includes(term) ||
@@ -947,7 +1108,222 @@ document.getElementById('officerSearch').addEventListener('input', function(){
   renderOfficerCards(filtered);
 });
 
-/* Officer Detail */
+/* ============================================================
+   ⭐ Balance Modal
+   ============================================================ */
+const balModal     = document.getElementById('balModal');
+const balModalBox  = document.getElementById('balModalBox');
+const balModalTitle= document.getElementById('balModalTitle');
+const balModalSub  = document.getElementById('balModalSub');
+const balOfficerInfo=document.getElementById('balOfficerInfo');
+const balAmount    = document.getElementById('balAmount');
+const balNote      = document.getElementById('balNote');
+const balPreview   = document.getElementById('balPreview');
+const bpCurrent    = document.getElementById('bpCurrent');
+const bpChange     = document.getElementById('bpChange');
+const bpChangeLabel= document.getElementById('bpChangeLabel');
+const bpResult     = document.getElementById('bpResult');
+const balConfirmBtn= document.getElementById('balConfirmBtn');
+const balCancelBtn = document.getElementById('balCancelBtn');
+
+function openBalanceModal(officer, action) {
+  BAL_MODAL.officer = officer;
+  BAL_MODAL.action = action;
+  BAL_MODAL.submitting = false;
+
+  balModalBox.classList.remove('add-mode', 'sub-mode');
+  balModalBox.classList.add(action === 'add' ? 'add-mode' : 'sub-mode');
+
+  if (action === 'add') {
+    balModalTitle.innerHTML = '<i class="fas fa-plus-circle"></i> <span>ব্যালেন্স এড করুন</span>';
+    balModalSub.textContent = 'পরিমাণ দিন — টাকা সরাসরি অফিসারের একাউন্টে যোগ হবে।';
+  } else {
+    balModalTitle.innerHTML = '<i class="fas fa-minus-circle"></i> <span>ব্যালেন্স মাইনাস করুন</span>';
+    balModalSub.textContent = 'পরিমাণ দিন — টাকা অফিসারের একাউন্ট থেকে কর্তন হবে।';
+  }
+
+  balOfficerInfo.innerHTML = `
+    <div class="boi-name">${escapeHtml(officer.name)}</div>
+    <div class="boi-meta">
+      <i class="fas fa-mobile-alt"></i> ${escapeHtml(officer.number)} &nbsp;·&nbsp;
+      <i class="fas fa-fingerprint"></i> ${escapeHtml(officer.userKey)}
+    </div>
+    <div class="boi-current">
+      <span class="label">বর্তমান ব্যালেন্স</span>
+      <span class="value">৳ ${formatBDT(officer.taka)}</span>
+    </div>
+  `;
+
+  balAmount.value = '';
+  balNote.value = '';
+  document.querySelectorAll('.bal-amt-chip').forEach(c => c.classList.remove('active'));
+  balPreview.style.display = 'none';
+  balConfirmBtn.disabled = true;
+
+  balModal.classList.add('show');
+  setTimeout(() => balAmount.focus(), 200);
+}
+
+function closeBalanceModal() {
+  if (BAL_MODAL.submitting) return;
+  balModal.classList.remove('show');
+  BAL_MODAL.officer = null;
+}
+
+function updateBalancePreview() {
+  if (!BAL_MODAL.officer) return;
+  const amt = parseInt(balAmount.value, 10);
+  if (!amt || amt < 1) {
+    balPreview.style.display = 'none';
+    balConfirmBtn.disabled = true;
+    return;
+  }
+
+  const current = Number(BAL_MODAL.officer.taka) || 0;
+  const change = BAL_MODAL.action === 'add' ? amt : -amt;
+  const result = current + change;
+
+  if (result < 0) {
+    bpChangeLabel.textContent = BAL_MODAL.action === 'add' ? 'যোগ' : 'কর্তন';
+    bpChange.textContent = (BAL_MODAL.action === 'add' ? '+' : '-') + '৳ ' + formatBDT(amt);
+    bpChange.style.color = 'var(--red)';
+    bpCurrent.textContent = '৳ ' + formatBDT(current);
+    bpResult.textContent = '⚠️ পর্যাপ্ত ব্যালেন্স নেই';
+    bpResult.style.color = 'var(--red)';
+    balPreview.style.display = 'block';
+    balConfirmBtn.disabled = true;
+    return;
+  }
+
+  bpCurrent.textContent = '৳ ' + formatBDT(current);
+  bpChangeLabel.textContent = BAL_MODAL.action === 'add' ? 'যোগ' : 'কর্তন';
+  bpChange.textContent = (BAL_MODAL.action === 'add' ? '+' : '-') + '৳ ' + formatBDT(amt);
+  bpChange.style.color = BAL_MODAL.action === 'add' ? 'var(--green)' : 'var(--red)';
+  bpResult.textContent = '৳ ' + formatBDT(result);
+  bpResult.style.color = 'var(--orange)';
+
+  balPreview.style.display = 'block';
+  balConfirmBtn.disabled = false;
+}
+
+/* Amount input */
+balAmount.addEventListener('input', e => {
+  e.target.value = (e.target.value||'').replace(/\D/g,'').slice(0,7);
+  document.querySelectorAll('.bal-amt-chip').forEach(c => {
+    c.classList.toggle('active', parseInt(c.dataset.amt,10) === parseInt(e.target.value,10));
+  });
+  updateBalancePreview();
+});
+
+/* Quick chips */
+document.querySelectorAll('.bal-amt-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.bal-amt-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    balAmount.value = chip.dataset.amt;
+    updateBalancePreview();
+  });
+});
+
+/* Cancel */
+balCancelBtn.addEventListener('click', closeBalanceModal);
+
+/* Backdrop close */
+balModal.addEventListener('click', (e) => {
+  if (e.target === balModal) closeBalanceModal();
+});
+
+/* Confirm — API কল */
+balConfirmBtn.addEventListener('click', async () => {
+  if (!BAL_MODAL.officer || BAL_MODAL.submitting) return;
+
+  const amt = parseInt(balAmount.value, 10);
+  const note = balNote.value.trim();
+
+  if (!amt || amt < 1) return;
+
+  BAL_MODAL.submitting = true;
+  balConfirmBtn.disabled = true;
+  balConfirmBtn.innerHTML = '<span class="spinner"></span> প্রসেস হচ্ছে...';
+
+  try {
+    const data = await apiPost(API_BALANCE, 'adjust', {
+      officerKey: BAL_MODAL.officer.userKey,
+      action: BAL_MODAL.action,
+      amount: amt,
+      note: note
+    });
+
+    if (data && data.status) {
+      /* ✅ সফল — মডাল বন্ধ + অফিসার কার্ড আপডেট */
+      BAL_MODAL.submitting = false;
+      balModal.classList.remove('show');
+
+      /* Local update */
+      const officer = OFFICERS.find(x => x.userKey === data.officer.userKey);
+      if (officer) officer.taka = data.newTaka;
+
+      /* Render */
+      renderOfficerCards(OFFICERS);
+
+      /* Summary tiles update */
+      const totalBalance = OFFICERS.reduce((s, o) => s + Number(o.taka || 0), 0);
+      document.getElementById('stBalance').textContent = '৳ ' + formatBDT(totalBalance);
+
+      /* ✅ টোস্ট নোটিফিকেশন */
+      showToast(
+        data.action === 'add'
+          ? `✅ ${data.officer.name} — ৳${formatBDT(data.amount)} এড হয়েছে`
+          : `✅ ${data.officer.name} — ৳${formatBDT(data.amount)} মাইনাস হয়েছে`,
+        'ok'
+      );
+    } else {
+      showToast('❌ ' + (data?.message || 'ব্যর্থ হয়েছে'), 'err', 5000);
+      balConfirmBtn.disabled = false;
+      balConfirmBtn.innerHTML = '<i class="fas fa-check"></i> নিশ্চিত করুন';
+      BAL_MODAL.submitting = false;
+    }
+  } catch (e) {
+    showToast('❌ ' + (e.message || 'নেটওয়ার্ক সমস্যা'), 'err', 5000);
+    balConfirmBtn.disabled = false;
+    balConfirmBtn.innerHTML = '<i class="fas fa-check"></i> নিশ্চিত করুন';
+    BAL_MODAL.submitting = false;
+  }
+});
+
+/* ⭐ টোস্ট helper */
+let toastTimer;
+function showToast(msg, type='', ms=3000) {
+  let toast = document.getElementById('epToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'epToast';
+    toast.style.cssText = `
+      position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(150%);
+      background:rgba(20,20,40,.98);border:1px solid var(--orange);color:#fff;
+      padding:14px 22px;border-radius:30px;font-size:.9rem;font-weight:600;
+      box-shadow:0 10px 30px rgba(0,0,0,.5);z-index:999999;
+      transition:transform .35s cubic-bezier(.4,1.4,.5,1);max-width:90vw;
+      display:flex;align-items:center;gap:10px;
+    `;
+    document.body.appendChild(toast);
+  }
+  toast.className = 'ep-toast' + (type==='ok'?' ok':'') + (type==='err'?' err':'');
+  if (type === 'ok') toast.style.borderColor = '#4caf50';
+  else if (type === 'err') toast.style.borderColor = '#f44336';
+  else toast.style.borderColor = '#ff9800';
+  toast.textContent = msg;
+  toast.style.transform = 'translateX(-50%) translateY(0)';
+
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    toast.style.transform = 'translateX(-50%) translateY(150%)';
+  }, ms);
+}
+
+/* ============================================================
+   Officer Detail
+   ============================================================ */
 async function openOfficerDetail(officerKey){
   CURRENT_OFFICER = officerKey;
   CURRENT_HISTORY = [];
@@ -960,26 +1336,21 @@ async function openOfficerDetail(officerKey){
   });
   document.getElementById('historyView').style.display = '';
   document.getElementById('aggregateView').style.display = 'none';
+  document.getElementById('balanceView').style.display = 'none';
 
   document.getElementById('officerHeader').innerHTML = `<div class="oh-name">লোড হচ্ছে...</div>`;
-
   showScreen('detailScreen');
   await loadOfficerDetail();
 }
 
 async function loadOfficerDetail(){
   if (!CURRENT_OFFICER) return;
-
   try {
-    const data = await apiPost('officer-detail', { officerKey: CURRENT_OFFICER });
+    const data = await apiPost(API_BASE, 'officer-detail', { officerKey: CURRENT_OFFICER });
     if (!data || !data.status) {
-      document.getElementById('officerHeader').innerHTML = `
-        <div class="oh-name">${escapeHtml(data?.message || 'লোড ব্যর্থ')}</div>
-      `;
-      document.getElementById('historyList').innerHTML = `<div class="empty-history">${escapeHtml(data?.message || 'লোড ব্যর্থ')}</div>`;
+      document.getElementById('officerHeader').innerHTML = `<div class="oh-name">${escapeHtml(data?.message || 'লোড ব্যর্থ')}</div>`;
       return;
     }
-
     const o = data.officer || {};
     const st = data.stats || {};
 
@@ -998,25 +1369,36 @@ async function loadOfficerDetail(){
         <span><i class="fas fa-times-circle" style="color:var(--red)"></i> ব্যর্থ: ${st.failed||0}</span>
         <span><i class="fas fa-chart-line" style="color:var(--cyan)"></i> সফল টাকা: ৳ ${formatBDT(st.successAmount||0)}</span>
       </div>
+      <div class="oh-balance-actions">
+        <button class="oc-bal-btn add" id="detailAddBtn">
+          <i class="fas fa-plus-circle"></i> এড
+        </button>
+        <button class="oc-bal-btn sub" id="detailSubBtn">
+          <i class="fas fa-minus-circle"></i> মাইনাস
+        </button>
+      </div>
     `;
+
+    /* Bind detail buttons */
+    document.getElementById('detailAddBtn').addEventListener('click', () => {
+      openBalanceModal({ userKey: o.userKey, name: o.name, number: o.number, taka: o.taka }, 'add');
+    });
+    document.getElementById('detailSubBtn').addEventListener('click', () => {
+      openBalanceModal({ userKey: o.userKey, name: o.name, number: o.number, taka: o.taka }, 'subtract');
+    });
 
     CURRENT_HISTORY = data.history || [];
     renderHistoryList(CURRENT_HISTORY);
     CURRENT_OFFICER_DATA = data;
   } catch (e) {
-    document.getElementById('officerHeader').innerHTML = `
-      <div class="oh-name" style="color:var(--red)">সংযোগ ব্যর্থ: ${escapeHtml(e.message)}</div>
-    `;
+    document.getElementById('officerHeader').innerHTML = `<div class="oh-name" style="color:var(--red)">সংযোগ ব্যর্থ: ${escapeHtml(e.message)}</div>`;
   }
 }
 
 function renderHistoryList(list){
   const wrap = document.getElementById('historyList');
   if (!list.length) {
-    wrap.innerHTML = `<div class="empty-history">
-      <i class="fas fa-inbox"></i>
-      কোনো লেনদেন নেই
-    </div>`;
+    wrap.innerHTML = `<div class="empty-history"><i class="fas fa-inbox"></i> কোনো লেনদেন নেই</div>`;
     return;
   }
   wrap.innerHTML = list.map(h => {
@@ -1026,7 +1408,6 @@ function renderHistoryList(list){
     const statusText = ok ? 'সফল' : 'ব্যর্থ';
     const operatorName = OPERATOR_NAMES[h.operator] || h.operator || '—';
     const timeFmt = formatFirebaseTime(h.time);
-
     return `
       <div class="history-item ${statusClass}">
         <div class="hi-top">
@@ -1036,9 +1417,7 @@ function renderHistoryList(list){
               <span><i class="fas fa-signal"></i> ${escapeHtml(operatorName)}</span>
               <span><i class="fas fa-clock"></i> ${timeFmt}</span>
             </div>
-            <span class="hi-status ${statusClass}">
-              <i class="fas ${statusIcon}"></i> ${statusText}
-            </span>
+            <span class="hi-status ${statusClass}"><i class="fas ${statusIcon}"></i> ${statusText}</span>
             <div class="hi-refid">refid: ${escapeHtml(h.refid||'—')}</div>
           </div>
           <div class="hi-amt">৳${h.amount || 0}</div>
@@ -1050,10 +1429,7 @@ function renderHistoryList(list){
 
 document.getElementById('historySearch').addEventListener('input', function(){
   HISTORY_FILTER = this.value.toLowerCase().trim();
-  if (!HISTORY_FILTER) {
-    renderHistoryList(CURRENT_HISTORY);
-    return;
-  }
+  if (!HISTORY_FILTER) { renderHistoryList(CURRENT_HISTORY); return; }
   const filtered = CURRENT_HISTORY.filter(h =>
     (h.number||'').toLowerCase().includes(HISTORY_FILTER) ||
     (h.refid||'').toLowerCase().includes(HISTORY_FILTER) ||
@@ -1063,6 +1439,7 @@ document.getElementById('historySearch').addEventListener('input', function(){
   renderHistoryList(filtered);
 });
 
+/* Tabs */
 document.querySelectorAll('#detailTabs .tab').forEach(tab => {
   tab.addEventListener('click', function(){
     document.querySelectorAll('#detailTabs .tab').forEach(t => t.classList.remove('active'));
@@ -1072,36 +1449,84 @@ document.querySelectorAll('#detailTabs .tab').forEach(tab => {
     if (CURRENT_TAB === 'history') {
       document.getElementById('historyView').style.display = '';
       document.getElementById('aggregateView').style.display = 'none';
+      document.getElementById('balanceView').style.display = 'none';
+    } else if (CURRENT_TAB === 'balance') {
+      document.getElementById('historyView').style.display = 'none';
+      document.getElementById('aggregateView').style.display = 'none';
+      document.getElementById('balanceView').style.display = '';
+      loadBalanceLog();
     } else {
       document.getElementById('historyView').style.display = 'none';
       document.getElementById('aggregateView').style.display = '';
+      document.getElementById('balanceView').style.display = 'none';
       renderAggregate(CURRENT_TAB);
     }
   });
 });
 
+/* ⭐ Balance Log load */
+async function loadBalanceLog() {
+  if (!CURRENT_OFFICER) return;
+  const wrap = document.getElementById('balanceLogList');
+  wrap.innerHTML = `<div class="empty-history"><i class="fas fa-spinner fa-spin"></i> লোড হচ্ছে...</div>`;
+
+  try {
+    const data = await apiPost(API_BALANCE, 'log', { officerKey: CURRENT_OFFICER, limit: 200 });
+    if (!data || !data.status) {
+      wrap.innerHTML = `<div class="empty-history">${escapeHtml(data?.message || 'লোড ব্যর্থ')}</div>`;
+      return;
+    }
+    const list = data.history || [];
+    if (!list.length) {
+      wrap.innerHTML = `<div class="empty-history"><i class="fas fa-inbox"></i> কোনো ব্যালেন্স অ্যাডজাস্টমেন্ট নেই</div>`;
+      return;
+    }
+    wrap.innerHTML = list.map(e => {
+      const isAdd = e.action === 'add';
+      const cls = isAdd ? 'add' : 'subtract';
+      const icon = isAdd ? 'fa-plus-circle' : 'fa-minus-circle';
+      const label = isAdd ? 'ব্যালেন্স এড' : 'ব্যালেন্স মাইনাস';
+      return `
+        <div class="history-item ${cls}">
+          <div class="hi-top">
+            <div class="hi-left">
+              <div class="hi-num">
+                <i class="fas ${icon}" style="color:${isAdd ? 'var(--green)' : 'var(--red)'};margin-right:5px"></i>
+                ${label}
+              </div>
+              <div class="hi-meta">
+                <span><i class="fas fa-clock"></i> ${formatFirebaseTime(e.timestamp)}</span>
+                <span><i class="fas fa-user-shield"></i> ${escapeHtml(e.byRole || 'Main Admin')}</span>
+              </div>
+              ${e.note && e.note !== '—' ? `<div class="hi-note"><i class="fas fa-sticky-note"></i> ${escapeHtml(e.note)}</div>` : ''}
+              <div class="hi-refid">
+                আগে: ৳${formatBDT(e.oldTaka)} → পরে: ৳${formatBDT(e.newTaka)}
+              </div>
+            </div>
+            <div class="hi-amt">${isAdd ? '+' : '-'}৳${formatBDT(e.amount)}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (e) {
+    wrap.innerHTML = `<div class="empty-history">সংযোগ ব্যর্থ: ${escapeHtml(e.message)}</div>`;
+  }
+}
+
+/* Aggregate */
 function renderAggregate(view){
   const tbody = document.getElementById('aggBody');
   const tfoot = document.getElementById('aggFoot');
   const totalEl = document.getElementById('aggTotal');
   const headEl = document.getElementById('aggHead');
-
   const tr = (CURRENT_OFFICER_DATA && CURRENT_OFFICER_DATA.totalRecharge) || {};
   const keys = Object.keys(tr);
-
   let filtered = [];
   let headLabel = 'সময়';
 
-  if (view === 'year') {
-    filtered = keys.filter(k => /^\d{4}$/.test(k));
-    headLabel = 'বছর';
-  } else if (view === 'month') {
-    filtered = keys.filter(k => /^\d{4}-\d{2}$/.test(k));
-    headLabel = 'মাস';
-  } else {
-    filtered = keys.filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k));
-    headLabel = 'তারিখ';
-  }
+  if (view === 'year') { filtered = keys.filter(k => /^\d{4}$/.test(k)); headLabel = 'বছর'; }
+  else if (view === 'month') { filtered = keys.filter(k => /^\d{4}-\d{2}$/.test(k)); headLabel = 'মাস'; }
+  else { filtered = keys.filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k)); headLabel = 'তারিখ'; }
 
   filtered.sort((a, b) => String(b).localeCompare(String(a)));
   headEl.textContent = headLabel;
@@ -1117,12 +1542,7 @@ function renderAggregate(view){
 
   tbody.innerHTML = filtered.map((key, idx) => {
     const amount = Number(tr[key] || 0);
-    return `
-      <tr>
-        <td><span class="row-index">${idx + 1}</span>${formatPeriod(key, view)}</td>
-        <td>৳ ${formatBDT(amount)}</td>
-      </tr>
-    `;
+    return `<tr><td><span class="row-index">${idx + 1}</span>${formatPeriod(key, view)}</td><td>৳ ${formatBDT(amount)}</td></tr>`;
   }).join('');
 
   const grand = filtered.reduce((s, k) => s + Number(tr[k] || 0), 0);
@@ -1130,36 +1550,17 @@ function renderAggregate(view){
   tfoot.style.display = '';
 }
 
-document.getElementById('backToDashBtn').addEventListener('click', () => {
-  CURRENT_OFFICER = null;
-  CURRENT_OFFICER_DATA = null;
-  CURRENT_HISTORY = [];
-  showScreen('dashboardScreen');
-});
-document.getElementById('reloadDetailBtn').addEventListener('click', () => loadOfficerDetail());
-document.getElementById('reloadBtn').addEventListener('click', () => {
-  if (document.getElementById('dashboardScreen').classList.contains('active')) {
-    loadOfficers();
-  } else if (document.getElementById('detailScreen').classList.contains('active')) {
-    loadOfficerDetail();
-  }
-});
-
 document.addEventListener('DOMContentLoaded', () => {
   validateLoginForm();
-  showHeaderButtons(false);
 });
 
+/* Vercel Toolbar block */
 (function(){
   'use strict';
   function rm(){
-    const sels = [
-      'vercel-live-feedback','vercel-toolbar','[data-vercel-toolbar]',
-      '#vercel-live-feedback','[class*="vercel-toolbar"]',
-      '[class*="vercel-live-feedback"]',
-      'iframe[src*="vercel.com/live-feedback"]',
-      'iframe[src*="vercel.live"]','#__vercel_toolbar'
-    ];
+    const sels = ['vercel-live-feedback','vercel-toolbar','[data-vercel-toolbar]','#vercel-live-feedback',
+      '[class*="vercel-toolbar"]','[class*="vercel-live-feedback"]',
+      'iframe[src*="vercel.com/live-feedback"]','iframe[src*="vercel.live"]','#__vercel_toolbar'];
     sels.forEach(s=>document.querySelectorAll(s).forEach(el=>el.remove()));
   }
   document.addEventListener('DOMContentLoaded', rm);
