@@ -11,7 +11,6 @@
     <meta name="author" content="Easy Premium">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     
-    <!-- Canonical Tag -->
     <link rel="canonical" href="https://easy-premium.com/privacy-refund-policy-terms-of-service.html" />
     
     <!-- Open Graph Meta Tags -->
@@ -47,7 +46,6 @@
     <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     
-    <!-- Verification Meta Tags -->
     <meta name="google-site-verification" content="আপনার-ভেরিফিকেশন-কোড-দিন">
     
     <!-- Styles (সম্পূর্ণ অপরিবর্তিত) -->
@@ -954,9 +952,15 @@
     }
     </script>
 
-    <!-- JavaScript (সম্পূর্ণ অপরিবর্তিত + URL স্ক্রলিং যুক্ত) -->
+    <!-- ============================================================ -->
+    <!-- JavaScript: উন্নত স্ক্রলিং সিস্টেম (সম্পূর্ণ নতুন ও নির্ভুল) -->
+    <!-- ============================================================ -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            
+            /* ========================================================
+               ১. SECTION FADE-IN ANIMATION (IntersectionObserver)
+               ======================================================== */
             const observerOptions = {
                 threshold: 0.1,
                 rootMargin: '0px 0px -50px 0px'
@@ -975,47 +979,193 @@
                 observer.observe(card);
             });
             
+            /* ========================================================
+               ২. SOCIAL LINK HOVER (অপরিবর্তিত)
+               ======================================================== */
             const socialLinks = document.querySelectorAll('.social-link');
             socialLinks.forEach(link => {
                 link.addEventListener('mouseenter', function() {
                     this.style.transform = 'translateY(-5px) scale(1.1)';
                 });
-                
                 link.addEventListener('mouseleave', function() {
                     this.style.transform = 'translateY(0) scale(1)';
                 });
             });
             
+            /* ========================================================
+               ৩. VIEWPORT HEIGHT ADJUST (অপরিবর্তিত)
+               ======================================================== */
             function adjustHeight() {
                 const vh = window.innerHeight * 0.01;
                 document.documentElement.style.setProperty('--vh', `${vh}px`);
                 document.body.style.minHeight = window.innerHeight + 'px';
             }
-            
             adjustHeight();
             window.addEventListener('resize', adjustHeight);
             window.addEventListener('orientationchange', adjustHeight);
             
-            const urlParams = new URLSearchParams(window.location.search);
-            const dataParam = urlParams.get('data');
-            if (dataParam) {
-                const sectionMap = {
-                    'PrivacyPolicy': 'privacy-policy',
-                    'PaymentSolutions': 'refund-policy',
-                    'TermsandConditions': 'terms-conditions',
-                    'RefundandReturnsPolicy': 'refund-policy',
-                    'MobileRechargeRetailer': 'mobile-recharge-retailer'
-                };
-                const targetId = sectionMap[dataParam];
-                if (targetId) {
-                    const targetElement = document.getElementById(targetId);
-                    if (targetElement) {
-                        setTimeout(() => {
-                            targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }, 300);
+            /* ========================================================
+               ৪. উন্নত স্ক্রলিং সিস্টেম
+               ======================================================== */
+            
+            // URL প্যারামিটার থেকে সেকশন আইডি ম্যাপিং
+            const sectionMap = {
+                // URL প্যারামিটার → Section ID
+                'PrivacyPolicy': 'privacy-policy',
+                'PaymentSolutions': 'refund-policy',
+                'TermsandConditions': 'terms-conditions',
+                'TermsAndConditions': 'terms-conditions',
+                'RefundandReturnsPolicy': 'refund-policy',
+                'RefundAndReturnsPolicy': 'refund-policy',
+                'RefundPolicy': 'refund-policy',
+                'MobileRechargeRetailer': 'mobile-recharge-retailer',
+                'MobileRecharge': 'mobile-recharge-retailer',
+                'Retailer': 'mobile-recharge-retailer'
+            };
+            
+            // hash থেকে সেকশন আইডি ম্যাপিং (backup)
+            const hashMap = {
+                '#privacy-policy': 'privacy-policy',
+                '#refund-policy': 'refund-policy',
+                '#terms-conditions': 'terms-conditions',
+                '#mobile-recharge-retailer': 'mobile-recharge-retailer',
+                '#privacy': 'privacy-policy',
+                '#refund': 'refund-policy',
+                '#terms': 'terms-conditions',
+                '#retailer': 'mobile-recharge-retailer'
+            };
+            
+            /**
+             * নির্ভুল স্ক্রল ফাংশন
+             * - CSS animation শেষ হওয়ার পর স্ক্রল করে
+             * - একাধিক বার adjust করে (কারণ animation-এ height পরিবর্তন হয়)
+             * - offset দিয়ে স্ক্রল করে যাতে কার্ডের হেডার দেখা যায়
+             */
+            function scrollToSection(targetId, updateUrl) {
+                const targetElement = document.getElementById(targetId);
+                if (!targetElement) {
+                    console.warn('Section not found:', targetId);
+                    return;
+                }
+                
+                // Offset: কার্ডের উপরে কিছুটা ফাঁকা রাখার জন্য
+                const OFFSET = 20;
+                
+                function performScroll() {
+                    const elementPosition = targetElement.getBoundingClientRect().top + window.pageYOffset;
+                    const offsetPosition = elementPosition - OFFSET;
+                    
+                    window.scrollTo({
+                        top: offsetPosition,
+                        behavior: 'smooth'
+                    });
+                }
+                
+                // ১ম স্ক্রল: একটু দেরিতে (animation শুরু হওয়ার পর)
+                setTimeout(performScroll, 100);
+                
+                // ২য় স্ক্রল: animation শেষ হওয়ার পর (height পরিবর্তন adjust করার জন্য)
+                setTimeout(performScroll, 700);
+                
+                // ৩য় স্ক্রল: নিশ্চিত করার জন্য (মোবাইলে height পরিবর্তন হলে)
+                setTimeout(performScroll, 1200);
+                
+                // URL আপডেট (hash যোগ করা) — back/forward কাজ করার জন্য
+                if (updateUrl !== false) {
+                    if (history.pushState) {
+                        history.pushState(null, null, '#' + targetId);
+                    } else {
+                        window.location.hash = targetId;
                     }
                 }
             }
+            
+            /**
+             * URL থেকে সেকশন নির্ধারণ ও স্ক্রল
+             */
+            function handleInitialScroll() {
+                let targetId = null;
+                let shouldUpdateUrl = false;
+                
+                // ১. প্রথমে URL প্যারামিটার চেক (?data=PrivacyPolicy)
+                const urlParams = new URLSearchParams(window.location.search);
+                const dataParam = urlParams.get('data');
+                
+                if (dataParam) {
+                    // Case-insensitive matching
+                    const normalizedParam = dataParam.trim();
+                    if (sectionMap[normalizedParam]) {
+                        targetId = sectionMap[normalizedParam];
+                        shouldUpdateUrl = true;
+                    } else {
+                        // Fuzzy match: lowercase করে খোঁজা
+                        const lowerParam = normalizedParam.toLowerCase();
+                        for (const key in sectionMap) {
+                            if (key.toLowerCase() === lowerParam) {
+                                targetId = sectionMap[key];
+                                shouldUpdateUrl = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                // ২. যদি প্যারামিটার না থাকে, hash চেক (#privacy-policy)
+                if (!targetId && window.location.hash) {
+                    const hash = window.location.hash.toLowerCase();
+                    if (hashMap[hash]) {
+                        targetId = hashMap[hash];
+                    } else {
+                        // সরাসরি id হিসেবে চেষ্টা
+                        const directId = window.location.hash.substring(1);
+                        if (document.getElementById(directId)) {
+                            targetId = directId;
+                        }
+                    }
+                }
+                
+                // ৩. স্ক্রল করা
+                if (targetId) {
+                    // পেজ সম্পূর্ণ লোড হওয়ার পর স্ক্রল
+                    // (DOM + CSS animation এর জন্য যথেষ্ট সময় দেওয়া)
+                    setTimeout(() => {
+                        scrollToSection(targetId, shouldUpdateUrl);
+                    }, 200);
+                }
+            }
+            
+            // Initial scroll handle করা
+            handleInitialScroll();
+            
+            // hash পরিবর্তন হলে (user সরাসরি #privacy-policy ক্লিক করলে)
+            window.addEventListener('hashchange', function() {
+                const hash = window.location.hash.toLowerCase();
+                let targetId = null;
+                
+                if (hashMap[hash]) {
+                    targetId = hashMap[hash];
+                } else {
+                    const directId = window.location.hash.substring(1);
+                    if (document.getElementById(directId)) {
+                        targetId = directId;
+                    }
+                }
+                
+                if (targetId) {
+                    scrollToSection(targetId, false);
+                }
+            });
+            
+            // পেজ লোড হওয়ার পর যদি browser আগের scroll position মনে রাখে, তা রিসেট করা
+            if ('scrollRestoration' in history) {
+                history.scrollRestoration = 'manual';
+            }
+            
+            /* ========================================================
+               ৫. DEBUG: কনসোলে স্ক্রলিং তথ্য (প্রয়োজনে বন্ধ করা যাবে)
+               ======================================================== */
+            console.log('%c📜 Scroll System Loaded', 'color: #00bcd4; font-size: 12px; font-weight: bold;');
+            console.log('Available sections:', Object.values(sectionMap).filter((v, i, a) => a.indexOf(v) === i));
         });
     </script>
     
