@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Screen & Voice Demo</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #f4f6f8;
+    }
+    button {
+      padding: 12px;
+      margin: 5px 0;
+      cursor: pointer;
+    }
+    video {
+      width: 100%;
+      margin-top: 12px;
+      background: #222;
+    }
+    #status {
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h2>স্ক্রিন ও ভয়েস রেকর্ডিং ডেমো</h2>
+
+  <button id="screenBtn">স্ক্রিন শেয়ার চালু করুন</button>
+  <button id="shotBtn" disabled>স্ক্রিনশট নিন</button>
+  <button id="voiceBtn">১০ সেকেন্ডের ভয়েস রেকর্ড</button>
+
+  <video id="preview" autoplay muted playsinline></video>
+  <p id="status">শুরু করার জন্য একটি বাটনে চাপ দিন।</p>
+
+  <canvas id="canvas" hidden></canvas>
+
+  <script>
+    const status = document.getElementById("status");
+    const preview = document.getElementById("preview");
+    const canvas = document.getElementById("canvas");
+    const shotBtn = document.getElementById("shotBtn");
+
+    let screenStream = null;
+
+    // ব্যবহারকারীর অনুমতি নিয়ে স্ক্রিন শেয়ার
+    document.getElementById("screenBtn")
+      .addEventListener("click", async () => {
+        try {
+          screenStream =
+            await navigator.mediaDevices.getDisplayMedia({
+              video: true,
+              audio: false
+            });
+
+          preview.srcObject = screenStream;
+          shotBtn.disabled = false;
+          status.textContent = "স্ক্রিন শেয়ার চালু হয়েছে।";
+          
+          screenStream.getVideoTracks()[0]
+            .addEventListener("ended", () => {
+              shotBtn.disabled = true;
+              status.textContent = "স্ক্রিন শেয়ার বন্ধ হয়েছে।";
+            });
+        } catch (error) {
+          status.textContent =
+            "স্ক্রিন শেয়ার চালু করা যায়নি: " + error.message;
+        }
+      });
+
+    // বর্তমান শেয়ার করা স্ক্রিনের ছবি তৈরি
+    shotBtn.addEventListener("click", () => {
+      if (!screenStream || !preview.videoWidth) {
+        status.textContent = "আগে স্ক্রিন শেয়ার চালু করুন।";
+        return;
+      }
+
+      canvas.width = preview.videoWidth;
+      canvas.height = preview.videoHeight;
+
+      canvas.getContext("2d").drawImage(
+        preview, 0, 0, canvas.width, canvas.height
+      );
+
+      canvas.toBlob(blob => {
+        if (!blob) return;
+
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "screenshot.png";
+        link.click();
+
+        status.textContent =
+          "স্ক্রিনশট তৈরি হয়েছে এবং ডাউনলোড শুরু হয়েছে।";
+      }, "image/png");
+    });
+
+    // ব্যবহারকারীর অনুমতি নিয়ে ১০ সেকেন্ডের অডিও
+    document.getElementById("voiceBtn")
+      .addEventListener("click", async () => {
+        let stream;
+        let recorder;
+
+        try {
+          stream =
+            await navigator.mediaDevices.getUserMedia({
+              audio: true
+            });
+
+          const chunks = [];
+          recorder = new MediaRecorder(stream);
+
+          recorder.ondataavailable = event => {
+            if (event.data.size > 0) {
+              chunks.push(event.data);
+            }
+          };
+
+          recorder.onstop = () => {
+            const audioBlob = new Blob(chunks, {
+              type: recorder.mimeType || "audio/webm"
+            });
+
+            const url = URL.createObjectURL(audioBlob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "voice-recording.webm";
+            link.click();
+
+            stream.getTracks().forEach(track => track.stop());
+            status.textContent =
+              "১০ সেকেন্ডের রেকর্ডিং তৈরি হয়েছে।";
+          };
+
+          recorder.start();
+          status.textContent = "রেকর্ডিং চলছে: ১০ সেকেন্ড...";
+
+          setTimeout(() => {
+            if (recorder.state === "recording") {
+              recorder.stop();
+            }
+          }, 10000);
+
+        } catch (error) {
+          if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+          }
+          status.textContent =
+            "মাইক্রোফোন চালু করা যায়নি: " + error.message;
+        }
+      });
+  </script>
+</body>
+</html>
