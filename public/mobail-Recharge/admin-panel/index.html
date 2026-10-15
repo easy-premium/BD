@@ -3,367 +3,278 @@
 <html lang="bn">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Screen & Voice Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Camera & Voice Lab</title>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      padding: 24px 16px;
+      padding: 20px;
       font-family: Arial, sans-serif;
-      background: #ffffff;
-      color: #222222;
+      background: #fff;
+      color: #222;
     }
 
-    .container {
+    main {
       max-width: 600px;
       margin: auto;
     }
 
-    h1 {
-      font-size: 26px;
-      text-align: center;
-      margin-bottom: 28px;
+    h1 { font-size: 25px; }
+
+    video, img, audio {
+      display: block;
+      width: 100%;
+      margin: 12px 0;
+      border-radius: 10px;
     }
 
-    h2 {
-      font-size: 19px;
-      margin-top: 28px;
+    video {
+      background: #f1f5f9;
+      object-fit: cover;
     }
 
-    button, .download {
+    button, a {
       display: inline-block;
-      padding: 12px 16px;
-      margin: 6px 0;
-      border: 1px solid #d1d5db;
+      padding: 12px;
+      margin: 5px 3px;
+      border: 1px solid #ddd;
       border-radius: 8px;
       background: #f8fafc;
-      color: #222222;
-      font-size: 16px;
-      cursor: pointer;
+      color: #222;
+      font-size: 15px;
       text-decoration: none;
-    }
-
-    button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .primary {
-      background: #2563eb;
-      color: white;
-      border-color: #2563eb;
-    }
-
-    #preview {
-      display: block;
-      width: 100%;
-      height: auto;
-      max-height: 400px;
-      margin-top: 16px;
-      background: #ffffff;
-      border: 1px solid #e5e7eb;
-      border-radius: 10px;
-      object-fit: contain;
-    }
-
-    #screenshot {
-      display: block;
-      max-width: 100%;
-      margin-top: 12px;
-      border-radius: 8px;
-    }
-
-    #audioPlayer {
-      display: block;
-      width: 100%;
-      margin-top: 12px;
+      cursor: pointer;
     }
 
     .status {
       padding: 12px;
-      background: #f3f4f6;
+      background: #f1f5f9;
       border-radius: 8px;
       overflow-wrap: anywhere;
     }
 
-    .note {
-      color: #555555;
-      font-size: 14px;
-      line-height: 1.6;
-    }
+    .hidden { display: none; }
   </style>
 </head>
 
 <body>
-  <main class="container">
-    <h1>স্ক্রিন ও ভয়েস রেকর্ডিং ডেমো</h1>
+<main>
+  <h1>ক্যামেরা ও ভয়েস পরীক্ষাগার</h1>
 
-    <section>
-      <h2>১. স্ক্রিন শেয়ার</h2>
+  <section>
+    <h2>১. ফ্রন্ট ক্যামেরা</h2>
 
-      <p class="note">
-        নিজের স্ক্রিন শেয়ার করতে নিচের বাটনে চাপ দিন।
-        ব্রাউজার অনুমতি চাইলে নিজে নির্বাচন করুন।
-      </p>
+    <button id="startCamera">ক্যামেরা চালু করুন</button>
+    <button id="takePhoto" disabled>ছবি তুলুন</button>
+    <button id="stopCamera" disabled>ক্যামেরা বন্ধ</button>
 
-      <button id="startScreen" class="primary">
-        স্ক্রিন শেয়ার শুরু করুন
-      </button>
+    <video id="camera" autoplay playsinline muted
+           class="hidden"></video>
 
-      <button id="stopScreen" disabled>
-        স্ক্রিন শেয়ার বন্ধ করুন
-      </button>
+    <canvas id="canvas" class="hidden"></canvas>
+    <img id="photo" alt="তোলা ছবি" class="hidden">
 
-      <video id="preview" autoplay playsinline muted hidden></video>
+    <a id="photoDownload" class="hidden" download="photo.jpg">
+      ছবি ডাউনলোড
+    </a>
 
-      <p id="screenStatus" class="status">
-        স্ক্রিন শেয়ার শুরু হয়নি।
-      </p>
+    <p id="cameraStatus" class="status">
+      ক্যামেরা বন্ধ আছে।
+    </p>
+  </section>
 
-      <button id="takeShot" disabled>
-        স্ক্রিনশট নিন
-      </button>
+  <hr>
 
-      <div>
-        <img id="screenshot" alt="আপনার স্ক্রিনশট" hidden>
-      </div>
+  <section>
+    <h2>২. ভয়েস রেকর্ডিং</h2>
 
-      <a id="downloadShot" class="download" hidden>
-        স্ক্রিনশট ডাউনলোড করুন
-      </a>
-    </section>
+    <button id="startVoice">রেকর্ডিং শুরু</button>
+    <button id="stopVoice" disabled>রেকর্ডিং বন্ধ</button>
 
-    <section>
-      <h2>২. নিজের ভয়েস রেকর্ড</h2>
+    <audio id="audio" controls class="hidden"></audio>
 
-      <p class="note">
-        মাইক্রোফোন ব্যবহারের অনুমতি দেওয়ার পর
-        ১০ সেকেন্ডের অডিও রেকর্ড হবে।
-      </p>
+    <a id="audioDownload" class="hidden" download="voice.webm">
+      অডিও ডাউনলোড
+    </a>
 
-      <button id="recordVoice" class="primary">
-        ১০ সেকেন্ড রেকর্ড করুন
-      </button>
+    <p id="voiceStatus" class="status">
+      রেকর্ডিং শুরু হয়নি।
+    </p>
+  </section>
+</main>
 
-      <p id="voiceStatus" class="status">
-        রেকর্ডিং শুরু হয়নি।
-      </p>
+<script>
+  const camera = document.getElementById("camera");
+  const canvas = document.getElementById("canvas");
+  const photo = document.getElementById("photo");
 
-      <audio id="audioPlayer" controls hidden></audio>
+  let cameraStream = null;
+  let recorder = null;
+  let audioStream = null;
+  let audioChunks = [];
+  let photoURL = null;
+  let audioURL = null;
 
-      <a id="downloadVoice" class="download" hidden>
-        অডিও ডাউনলোড করুন
-      </a>
-    </section>
-  </main>
-
-  <script>
-    const startScreen = document.getElementById("startScreen");
-    const stopScreen = document.getElementById("stopScreen");
-    const takeShot = document.getElementById("takeShot");
-    const preview = document.getElementById("preview");
-
-    const screenStatus = document.getElementById("screenStatus");
-    const screenshot = document.getElementById("screenshot");
-    const downloadShot = document.getElementById("downloadShot");
-
-    const recordVoice = document.getElementById("recordVoice");
-    const voiceStatus = document.getElementById("voiceStatus");
-    const audioPlayer = document.getElementById("audioPlayer");
-    const downloadVoice = document.getElementById("downloadVoice");
-
-    let screenStream = null;
-    let screenshotURL = null;
-    let audioURL = null;
-
-    // স্ক্রিন শেয়ার: ব্যবহারকারী নিজে শুরু করবেন
-    startScreen.addEventListener("click", async () => {
-      if (!navigator.mediaDevices ||
-          typeof navigator.mediaDevices.getDisplayMedia !== "function") {
-        screenStatus.textContent =
-          "এই ব্রাউজারে স্ক্রিন শেয়ার সমর্থিত নয়। " +
-          "আপডেট করা Chrome এবং HTTPS-এ পরীক্ষা করুন।";
-        return;
-      }
-
+  // ফ্রন্ট ক্যামেরা চালু
+  document.getElementById("startCamera").onclick =
+    async () => {
       try {
-        screenStream =
-          await navigator.mediaDevices.getDisplayMedia({
-            video: true,
+        cameraStream =
+          await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: "user"
+            },
             audio: false
           });
 
-        preview.srcObject = screenStream;
-        preview.hidden = false;
+        camera.srcObject = cameraStream;
+        camera.classList.remove("hidden");
 
-        await preview.play();
+        await camera.play();
 
-        startScreen.disabled = true;
-        stopScreen.disabled = false;
-        takeShot.disabled = false;
+        document.getElementById("takePhoto").disabled = false;
+        document.getElementById("stopCamera").disabled = false;
 
-        screenStatus.textContent =
-          "স্ক্রিন শেয়ার চলছে।";
-
-        screenStream.getVideoTracks()[0]
-          .addEventListener("ended", stopScreenShare);
+        document.getElementById("cameraStatus").textContent =
+          "ফ্রন্ট ক্যামেরা চালু আছে।";
 
       } catch (error) {
-        screenStatus.textContent =
-          "স্ক্রিন শেয়ার শুরু করা যায়নি: " + error.message;
+        document.getElementById("cameraStatus").textContent =
+          "ক্যামেরা চালু করা যায়নি: " + error.message;
       }
-    });
+    };
 
-    function stopScreenShare() {
-      if (screenStream) {
-        screenStream.getTracks().forEach(track => track.stop());
-        screenStream = null;
-      }
+  // একটি ছবি তোলা
+  document.getElementById("takePhoto").onclick = () => {
+    if (!cameraStream || !camera.videoWidth) return;
 
-      preview.srcObject = null;
-      preview.hidden = true;
+    canvas.width = camera.videoWidth;
+    canvas.height = camera.videoHeight;
 
-      startScreen.disabled = false;
-      stopScreen.disabled = true;
-      takeShot.disabled = true;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(camera, 0, 0);
 
-      screenStatus.textContent = "স্ক্রিন শেয়ার বন্ধ হয়েছে।";
+    canvas.toBlob(blob => {
+      if (!blob) return;
+
+      if (photoURL) URL.revokeObjectURL(photoURL);
+
+      photoURL = URL.createObjectURL(blob);
+      photo.src = photoURL;
+      photo.classList.remove("hidden");
+
+      const link = document.getElementById("photoDownload");
+      link.href = photoURL;
+      link.classList.remove("hidden");
+
+      document.getElementById("cameraStatus").textContent =
+        "ছবি তৈরি হয়েছে।";
+    }, "image/jpeg", 0.9);
+  };
+
+  // ক্যামেরা বন্ধ
+  document.getElementById("stopCamera").onclick = () => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => track.stop());
+      cameraStream = null;
     }
 
-    stopScreen.addEventListener("click", stopScreenShare);
+    camera.srcObject = null;
+    camera.classList.add("hidden");
 
-    // শেয়ার করা স্ক্রিন থেকে একটি ছবি তৈরি
-    takeShot.addEventListener("click", () => {
-      if (!screenStream || !preview.videoWidth) {
-        screenStatus.textContent =
-          "প্রথমে স্ক্রিন শেয়ার শুরু করুন।";
-        return;
-      }
+    document.getElementById("takePhoto").disabled = true;
+    document.getElementById("stopCamera").disabled = true;
 
-      const canvas = document.createElement("canvas");
-      canvas.width = preview.videoWidth;
-      canvas.height = preview.videoHeight;
+    document.getElementById("cameraStatus").textContent =
+      "ক্যামেরা বন্ধ করা হয়েছে।";
+  };
 
-      const context = canvas.getContext("2d");
-      context.drawImage(preview, 0, 0);
-
-      canvas.toBlob(blob => {
-        if (!blob) {
-          screenStatus.textContent =
-            "স্ক্রিনশট তৈরি করা যায়নি।";
-          return;
+  // অডিও রেকর্ডিং শুরু
+  document.getElementById("startVoice").onclick =
+    async () => {
+      try {
+        if (!navigator.mediaDevices ||
+            !navigator.mediaDevices.getUserMedia ||
+            !window.MediaRecorder) {
+          throw new Error("এই ব্রাউজারে অডিও রেকর্ডিং সমর্থিত নয়।");
         }
 
-        if (screenshotURL) URL.revokeObjectURL(screenshotURL);
+        audioStream =
+          await navigator.mediaDevices.getUserMedia({
+            audio: true
+          });
 
-        screenshotURL = URL.createObjectURL(blob);
-        screenshot.src = screenshotURL;
-        screenshot.hidden = false;
+        audioChunks = [];
+        recorder = new MediaRecorder(audioStream);
 
-        downloadShot.href = screenshotURL;
-        downloadShot.download = "my-screenshot.png";
-        downloadShot.hidden = false;
+        recorder.ondataavailable = event => {
+          if (event.data.size > 0) {
+            audioChunks.push(event.data);
+          }
+        };
 
-        screenStatus.textContent =
-          "স্ক্রিনশট তৈরি হয়েছে।";
-      }, "image/png");
-    });
-
-    // মাইক্রোফোন রেকর্ডিং: ব্যবহারকারীর অনুমতি আবশ্যক
-    recordVoice.addEventListener("click", async () => {
-      if (!navigator.mediaDevices ||
-          typeof navigator.mediaDevices.getUserMedia !== "function") {
-        voiceStatus.textContent =
-          "এই ব্রাউজারে মাইক্রোফোন API পাওয়া যাচ্ছে না।";
-        return;
-      }
-
-      if (typeof MediaRecorder === "undefined") {
-        voiceStatus.textContent =
-          "এই ব্রাউজারে অডিও রেকর্ডিং সমর্থিত নয়।";
-        return;
-      }
-
-      let stream = null;
-
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          audio: true
-        });
-
-        const recorder = new MediaRecorder(stream);
-        const chunks = [];
-
-        recordVoice.disabled = true;
-        voiceStatus.textContent =
-          "রেকর্ডিং চলছে: ১০ সেকেন্ড অপেক্ষা করুন।";
-
-        recorder.addEventListener("dataavailable", event => {
-          if (event.data.size > 0) chunks.push(event.data);
-        });
-
-        recorder.addEventListener("stop", () => {
-          const blob = new Blob(chunks, {
+        recorder.onstop = () => {
+          const blob = new Blob(audioChunks, {
             type: recorder.mimeType || "audio/webm"
           });
 
           if (audioURL) URL.revokeObjectURL(audioURL);
 
           audioURL = URL.createObjectURL(blob);
-          audioPlayer.src = audioURL;
-          audioPlayer.hidden = false;
 
-          downloadVoice.href = audioURL;
-          downloadVoice.download = "my-voice.webm";
-          downloadVoice.hidden = false;
+          const audio = document.getElementById("audio");
+          audio.src = audioURL;
+          audio.classList.remove("hidden");
 
-          voiceStatus.textContent =
-            "১০ সেকেন্ডের রেকর্ডিং তৈরি হয়েছে।";
+          const link = document.getElementById("audioDownload");
+          link.href = audioURL;
+          link.classList.remove("hidden");
 
-          stream.getTracks().forEach(track => track.stop());
-          recordVoice.disabled = false;
-        });
+          if (audioStream) {
+            audioStream.getTracks().forEach(track => track.stop());
+            audioStream = null;
+          }
 
-        recorder.addEventListener("error", () => {
-          voiceStatus.textContent =
-            "অডিও রেকর্ডিংয়ে সমস্যা হয়েছে।";
-
-          stream.getTracks().forEach(track => track.stop());
-          recordVoice.disabled = false;
-        });
+          document.getElementById("voiceStatus").textContent =
+            "রেকর্ডিং তৈরি হয়েছে।";
+        };
 
         recorder.start();
 
-        setTimeout(() => {
-          if (recorder.state === "recording") {
-            recorder.stop();
-          }
-        }, 10000);
+        document.getElementById("startVoice").disabled = true;
+        document.getElementById("stopVoice").disabled = false;
+
+        document.getElementById("voiceStatus").textContent =
+          "রেকর্ডিং চলছে...";
 
       } catch (error) {
-        if (stream) {
-          stream.getTracks().forEach(track => track.stop());
-        }
+        document.getElementById("voiceStatus").textContent =
+          "রেকর্ডিং শুরু করা যায়নি: " + error.message;
+      }
+    };
 
-        voiceStatus.textContent =
-          "মাইক্রোফোন চালু করা যায়নি: " + error.message;
+  // অডিও রেকর্ডিং বন্ধ
+  document.getElementById("stopVoice").onclick = () => {
+    if (recorder && recorder.state === "recording") {
+      recorder.stop();
+    }
 
-        recordVoice.disabled = false;
+    document.getElementById("startVoice").disabled = false;
+    document.getElementById("stopVoice").disabled = true;
+  };
+
+  // পেজ ছাড়লে ক্যামেরা ও মাইক্রোফোন বন্ধ
+  window.addEventListener("pagehide", () => {
+    [cameraStream, audioStream].forEach(stream => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
       }
     });
-
-    // পেজ ছেড়ে গেলে স্ক্রিন শেয়ার বন্ধ
-    window.addEventListener("pagehide", () => {
-      if (screenStream) {
-        screenStream.getTracks().forEach(track => track.stop());
-      }
-    });
-  </script>
+  });
+</script>
 </body>
 </html>
 ```
