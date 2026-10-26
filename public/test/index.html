@@ -775,38 +775,13 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .platform-description {
-            padding: 15px;
-            color: #b0bec5;
-            font-size: 0.9rem;
-            line-height: 1.4;
-            flex: 1;
-        }
-        .platform-features {
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.2);
-            flex-shrink: 0;
-        }
-        .feature {
-            display: flex;
-            align-items: flex-start;
-            margin-bottom: 8px;
-            color: #b0bec5;
-            font-size: 0.9rem;
-        }
-        .feature i {
-            color: #4caf50;
-            margin-right: 8px;
-            font-size: 0.9rem;
-            flex-shrink: 0;
-            margin-top: 3px;
-        }
         .platform-price {
             padding: 15px;
             text-align: center;
             background: rgba(255, 152, 0, 0.1);
             border-top: none !important;
             flex-shrink: 0;
+            margin-top: auto;
         }
         .price {
             font-size: 1.5rem;
@@ -1360,9 +1335,7 @@
                     .map(([id, p]) => ({
                         id: id,
                         name: p.name || 'প্ল্যাটফর্ম',
-                        description: p.description || '',
                         price: (p.price !== undefined && p.price !== null) ? p.price : 0,
-                        features: Array.isArray(p.features) ? p.features : [],
                         icon: p.icon || 'visa',
                         link: p.link || '#',
                         image: DEFAULT_IMAGE,
@@ -1386,7 +1359,7 @@
             }
         }
 
-        // ================== প্রোডাক্ট রেন্ডার (আগের মতোই) ==================
+        // ================== প্রোডাক্ট রেন্ডার (description ও features ছাড়া) ==================
         function displayPlatforms(platforms) {
             platformsGrid.innerHTML = '';
             platforms.forEach(platform => {
@@ -1405,10 +1378,6 @@
                                  loading="lazy"
                                  onerror="this.onerror=null; this.src='${DEFAULT_IMAGE}';">
                             <div class="platform-name">${platform.name}</div>
-                        </div>
-                        <div class="platform-description">${platform.description}</div>
-                        <div class="platform-features">
-                            ${platform.features.map(f => `<div class="feature"><i class="fas fa-check-circle"></i><span>${f}</span></div>`).join('')}
                         </div>
                         <div class="platform-price">
                             <div class="price">${platform.price} ৳</div>
@@ -1439,13 +1408,12 @@
             });
         }
 
-        // ================== সার্চ ==================
+        // ================== সার্চ (নাম দিয়ে) ==================
         searchInput.addEventListener('input', function() {
             const term = this.value.toLowerCase().trim();
             if (term.length === 0) { searchResults.style.display = 'none'; return; }
             const filtered = allPlatforms.filter(p =>
-                p.name.toLowerCase().includes(term) ||
-                p.description.toLowerCase().includes(term)
+                p.name.toLowerCase().includes(term)
             );
             displaySearchResults(filtered);
         });
@@ -1469,7 +1437,6 @@
                              onerror="this.onerror=null; this.src='${DEFAULT_IMAGE}';">
                         <div class="search-result-content">
                             <div class="search-result-name">${p.name}</div>
-                            <div class="search-result-desc">${p.description}</div>
                         </div>
                         <div class="search-result-price">${p.price}</div>
                     `;
