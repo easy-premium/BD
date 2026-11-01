@@ -687,7 +687,7 @@
             white-space: nowrap;
         }
 
-        /* ================== More Button Style (Fixed Icon Visibility) ================== */
+        /* ================== More Button Style ================== */
         .more-btn {
             background: rgba(0, 0, 0, 0.5);
             border: 2px solid #ff9800;
@@ -1204,14 +1204,14 @@
                 padding: 25px 12px;
             }
             .platforms-grid {
-                grid-template-columns: 1fr;
-                gap: 15px;
+                grid-template-columns: repeat(2, 1fr); /* এখানে ১টি কলামের পরিবর্তে ২টি কলাম করা হয়েছে */
+                gap: 10px;
             }
             .platform-header {
                 padding: 15px;
             }
             .platform-icon {
-                height: 20rem;
+                height: 20rem; /* আপনার ইমেজ সাইজ আগের মতোই রাখা হয়েছে */
             }
             .platform-name {
                 font-size: 1.2rem;
@@ -1313,7 +1313,7 @@
                     <div id="searchResults" class="search-results"></div>
                 </div>
             </div>
-            <!-- More Button (Fixed Inline SVG Icon) -->
+            <!-- More Button -->
             <button id="moreBtn" class="more-btn" aria-label="More Menu">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M4 12h10M4 12l3-3M4 12l3 3"></path>
