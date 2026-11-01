@@ -1201,23 +1201,33 @@
                 font-size: 0.9rem;
             }
             .platforms-section {
-                padding: 25px 12px;
+                padding: 20px 10px; /* সেকশনের প্যাডিং কমানো হয়েছে */
             }
             .platforms-grid {
-                grid-template-columns: repeat(2, 1fr); /* এখানে ১টি কলামের পরিবর্তে ২টি কলাম করা হয়েছে */
-                gap: 10px;
+                grid-template-columns: repeat(2, 1fr); /* ২টি কলাম */
+                gap: 10px; /* গ্রিড গ্যাপ কমানো হয়েছে */
             }
             .platform-header {
-                padding: 15px;
+                padding: 10px; /* কার্ডের ভেতরের প্যাডিং কমানো হয়েছে */
             }
             .platform-icon {
-                height: 20rem; /* আপনার ইমেজ সাইজ আগের মতোই রাখা হয়েছে */
+                height: 10rem; /* মোবাইলে ইমেজের উচ্চতা ২০rem থেকে ১০rem করা হয়েছে যাতে ফাঁকা না লাগে */
+                margin-bottom: 5px;
             }
             .platform-name {
-                font-size: 1.2rem;
+                font-size: 0.95rem;
+            }
+            .platform-price {
+                padding: 10px;
+                margin-top: 0; /* নিচের ফাঁকা জায়গা রিমুভ করার জন্য */
             }
             .price {
-                font-size: 1.3rem;
+                font-size: 1.2rem;
+                margin-bottom: 0;
+            }
+            .buy-button {
+                padding: 10px;
+                font-size: 0.85rem;
             }
             .footer {
                 padding: 30px 15px 25px;
