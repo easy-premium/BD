@@ -1619,7 +1619,7 @@
             }
         });
 
-        // ================== Drawer Logic ==================
+        // ================== Drawer Logic (With Back Button Support) ==================
         const moreBtn = document.getElementById('moreBtn');
         const sideDrawer = document.getElementById('sideDrawer');
         const drawerOverlay = document.getElementById('drawerOverlay');
@@ -1628,16 +1628,31 @@
         function openDrawer() {
             sideDrawer.classList.add('active');
             drawerOverlay.classList.add('active');
+            // ব্রাউজারের হিস্ট্রিতে একটি স্টেট পুশ করা হচ্ছে
+            history.pushState({ drawerOpen: true }, '', '#menu');
         }
 
-        function closeDrawer() {
+        function closeDrawerUI() {
             sideDrawer.classList.remove('active');
             drawerOverlay.classList.remove('active');
+            // যদি হিস্ট্রিতে স্টেট থাকে, তবে ব্যাক করা হবে যাতে স্টেটটি মুছে যায়
+            if (history.state && history.state.drawerOpen) {
+                history.back();
+            }
         }
 
         moreBtn.addEventListener('click', openDrawer);
-        closeDrawerBtn.addEventListener('click', closeDrawer);
-        drawerOverlay.addEventListener('click', closeDrawer);
+        closeDrawerBtn.addEventListener('click', closeDrawerUI);
+        drawerOverlay.addEventListener('click', closeDrawerUI);
+
+        // মোবাইল বা ব্রাউজারের ব্যাক বাটন প্রেস করলে এই ইভেন্টটি কাজ করবে
+        window.addEventListener('popstate', function(e) {
+            if (sideDrawer.classList.contains('active')) {
+                // ব্যাক বাটন প্রেস হলে ড্রয়ার বন্ধ হবে
+                sideDrawer.classList.remove('active');
+                drawerOverlay.classList.remove('active');
+            }
+        });
 
         // ================== DOM রেডি হলে লোড ==================
         document.addEventListener('DOMContentLoaded', function() {
