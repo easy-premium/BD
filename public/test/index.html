@@ -1619,40 +1619,40 @@
             }
         });
 
-        // ================== Drawer Logic (With Back Button Support) ==================
+        // ================== Drawer Logic & Strict Back Button Block ==================
         const moreBtn = document.getElementById('moreBtn');
         const sideDrawer = document.getElementById('sideDrawer');
         const drawerOverlay = document.getElementById('drawerOverlay');
         const closeDrawerBtn = document.getElementById('closeDrawerBtn');
 
+        // পেজ লোড হওয়া মাত্রই একটি হিস্ট্রি স্টেট পুশ করা হচ্ছে যাতে ব্যাক বাটন কাজ না করে
+        history.pushState({ page: 1 }, "", location.href);
+
+        // ব্যাক বাটন প্রেস করলে যা হবে
+        window.addEventListener('popstate', function(event) {
+            // আবার স্টেট পুশ করে ইউজারকে পেজে আটকে রাখা হবে (ব্যাক করা নিষিদ্ধ)
+            history.pushState({ page: 1 }, "", location.href);
+            
+            // যদি ড্রয়ার খোলা থাকে, তবে ব্যাক বাটনে শুধু ড্রয়ারটি বন্ধ হবে
+            if (sideDrawer.classList.contains('active')) {
+                sideDrawer.classList.remove('active');
+                drawerOverlay.classList.remove('active');
+            }
+        });
+
         function openDrawer() {
             sideDrawer.classList.add('active');
             drawerOverlay.classList.add('active');
-            // ব্রাউজারের হিস্ট্রিতে একটি স্টেট পুশ করা হচ্ছে
-            history.pushState({ drawerOpen: true }, '', '#menu');
         }
 
         function closeDrawerUI() {
             sideDrawer.classList.remove('active');
             drawerOverlay.classList.remove('active');
-            // যদি হিস্ট্রিতে স্টেট থাকে, তবে ব্যাক করা হবে যাতে স্টেটটি মুছে যায়
-            if (history.state && history.state.drawerOpen) {
-                history.back();
-            }
         }
 
         moreBtn.addEventListener('click', openDrawer);
         closeDrawerBtn.addEventListener('click', closeDrawerUI);
         drawerOverlay.addEventListener('click', closeDrawerUI);
-
-        // মোবাইল বা ব্রাউজারের ব্যাক বাটন প্রেস করলে এই ইভেন্টটি কাজ করবে
-        window.addEventListener('popstate', function(e) {
-            if (sideDrawer.classList.contains('active')) {
-                // ব্যাক বাটন প্রেস হলে ড্রয়ার বন্ধ হবে
-                sideDrawer.classList.remove('active');
-                drawerOverlay.classList.remove('active');
-            }
-        });
 
         // ================== DOM রেডি হলে লোড ==================
         document.addEventListener('DOMContentLoaded', function() {
