@@ -521,6 +521,7 @@
             gap: 15px;
             flex: 1;
             min-width: 200px;
+            width: 100%;
         }
 
         .logo {
@@ -577,12 +578,6 @@
             letter-spacing: 0.3px;
             margin-top: 2px;
             white-space: nowrap;
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
 
         .search-container {
@@ -690,6 +685,35 @@
             color: #ff9800;
             font-size: 0.95rem;
             white-space: nowrap;
+        }
+
+        /* More Button Style */
+        .more-btn {
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #ff9800;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            min-width: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            padding: 8px;
+            flex-shrink: 0;
+            margin-left: 10px;
+            margin-right: 20px;
+        }
+        .more-btn:hover {
+            background: rgba(255, 152, 0, 0.2);
+            box-shadow: 0 0 15px rgba(255, 152, 0, 0.4);
+        }
+        .more-btn img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: invert(1); /* Fallback if base64 is black, making it white */
         }
 
         .hero {
@@ -1016,7 +1040,122 @@
             }
         }
 
+        /* ================== সাইড ড্রয়ার CSS ================== */
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(3px);
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .drawer-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .side-drawer {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 50%; /* অর্ধেক স্ক্রিন */
+            height: 100%;
+            background: rgba(15, 15, 30, 0.98);
+            box-shadow: -5px 0 25px rgba(0, 0, 0, 0.8);
+            z-index: 2001;
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            border-left: 2px solid #ff9800;
+        }
+        .side-drawer.active {
+            transform: translateX(0);
+        }
+        .drawer-header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 152, 0, 0.3);
+            background: rgba(0, 0, 0, 0.3);
+        }
+        .drawer-header h2 {
+            font-size: 1.2rem;
+            color: #ff9800;
+        }
+        .close-drawer-btn {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            padding: 5px;
+        }
+        .close-drawer-btn:hover {
+            color: #ff5722;
+            transform: rotate(90deg);
+        }
+        .drawer-content {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .drawer-btn {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .drawer-btn:hover {
+            background: rgba(255, 152, 0, 0.15);
+            border-color: #ff9800;
+            color: #ff9800;
+            transform: translateX(-5px);
+        }
+        .drawer-btn i {
+            font-size: 1.2rem;
+            width: 20px;
+            text-align: center;
+        }
+
         @media (max-width: 768px) {
+            .header {
+                flex-wrap: wrap;
+                padding: 10px 12px;
+                justify-content: space-between;
+            }
+            .header-left {
+                flex-wrap: wrap;
+                gap: 8px;
+                width: 100%;
+                justify-content: space-between;
+            }
+            .logo {
+                flex-shrink: 0;
+                order: 1;
+            }
+            .more-btn {
+                order: 2;
+                margin-right: 0;
+                margin-left: 0;
+            }
             .search-container {
                 display: block !important;
                 max-width: 100%;
@@ -1025,18 +1164,6 @@
                 width: 100%;
                 flex-basis: 100%;
                 order: 3;
-            }
-            .header {
-                flex-wrap: wrap;
-                padding: 10px 12px;
-            }
-            .header-left {
-                flex-wrap: wrap;
-                gap: 8px;
-                width: 100%;
-            }
-            .logo {
-                flex-shrink: 0;
             }
             .hero h1 {
                 font-size: 1.7rem;
@@ -1185,10 +1312,28 @@
                     <div id="searchResults" class="search-results"></div>
                 </div>
             </div>
-        </div>
-        <div class="header-right">
+            <!-- More Button -->
+            <button id="moreBtn" class="more-btn">
+                <img id="moreIcon" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ff9800'%3E%3Cpath d='M3 18h12v-2H3v2zM3 6v2h18V6H3zm0 7h18v-2H3v2z'/%3E%3C/svg%3E" alt="More">
+            </button>
         </div>
     </header>
+
+    <!-- Side Drawer (Menu) -->
+    <div id="drawerOverlay" class="drawer-overlay"></div>
+    <div id="sideDrawer" class="side-drawer">
+        <div class="drawer-header">
+            <h2>Menu</h2>
+            <button id="closeDrawerBtn" class="close-drawer-btn"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="drawer-content">
+            <a href="#home" class="drawer-btn"><i class="fas fa-home"></i> Home</a>
+            <a href="#products" class="drawer-btn"><i class="fas fa-box-open"></i> Products</a>
+            <a href="#about" class="drawer-btn"><i class="fas fa-info-circle"></i> About Us</a>
+            <a href="#contact" class="drawer-btn"><i class="fas fa-phone-alt"></i> Contact</a>
+            <a href="#privacy" class="drawer-btn"><i class="fas fa-shield-alt"></i> Privacy Policy</a>
+        </div>
+    </div>
 
     <!-- Hero Section -->
     <section class="hero">
@@ -1359,7 +1504,7 @@
             }
         }
 
-        // ================== প্রোডাক্ট রেন্ডার (description ও features ছাড়া) ==================
+        // ================== প্রোডাক্ট রেন্ডার ==================
         function displayPlatforms(platforms) {
             platformsGrid.innerHTML = '';
             platforms.forEach(platform => {
@@ -1408,7 +1553,7 @@
             });
         }
 
-        // ================== সার্চ (নাম দিয়ে) ==================
+        // ================== সার্চ ==================
         searchInput.addEventListener('input', function() {
             const term = this.value.toLowerCase().trim();
             if (term.length === 0) { searchResults.style.display = 'none'; return; }
@@ -1468,14 +1613,55 @@
             }
         });
 
+        // ================== Drawer Logic & Icon Loader ==================
+        async function loadMoreIcon() {
+            const iconImg = document.getElementById('moreIcon');
+            try {
+                const res = await fetch('https://www.easy-premium.com/more.txt');
+                if (!res.ok) return;
+                let txt = (await res.text()).trim();
+                if (txt) {
+                    if (!txt.startsWith('data:')) {
+                        if (txt.startsWith('/9j/')) txt = 'data:image/jpeg;base64,' + txt;
+                        else if (txt.startsWith('iVBOR')) txt = 'data:image/png;base64,' + txt;
+                        else txt = 'data:image/png;base64,' + txt;
+                    }
+                    iconImg.src = txt;
+                    iconImg.style.filter = 'none'; // Remove invert filter if base64 image is originally styled
+                }
+            } catch (e) {
+                console.warn('More icon load failed, using default.', e);
+            }
+        }
+
+        const moreBtn = document.getElementById('moreBtn');
+        const sideDrawer = document.getElementById('sideDrawer');
+        const drawerOverlay = document.getElementById('drawerOverlay');
+        const closeDrawerBtn = document.getElementById('closeDrawerBtn');
+
+        function openDrawer() {
+            sideDrawer.classList.add('active');
+            drawerOverlay.classList.add('active');
+        }
+
+        function closeDrawer() {
+            sideDrawer.classList.remove('active');
+            drawerOverlay.classList.remove('active');
+        }
+
+        moreBtn.addEventListener('click', openDrawer);
+        closeDrawerBtn.addEventListener('click', closeDrawer);
+        drawerOverlay.addEventListener('click', closeDrawer);
+
         // ================== DOM রেডি হলে লোড ==================
         document.addEventListener('DOMContentLoaded', function() {
             checkCookieConsent();
             loadPlatforms();
+            loadMoreIcon();
         });
     </script>
 
-    <!-- ================== সিকিউরিটি স্ক্রিপ্ট (আগের মতোই) ================== -->
+    <!-- ================== সিকিউরিটি স্ক্রিপ্ট ================== -->
     <script>
         (function() {
             'use strict';
