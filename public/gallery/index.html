@@ -58,9 +58,11 @@
         .header-left {
             display: flex;
             align-items: center;
+            justify-content: space-between; /* এটি নিশ্চিত করবে বাটন একদম ডানে যাবে */
             gap: 15px;
             flex: 1;
             min-width: 200px;
+            width: 100%;
         }
 
         .logo {
@@ -122,7 +124,7 @@
             white-space: nowrap;
         }
 
-        /* ================== More Button Style ================== */
+        /* ================== More Button Style (একদম ডানদিকে শেষ কোণায়) ================== */
         .more-btn {
             background: rgba(0, 0, 0, 0.5);
             border: 2px solid #ff9800;
@@ -137,7 +139,7 @@
             transition: all 0.3s;
             padding: 0;
             flex-shrink: 0;
-            margin-left: auto;
+            margin-left: auto; /* এটি বাটনটিকে ডানদিকে ঠেলে দেবে */
             color: #ff9800;
         }
         .more-btn:hover {
@@ -369,7 +371,7 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* ================== সাইড ড্রয়ার CSS (আপনার মেইন সাইটের হুবহু ডিজাইন) ================== */
+        /* ================== সাইড ড্রয়ার CSS ================== */
         .drawer-overlay {
             position: fixed;
             top: 0;
@@ -706,7 +708,6 @@
             lightboxImg.src = imageUrl;
             lightbox.classList.add('active');
             document.body.style.overflow = 'hidden';
-            // history.pushState({ lightbox: true }, ""); // গ্যালারির আগের লাইটবক্স লজিক আপনার মেইন পেজের ব্যাক-বাটন ব্লকের সাথে কনফ্লিক্ট করতে পারে, তাই এটি কমেন্ট আউট রাখা হলো
         }
 
         function closeLightbox() {
