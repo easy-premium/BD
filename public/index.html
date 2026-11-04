@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Mobile Servicing and Accessories Shop</title>
     <meta name="description" content="মোবাইল সার্ভিসিং ও এক্সেসরি শপ">
-    <meta name="keywords" content="Rewarble Voucher Services, visa card $5-$20,  visa card $5,  visa card $6,  visa card $7,  visa card $8,  visa card $9,  visa card $10,  visa card $11,  visa card $12, visa card $13, visa card $14,  visa card $15, visa card $16,  visa card $17,  visa card $18,  visa card $19,  visa card $20, visa card">
+    <meta name="keywords" content="Rewarble Voucher Services, visa card $5-$20,  visa card $5,  visa card $6,  visa card $7,  visa card $8,  visa card $9,  visa card $10,  visa card $11,  visa card $12, visa card $13, visa card $14,  visa card $15, visa card $16,  visa card $17, visa card $18, visa card $19, visa card $20, visa card">
     <meta name="author" content="Easy Premium">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://www.easy-premium.com">
@@ -1548,11 +1548,13 @@
             });
         }
 
+        // ================== 🛒 বাটন এবং ছবি ক্লিকে লিংক ওপেন (নতুন আপডেট) ==================
         function attachBuyButtons() {
-            document.querySelectorAll('.buy-button').forEach(btn => {
-                btn.addEventListener('click', function(e) {
+            // সব প্রোডাক্ট কার্ডের ভেতরের .platform-header (ছবি ও নাম) এবং .buy-button-এ ইভেন্ট লিসেনার বসানো হচ্ছে
+            document.querySelectorAll('.platform-card').forEach(card => {
+                
+                const openLink = (e) => {
                     e.stopPropagation();
-                    const card = this.closest('.platform-card');
                     if (!checkCookieConsent()) return;
                     const link = card.dataset.link;
                     if (link && link !== '#') {
@@ -1564,7 +1566,15 @@
                     } else {
                         alert('লিংক উপলব্ধ নয়।');
                     }
-                });
+                };
+
+                // "Click More Info" বাটনে ক্লিক
+                const btn = card.querySelector('.buy-button');
+                if(btn) btn.addEventListener('click', openLink);
+
+                // ছবি বা টাইটেলে ক্লিক
+                const header = card.querySelector('.platform-header');
+                if(header) header.addEventListener('click', openLink);
             });
         }
 
