@@ -22,5 +22,23 @@
     "link": "https://www.easy-premium.com/Wireless-Earphone",
     "name": "Abj 200 hours wireless earphone _OR_242 magnetic control",
     "price": 700
+  },
+  "Mobile-Phone-Holder": {
+    "imageBasik64": "https://www.easy-premium.com/Mobile-Phone-Holder/image2.txt",
+    "link": "https://www.easy-premium.com/Mobile-Phone-Holder",
+    "name": "Full Metal Folding 360 ° Rotating Desktop Mobile Phone Holder Stand For iphone ipad Universal Portable Mechanical Metal Stand",
+    "price": 400
+  },
+  "AirPods-Pro2": {
+    "imageBasik64": "https://www.easy-premium.com/AirPods-Pro2/image2.txt",
+    "link": "https://www.easy-premium.com/AirPods-Pro2",
+    "name": "Ultra Pods max Earbuds Transparent TWS Bluetooth Earbuds BT Noise Cancelling Gaming Stereo sound earbuds High bass HD",
+    "price": 400
+  },
+  "AirPods-Pro3": {
+    "imageBasik64": "https://www.easy-premium.com/AirPods-Pro3/image1.txt",
+    "link": "https://www.easy-premium.com/AirPods-Pro3",
+    "name": "Special AirPods Pro 2nd Generation TWS Black Edition With High Base & Long Battery Wireless Bluetooth Earbuds By Unique Tech",
+    "price": 600
   }
 }
