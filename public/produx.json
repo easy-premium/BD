@@ -3,24 +3,24 @@
     "imageBasik64": "https://www.easy-premium.com/AirPods-Pro/image1.txt",
     "link": "https://www.easy-premium.com/AirPods-Pro",
     "name": "Special AirPods Pro 2nd Generation TWS Black Edition With High Base & Long Battery Wireless Bluetooth Earbuds By Unique Tech",
-    "price": 700
+    "price": 600
   },
   "Mobile-Cooler": {
     "imageBasik64": "https://www.easy-premium.com/Mobile-Cooler/image1.txt",
     "link": "https://www.easy-premium.com/Mobile-Cooler",
     "name": "K5 Mobile Cooler 15W Low Noise Freeze Semiconductor Heat Sink For Gaming RGB Lights",
-    "price": 999
+    "price": 1000
   },
-  "AirPods-Pro2": {
-    "imageBasik64": "https://www.easy-premium.com/AirPods-Pro/image1.txt",
-    "link": "https://www.easy-premium.com/AirPods-Pro",
-    "name": "Special AirPods Pro 2nd Generation TWS Black Edition With High Base & Long Battery Wireless Bluetooth Earbuds By Unique Tech",
+  "Selfie-Stick": {
+    "imageBasik64": "https://www.easy-premium.com/Selfie-Stick/image1.txt",
+    "link": "https://www.easy-premium.com/Selfie-Stick",
+    "name": "Mepar Bluetooth Selfie Stick (Black, Remote Included)",
+    "price": 900
+  },
+  "Wireless-Earphone": {
+    "imageBasik64": "https://www.easy-premium.com/Wireless-Earphone/image3.txt",
+    "link": "https://www.easy-premium.com/Wireless-Earphone",
+    "name": "Abj 200 hours wireless earphone _OR_242 magnetic control",
     "price": 700
-  },
-  "Mobile-Cooler2": {
-    "imageBasik64": "https://www.easy-premium.com/Mobile-Cooler/image1.txt",
-    "link": "https://www.easy-premium.com/Mobile-Cooler",
-    "name": "K5 Mobile Cooler 15W Low Noise Freeze Semiconductor Heat Sink For Gaming RGB Lights",
-    "price": 999
   }
 }
