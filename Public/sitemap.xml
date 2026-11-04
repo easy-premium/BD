@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    
+    <!-- হোমপেজ -->
+    <url>
+        <loc>https://www.easy-premium.com/</loc>
+        <lastmod>2026-11-04</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>1.0</priority>
+    </url>
+
+    <!-- গ্যালারি পেজ -->
+    <url>
+        <loc>https://www.easy-premium.com/gallery</loc>
+        <lastmod>2026-11-04</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+
+    <!-- মোবাইল রিচার্জ পেজ -->
+    <url>
+        <loc>https://www.easy-premium.com/mobail-Recharge</loc>
+        <lastmod>2026-11-04</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.7</priority>
+    </url>
+
+    <!-- প্রোডাক্ট পেজসমূহ (আপনার স্ক্রিনশটে দেখা যাওয়া প্রোডাক্টগুলোর নাম অনুযায়ী) -->
+    <url>
+        <loc>https://www.easy-premium.com/product/excel-change-micro-usb</loc>
+        <lastmod>2026-11-04</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    <url>
+        <loc>https://www.easy-premium.com/product/special-airpods-pro-2</loc>
+        <lastmod>2026-11-04</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    <url>
+        <loc>https://www.easy-premium.com/product/mobile-cooler-fan</loc>
+        <lastmod>2026-11-04</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    <url>
+        <loc>https://www.easy-premium.com/product/selfie-stick-tripod</loc>
+        <lastmod>2026-11-04</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    <url>
+        <loc>https://www.easy-premium.com/product/wireless-earphone</loc>
+        <lastmod>2026-11-04</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+    </url>
+
+    <!-- প্রাইভেসি পলিসি (মূল পেজ) -->
+    <url>
+        <loc>https://www.easy-premium.com/privacy-refund-policy-terms-of-service</loc>
+        <lastmod>2026-11-04</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.5</priority>
+    </url>
+
+    <!-- ফুটারে থাকা পলিসি পেজগুলো -->
+    <url>
+        <loc>https://www.easy-premium.com/privacy-refund-policy-terms-of-service?data=PrivacyPolicy</loc>
+        <lastmod>2026-11-04</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.3</priority>
+    </url>
+    <url>
+        <loc>https://www.easy-premium.com/privacy-refund-policy-terms-of-service?data=PaymentSolutions</loc>
+        <lastmod>2026-11-04</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.3</priority>
+    </url>
+    <url>
+        <loc>https://www.easy-premium.com/privacy-refund-policy-terms-of-service?data=TermsandConditions</loc>
+        <lastmod>2026-11-04</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.3</priority>
+    </url>
+    <url>
+        <loc>https://www.easy-premium.com/privacy-refund-policy-terms-of-service?data=RefundandReturnsPolicy</loc>
+        <lastmod>2026-11-04</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.3</priority>
+    </url>
+
+</urlset>
