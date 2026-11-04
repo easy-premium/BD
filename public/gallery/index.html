@@ -58,9 +58,28 @@
         .header-left {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
             flex: 1;
             min-width: 200px;
+        }
+
+        /* ===== ড্রয়ার টগল বাটন ===== */
+        .drawer-toggle {
+            background: transparent;
+            border: none;
+            color: #ff9800;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+            flex-shrink: 0;
+        }
+        .drawer-toggle:hover {
+            transform: scale(1.1);
+            color: #00bcd4;
         }
 
         .logo {
@@ -134,6 +153,140 @@
             white-space: nowrap;
         }
         .back-btn:hover { color: #ff9800; }
+
+        /* ========== ড্রয়ার (সাইড মেনু) ========== */
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1500;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            backdrop-filter: blur(3px);
+        }
+        .drawer-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .drawer {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 280px;
+            height: 100%;
+            background: linear-gradient(180deg, #121230 0%, #0a0a1a 100%);
+            z-index: 1600;
+            transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 5px 0 30px rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            border-right: 1px solid rgba(255, 152, 0, 0.15);
+        }
+        .drawer.open {
+            left: 0;
+        }
+
+        .drawer-header {
+            padding: 20px 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 152, 0, 0.05);
+        }
+        .drawer-header .logo-image-container {
+            width: 42px;
+            height: 42px;
+            min-width: 42px;
+        }
+        .drawer-header .logo-main {
+            font-size: 1.1rem;
+        }
+        .drawer-header .logo-sub {
+            font-size: 0.7rem;
+        }
+
+        .drawer-close {
+            margin-left: auto;
+            background: transparent;
+            border: none;
+            color: #b0bec5;
+            font-size: 1.6rem;
+            cursor: pointer;
+            padding: 0 5px;
+            transition: color 0.2s;
+            line-height: 1;
+        }
+        .drawer-close:hover {
+            color: #ff9800;
+        }
+
+        .drawer-nav {
+            padding: 15px 0;
+            flex: 1;
+        }
+
+        .drawer-nav a {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 22px;
+            color: #e0e0e0;
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background 0.2s, color 0.2s, padding-left 0.2s;
+            border-left: 3px solid transparent;
+        }
+        .drawer-nav a:hover {
+            background: rgba(255, 152, 0, 0.08);
+            color: #ff9800;
+            padding-left: 28px;
+            border-left-color: #ff9800;
+        }
+        .drawer-nav a i {
+            width: 22px;
+            text-align: center;
+            font-size: 1.1rem;
+            color: #00bcd4;
+        }
+        .drawer-nav a:hover i {
+            color: #ff9800;
+        }
+
+        .drawer-divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.08);
+            margin: 10px 18px;
+        }
+
+        .drawer-footer {
+            padding: 18px 22px 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 0.8rem;
+            color: #78909c;
+            line-height: 1.6;
+        }
+        .drawer-footer .social-mini {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+        .drawer-footer .social-mini a {
+            color: #b0bec5;
+            font-size: 1.1rem;
+            transition: color 0.2s;
+        }
+        .drawer-footer .social-mini a:hover {
+            color: #ff9800;
+        }
 
         /* ========== গ্যালারি গ্রিড ========== */
         .gallery-container {
@@ -376,13 +529,62 @@
             .social-link { width: 45px; height: 45px; font-size: 1.3rem; }
             .messenger-float { bottom: 20px; right: 20px; width: 55px; height: 55px; }
             .copyright { font-size: 0.85rem; }
+            .drawer { width: 260px; left: -260px; }
+            .drawer-toggle { font-size: 1.3rem; }
         }
     </style>
 </head>
 <body>
 
+    <!-- ===== ড্রয়ার ওভারলে ===== -->
+    <div class="drawer-overlay" id="drawerOverlay"></div>
+
+    <!-- ===== ড্রয়ার (সাইড মেনু) ===== -->
+    <aside class="drawer" id="drawer">
+        <div class="drawer-header">
+            <div class="logo-image-container">
+                <img src="https://cdn-icons-png.flaticon.com/512/8701/8701941.png" alt="Easy Premium Logo" class="logo-image">
+            </div>
+            <div class="logo-text">
+                <div class="logo-main">EASY PREMIUM</div>
+                <div class="logo-sub">Photo Gallery</div>
+            </div>
+            <button class="drawer-close" id="drawerClose" aria-label="ড্রয়ার বন্ধ করুন">&times;</button>
+        </div>
+
+        <nav class="drawer-nav">
+            <a href="https://www.easy-premium.com/"><i class="fas fa-home"></i> হোম</a>
+            <a href="https://www.easy-premium.com/"><i class="fas fa-images"></i> ফটো গ্যালারি</a>
+            <div class="drawer-divider"></div>
+            <a href="https://easy-premium.com/privacy-refund-policy-terms-of-service?data=PrivacyPolicy"><i class="fas fa-shield-alt"></i> প্রাইভেসি পলিসি</a>
+            <a href="https://easy-premium.com/privacy-refund-policy-terms-of-service?data=TermsandConditions"><i class="fas fa-file-contract"></i> শর্তাবলী</a>
+            <a href="https://easy-premium.com/privacy-refund-policy-terms-of-service?data=RefundandReturnsPolicy"><i class="fas fa-undo-alt"></i> রিফান্ড পলিসি</a>
+            <a href="https://easy-premium.com/privacy-refund-policy-terms-of-service?data=PaymentSolutions"><i class="fas fa-credit-card"></i> পেমেন্ট সলিউশন</a>
+            <div class="drawer-divider"></div>
+            <a href="https://wa.me/+8801321782961" target="_blank"><i class="fas fa-headset"></i> সাপোর্ট / হেল্পলাইন</a>
+        </nav>
+
+        <div class="drawer-footer">
+            &copy; 2026 Easy Premium<br>
+            TIN: 478475635566
+            <div class="social-mini">
+                <a href="https://m.me/1356437314214521" target="_blank"><i class="fab fa-facebook"></i></a>
+                <a href="https://www.instagram.com/easypremiumbd/" target="_blank"><i class="fab fa-instagram"></i></a>
+                <a href="https://www.youtube.com/@Easy_Premium" target="_blank"><i class="fab fa-youtube"></i></a>
+                <a href="https://wa.me/+8801321782961" target="_blank"><i class="fab fa-whatsapp"></i></a>
+                <a href="https://t.me/Easy_Pemium" target="_blank"><i class="fab fa-telegram"></i></a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ===== হেডার ===== -->
     <header class="header">
         <div class="header-left">
+            <!-- ড্রয়ার টগল বাটন -->
+            <button class="drawer-toggle" id="drawerToggle" aria-label="মেনু খুলুন">
+                <i class="fas fa-bars"></i>
+            </button>
+
             <a href="https://www.easy-premium.com/" class="logo">
                 <div class="logo-image-container">
                     <img src="https://cdn-icons-png.flaticon.com/512/8701/8701941.png" alt="Easy Premium Logo" class="logo-image">
@@ -440,6 +642,43 @@
     </div>
 
     <script>
+        // ===== ড্রয়ার লজিক =====
+        const drawer = document.getElementById('drawer');
+        const drawerOverlay = document.getElementById('drawerOverlay');
+        const drawerToggle = document.getElementById('drawerToggle');
+        const drawerClose = document.getElementById('drawerClose');
+
+        function openDrawer() {
+            drawer.classList.add('open');
+            drawerOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDrawer() {
+            drawer.classList.remove('open');
+            drawerOverlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        drawerToggle.addEventListener('click', openDrawer);
+        drawerClose.addEventListener('click', closeDrawer);
+        drawerOverlay.addEventListener('click', closeDrawer);
+
+        // ড্রয়ার খোলা থাকলে Esc চাপলে বন্ধ হবে
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && drawer.classList.contains('open')) {
+                closeDrawer();
+            }
+        });
+
+        // ড্রয়ারের লিংকে ক্লিক করলে ড্রয়ার বন্ধ হবে (একই পেজে থাকলে)
+        document.querySelectorAll('.drawer-nav a').forEach(link => {
+            link.addEventListener('click', function() {
+                closeDrawer();
+            });
+        });
+
+        // ===== গ্যালারি লজিক (অপরিবর্তিত) =====
         const BASE_URL = "https://easy-premium.github.io/copyProdux/DATABASE/";
         const gallery = document.getElementById('gallery');
         const initialLoader = document.getElementById('initial-loader');
@@ -447,16 +686,14 @@
         const lightboxImg = document.getElementById('lightbox-img');
 
         let maxPhotoLimit = 0; 
-        let currentPhotoId = 1; // এটি পরে maxPhotoLimit দিয়ে সেট হবে
+        let currentPhotoId = 1;
 
         async function startGallery() {
             try {
-                // max.txt লোড করার চেষ্টা
                 const maxResponse = await fetch(BASE_URL + 'max.txt');
                 
                 if (maxResponse.ok) {
                     const maxText = await maxResponse.text();
-                    // টেক্সট ফাইল থেকে বাড়তি স্পেস বা নতুন লাইন রিমুভ করা
                     const cleanText = maxText.replace(/\s+/g, ''); 
                     maxPhotoLimit = parseInt(cleanText); 
                     
@@ -468,7 +705,6 @@
                 console.log("Max Limit Found:", maxPhotoLimit);
 
                 if (maxPhotoLimit > 0) {
-                    // 💥 এখানে পরিবর্তন: currentPhotoId-কে সর্বোচ্চ লিমিটে সেট করা হচ্ছে
                     currentPhotoId = maxPhotoLimit; 
                     loadNextPhoto(); 
                 } else {
@@ -483,7 +719,6 @@
         }
 
         async function loadNextPhoto() {
-            // 💥 এখানে পরিবর্তন: যদি আইডি ১ এর নিচে নেমে যায়, তবে লুপ বন্ধ হবে
             if (currentPhotoId < 1) {
                 return;
             }
@@ -491,14 +726,13 @@
             try {
                 const response = await fetch(BASE_URL + 'image' + currentPhotoId + '.txt');
 
-                // প্রথম ছবি (যেটি সবার উপরে থাকবে, সেটি maxPhotoLimit) লোড হওয়ার পর স্পিনার সরাবে
                 if (currentPhotoId === maxPhotoLimit && initialLoader) {
                     initialLoader.style.display = 'none';
                 }
 
                 if (response.ok) {
                     const photoUrl = await response.text(); 
-                    const cleanUrl = photoUrl.trim(); // বাড়তি স্পেস রিমুভ
+                    const cleanUrl = photoUrl.trim();
 
                     if (cleanUrl.length > 0) {
                         const div = document.createElement('div');
@@ -523,7 +757,6 @@
                     }
                 }
                 
-                // 💥 এখানে পরিবর্তন: আইডি বাড়ানোর বদলে কমানো হচ্ছে
                 currentPhotoId--;
                 loadNextPhoto(); 
                 
