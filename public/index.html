@@ -1359,7 +1359,7 @@
 
     <!-- Platforms Section -->
     <section class="platforms-section">
-        <div id="platforms-grid" class="platforms-grid"><div class="loading-spinner"><div class="spinner"></div><p>প্ল্যাটফর্ম লোড হচ্ছে...</p></div></div>
+        <div id="platforms-grid" class="platforms-grid"><div class="loading-spinner"><div class="spinner"></div><p>প্রোডাক্ট লোড হচ্ছে...</p></div></div>
     </section>
 
     <!-- Footer -->
@@ -1487,7 +1487,7 @@
                 const entries = Object.entries(data).filter(([id, p]) => p && typeof p === 'object');
 
                 if (entries.length === 0) {
-                    platformsGrid.innerHTML = '<div style="grid-column:1/-1; text-align:center;">কোন প্ল্যাটফর্ম নেই</div>';
+                    platformsGrid.innerHTML = '<div style="grid-column:1/-1; text-align:center;">কোন প্রোডাক্ট নেই</div>';
                     return;
                 }
 
@@ -1495,7 +1495,7 @@
                     .filter(([id, p]) => p.status === undefined || p.status === 'active')
                     .map(([id, p]) => ({
                         id: id,
-                        name: p.name || 'প্ল্যাটফর্ম',
+                        name: p.name || 'প্রোডাক্ট',
                         price: (p.price !== undefined && p.price !== null) ? p.price : 0,
                         icon: p.icon || 'visa',
                         link: p.link || '#',
@@ -1504,7 +1504,7 @@
                     }));
 
                 if (allPlatforms.length === 0) {
-                    platformsGrid.innerHTML = '<div style="grid-column:1/-1; text-align:center;">কোন প্ল্যাটফর্ম নেই</div>';
+                    platformsGrid.innerHTML = '<div style="grid-column:1/-1; text-align:center;">কোন প্রোডাক্ট নেই</div>';
                     return;
                 }
 
