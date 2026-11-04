@@ -46,5 +46,11 @@
     "link": "https://www.easy-premium.com/Wireless-Earphone2",
     "name": "JBL 881A Wireless Headphone",
     "price": 600
+  },
+  "Wireless-Earphone3": {
+    "imageBasik64": "https://www.easy-premium.com/Wireless-Earphone3/image1.txt",
+    "link": "https://www.easy-premium.com/Wireless-Earphone3",
+    "name": "P47 Wireless Headphone",
+    "price": 400
   }
 }
